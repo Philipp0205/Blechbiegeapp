@@ -1,152 +1,215 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/models/question.dart';
+import 'package:provider/provider.dart';
 
-class QuizPage extends StatefulWidget {
-  static const routeName = "/QuizPage";
+class QuizPageState with ChangeNotifier {
+  double _progress = 0;
+  Option? _selected;
 
-  const QuizPage({Key? key}) : super(key: key);
+  final PageController controller = PageController();
 
-  @override
-  State<StatefulWidget> createState() => _QuizPageStage();
+  get getSelected => _selected;
+
+  get getProgress => _progress;
+
+  set setSelected(Option option) {
+    _selected = option;
+    notifyListeners();
+  }
+
+  set setProgress(double progress) {
+    _progress = progress;
+    notifyListeners();
+  }
+
+  void nextPage() async {
+    await controller.nextPage(
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+    );
+  }
 }
 
-class _QuizPageStage extends State<QuizPage> {
-  bool btnPressed = false;
-  int currentQuestionIndex = 0;
+class QuizPage4 extends StatelessWidget {
+  final Category category;
+
+  QuizPage4(this.category);
 
   @override
   Widget build(BuildContext context) {
-    final PageController controller = PageController();
-    final questions =
-        ModalRoute.of(context)!.settings.arguments as List<Question>;
+    // final questions =
+    //     ModalRoute.of(context)?.settings.arguments as List<Question>;
+    final questions = category.questions;
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("Fragen"),
-        ),
-        body: Container(
-          margin: EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  for (int i = 0; i < questions.length; i++)
-                    crateSmallProgressDot(),
-                ],
-              ),
-              Divider(),
-              Navigator(
-                pages: [
-                  MaterialPage(child: createQuestionPage(questions, 0)),
-                ],
-                onPopPage: (route, result) {
-                  if (!route.didPop(result)) return false;
+    return ChangeNotifierProvider(
+      create: (_) => QuizPageState(),
+      child: Builder(builder: (context) {
+        var state = Provider.of<QuizPageState>(context);
 
-                  return true;
-                },
-              ),
-              // PageView.builder(
-              //   controller: controller,
-              //   itemBuilder: (BuildContext context, int index) {
-              //     return createQuestionPage2(questions, index);
-              //    },
-              // ),
-            ],
+        return Scaffold(
+          appBar: AppBar(
+            title: Text("Quiz4"),
           ),
-        ),
-      ),
+          body: PageView.builder(
+            controller: state.controller,
+            onPageChanged: (int index) =>
+                state.setProgress = (index / (questions.length + 1)),
+            itemBuilder: (context, index) {
+              //return QuestionPage(questions[index]);
+              return StartPage(category);
+            },
+          ),
+        );
+      }),
     );
   }
+}
 
-  createQuestionPage(List<Question> questions, int index) {
-    return Container(
-      margin: EdgeInsets.all(10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              questions[0].question,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-              ),
-            ),
-          ),
-          Divider(),
-          for (int i = 0; i < questions[index].answers.length; i++)
-            createQuestion(questions[index].answers.keys.elementAt(i),
-                questions[0].answers.values.elementAt(i)),
-          Divider(),
-        ],
-      ),
-    );
-  }
+class QuestionPage extends StatelessWidget {
+  final Question question;
 
-  createQuestionPage2(List<Question> questions, int index) {
+  QuestionPage(this.question);
+
+  @override
+  Widget build(BuildContext context) {
+    var state = Provider.of<QuizPageState>(context);
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: Text(
-            questions[0].question,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-            ),
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(16),
+            alignment: Alignment.center,
+            child: Text(question.question),
           ),
         ),
-        Divider(),
-        for (int i = 0; i < questions[index].answers.length; i++)
-          createQuestion(questions[index].answers.keys.elementAt(i),
-              questions[0].answers.values.elementAt(i)),
-        Divider(),
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: question.options.map((question) {
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(20),
+                    ),
+                    color: Colors.blue,
+                  ),
+                  height: 70,
+                  margin: EdgeInsets.only(bottom: 10),
+                  child: InkWell(
+                    onTap: () {
+                      state.setSelected = question;
+                      _bottomSheet(context, question);
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(
+                              state.getSelected == question
+                                  ? FontAwesomeIcons.checkCircle
+                                  : FontAwesomeIcons.circle,
+                              size: 30),
+                          Expanded(
+                            child: Container(
+                              margin: EdgeInsets.only(left: 16),
+                              child: Text(
+                                question.value,
+                                style: Theme.of(context).textTheme.bodyText2,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        )
       ],
     );
   }
 
-  createQuestion(String text, bool type) {
-    return Container(
-      width: double.infinity,
-      height: 50.0,
-      margin: EdgeInsets.only(bottom: 20, left: 12, right: 12),
-      child: RawMaterialButton(
-        fillColor: btnPressed
-            ? type
-                ? Colors.green
-                : Colors.red
-            : Colors.grey,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        onPressed: () {
-          setState(() {
-            btnPressed = true;
-          });
-        },
-        child: Text(text),
-      ),
+  /// Bottom sheet shown when Question is answered
+  _bottomSheet(BuildContext context, Option opt) {
+    bool correct = opt.correct;
+    var state = Provider.of<QuizPageState>(context, listen: false);
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 250,
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(correct ? 'Good Job!' : 'Wrong'),
+              Text(
+                opt.value,
+                style: TextStyle(fontSize: 18, color: Colors.white54),
+              ),
+              FlatButton(
+                color: correct ? Colors.green : Colors.red,
+                child: Text(
+                  correct ? 'Onward!' : 'Try Again',
+                  style: TextStyle(
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () {
+                  if (correct) {
+                    state.nextPage();
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
+}
 
-  crateSmallProgressDot() {
-    return Padding(
-      padding: EdgeInsets.all(2),
-      child: Container(
-        width: 5,
-        height: 5,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.black),
+class StartPage extends StatelessWidget {
+  final Category category;
+
+  StartPage(this.category);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView(
+        children: [
+          Hero(
+            tag: category.imagePath,
+            child: Image.asset('assets/images/${category.imagePath}',
+                width: MediaQuery.of(context).size.width),
+          ),
+          Container(
+            padding: EdgeInsets.all(10),
+            child: Text(
+              category.name,
+              style: Theme.of(context).textTheme.headline4,
+            ),
+          ),
+          Divider(),
+          Center(
+            child: ElevatedButton(
+                onPressed: () {},
+                child: Text('Quiz Starten')),
+          ),
+        ],
       ),
     );
   }

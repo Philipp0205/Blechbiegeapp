@@ -35,9 +35,9 @@ class _QuizCategoryPageState extends State<QuizCategoryPage> {
     Option option6 = new Option(false, "Antwort 3");
 
     List<Option> options2 = [];
-    options1.add(option4);
-    options1.add(option5);
-    options1.add(option6);
+    options2.add(option4);
+    options2.add(option5);
+    options2.add(option6);
 
     Question question2 = new Question(options2, "Dies ist einer weitere Frage");
 
@@ -76,8 +76,6 @@ class _QuizCategoryPageState extends State<QuizCategoryPage> {
                 children: categoryList
                     .map((category) => GestureDetector(
                           onTap: () {
-                            print("category clicked");
-                            print("questoin " + category.questions[0].question);
                             Navigator.pushNamed(context, "/Quiz",
                                 arguments: category.questions);
                           },
