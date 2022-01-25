@@ -1,13 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/models/question.dart';
 import 'package:provider/provider.dart';
 
 class QuizPageState with ChangeNotifier {
-  double _progress = 0;
+  double _progress = -1;
   Option? _selected;
+
+  late Category category;
 
   final PageController controller = PageController();
 
@@ -21,6 +24,7 @@ class QuizPageState with ChangeNotifier {
   }
 
   set setProgress(double progress) {
+    print("set progress $progress");
     _progress = progress;
     notifyListeners();
   }
@@ -58,13 +62,34 @@ class QuizPage4 extends StatelessWidget {
             onPageChanged: (int index) =>
                 state.setProgress = (index / (questions.length + 1)),
             itemBuilder: (context, index) {
-              //return QuestionPage(questions[index]);
-              return StartPage(category);
+              print(index);
+              if (index == 0) {
+                return StartPage(category);
+              } else if (index == questions.length + 1) {
+                return ResultPage();
+              } else {
+                return QuestionPage(questions[index - 1]);
+              }
             },
           ),
         );
       }),
     );
+  }
+
+  createQuestionPages(List<Question> questions) {
+    // var state = Provider.of<QuizPageState>(context);
+    List<Widget> widgets =
+        questions.map((question) => QuestionPage(question)).toList();
+    return widgets;
+    // return PageView.builder(
+    //   controller: state.controller,
+    //   onPageChanged: (int index) =>
+    //   state.setProgress = (index / (questions.length + 1)),
+    //   itemBuilder: (context, index) {
+    //     return QuestionPage(questions[index]);
+    //   },
+    // );
   }
 }
 
@@ -188,6 +213,7 @@ class StartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var state = Provider.of<QuizPageState>(context);
     return Scaffold(
       body: ListView(
         children: [
@@ -206,10 +232,34 @@ class StartPage extends StatelessWidget {
           Divider(),
           Center(
             child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  state.nextPage();
+                },
                 child: Text('Quiz Starten')),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ResultPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.all(20),
+        child: ListView(
+          children: [
+            Text(
+              "Glückwunsch!",
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            Divider(),
+            Text("Bald hast du die Patente A, D (und die 6)"),
+            Image.asset("assets/gifs/harald.gif"),
+          ],
+        ),
       ),
     );
   }
