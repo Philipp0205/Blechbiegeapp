@@ -235,7 +235,7 @@ class StartPage extends StatelessWidget {
                 onPressed: () {
                   state.nextPage();
                 },
-                child: Text('Quiz Starten')),
+                child: Text('Quiz Starten!')),
           ),
         ],
       ),
