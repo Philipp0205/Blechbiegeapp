@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:open_bsp/db/CsvService.dart';
+import 'package:open_bsp/db/DbService.dart';
+import 'package:open_bsp/models/Dog.dart';
 import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/models/question.dart';
 import 'package:open_bsp/pages/QuizPage.dart';
+
+import 'Settings.dart';
 
 class QuizCategoryPage2 extends StatefulWidget {
   static const routeName = '/';
@@ -14,9 +19,16 @@ class QuizCategoryPage2 extends StatefulWidget {
 
 class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
   late List<Category> categoryList = [];
+  DbService dbService = new DbService();
 
   @override
   void initState() {
+    CsvService csvService = new CsvService();
+    csvService.loadCsv();
+    categoryList = csvService.getCategories();
+    print("categoryList");
+    print(categoryList);
+
     Category category1 =
         new Category(1, "Allgemeine Fragen zum Bodensee", "wavescard.png");
 
@@ -52,8 +64,9 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
     // categoryList.add(new Category(1, "Umweltschutz", "seagull.png"));
     // categoryList.add(new Category(1, "Seemannschaft", "knot.png"));
     // categoryList.add(new Category(1, "Motorboot Fahrregeln", "propeller.png"));
-    // categoryList.add(new Category(1, "Segeln Allgemient", "sailboat.png"));
+    // categoryList.add(new Category(1, "Segeln Allgemein", "sailboat.png"));
 
+    testDb();
     super.initState();
   }
 
@@ -61,9 +74,21 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Kategorien"),
-        ),
+        appBar: AppBar(title: const Text("Kategorien"), actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => Settings(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.settings,
+              color: Colors.white,
+            ),
+          ),
+        ]),
         body: GridView.count(
           crossAxisCount: 2,
           crossAxisSpacing: 10.0,
@@ -75,12 +100,25 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
       ),
     );
   }
+
+  void testDb() async {
+    print('testdb');
+    // Create a Dog and add it to the dogs table
+
+    var fido = Dog(
+      id: 0,
+      name: 'Fido',
+      age: 35,
+    );
+  }
 }
 
 class CategoryCard extends StatelessWidget {
   final Category category;
 
   CategoryCard(this.category);
+
+  CsvService csvService = new CsvService();
 
   @override
   Widget build(BuildContext context) {
@@ -96,9 +134,11 @@ class CategoryCard extends StatelessWidget {
           ),
           child: InkWell(
             onTap: () {
+              csvService.loadCsv();
+
               Navigator.of(context).push(
                 MaterialPageRoute(
-                    builder: (context) => QuizPage4(category),
+                  builder: (context) => QuizPage4(category),
                 ),
               );
             },
