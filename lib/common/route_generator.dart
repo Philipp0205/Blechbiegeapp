@@ -10,7 +10,7 @@ class RouteGenerator {
       case '/':
         return MaterialPageRoute(builder: (_) => QuizCategoryPage());
       case '/Quiz':
-        return MaterialPageRoute(builder: (_) => QuizPage());
+        //return MaterialPageRoute(builder: (_) => QuizPage4());
       default:
         return _errorRoute();
     }

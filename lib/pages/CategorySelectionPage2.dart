@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_bsp/db/CsvService.dart';
-import 'package:open_bsp/db/DbService.dart';
+import 'package:open_bsp/db/QuestionDb.dart';
 import 'package:open_bsp/models/Dog.dart';
 import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/models/question.dart';
@@ -19,7 +19,7 @@ class QuizCategoryPage2 extends StatefulWidget {
 
 class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
   late List<Category> categoryList = [];
-  DbService dbService = new DbService();
+  Database dbService = new Database();
 
   @override
   void initState() {

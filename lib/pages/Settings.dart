@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/db/CsvService.dart';
+import 'package:open_bsp/db/TestDb.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class Settings extends StatelessWidget {
@@ -19,7 +20,7 @@ class Settings extends StatelessWidget {
                 leading: Icon(Icons.code),
                 title: Text('Debug function'),
                 onPressed: (value) {
-			debugFunction();
+                  debugFunction();
                 },
               ),
               SettingsTile.switchTile(
@@ -30,14 +31,29 @@ class Settings extends StatelessWidget {
               ),
             ],
           ),
+          SettingsSection(
+            title: Text('Database'),
+            tiles: <SettingsTile>[
+              SettingsTile.navigation(
+                leading: Icon(Icons.code),
+                title: Text('Insert dog'),
+                onPressed: (value) {
+                  debugFunction();
+                },
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  void debugFunction() {
-	  print("Debug Function pressed");
-	  CsvService csvService = new CsvService();
-	  csvService.loadCsv();
+  void debugFunction() async {
+    print("Debug Function pressed");
+    TestDb testDb = TestDb.instance;
+    testDb.testInsert();
+    var dogs = await testDb.dogs();
+    print(dogs);
+
   }
 }
