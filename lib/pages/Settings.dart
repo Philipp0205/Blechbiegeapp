@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/db/CsvService.dart';
+import 'package:open_bsp/db/QuestionDb.dart';
 import 'package:open_bsp/db/TestDb.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -49,11 +50,8 @@ class Settings extends StatelessWidget {
   }
 
   void debugFunction() async {
-    print("Debug Function pressed");
-    TestDb testDb = TestDb.instance;
-    testDb.testInsert();
-    var dogs = await testDb.dogs();
-    print(dogs);
-
+    print("Debug Function pressed2");
+    QuestionDb questionDb = QuestionDb.instance;
+    questionDb.testInsert();
   }
 }

@@ -1,13 +1,30 @@
 class Question {
-  String question = '';
-  List<Option> options = [];
+  final int id;
+  final String question;
+  final List<Option> options;
 
-  Question(this.options, this.question);
+  const Question({
+    required this.id,
+    required this.question,
+    required this.options,
+  });
 
-  // Question.fromMap(Map data) {
-  //   question = data['question'] ?? '';
-  //   options = (data['options'] as List ?? []).map((v) => Option.fromMap(v)).toList();
-  // }
+  @override
+  String toString() {
+    return 'Question{id: $id, question: $question}';
+  }
+
+  // Convert a Dog into a Map. The keys must correspond to the names of the
+  // columns in the database.
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'question': question,
+      'correctAnswer': options[0].value,
+      'falseAnswer1': options[1].value,
+      'falseAnswer2': options[2].value,
+    };
+  }
 }
 
 class Option {

@@ -19,7 +19,6 @@ class QuizCategoryPage2 extends StatefulWidget {
 
 class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
   late List<Category> categoryList = [];
-  Database dbService = new Database();
 
   @override
   void initState() {
@@ -41,7 +40,7 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
     options1.add(option2);
     options1.add(option3);
 
-    Question question1 = new Question(options1, "Das ist eine Testfrage");
+    Question question1 = new Question(id: 2, question: "Das ist eine Testfrage", options: options1);
 
     Option option4 = new Option(false, "Antwort 1");
     Option option5 = new Option(true, "Antwort 2 ");
@@ -52,7 +51,7 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
     options2.add(option5);
     options2.add(option6);
 
-    Question question2 = new Question(options2, "Dies ist einer weitere Frage");
+    Question question2 = new Question(id: 3, options: options2, question: "Die ist eine weitere Frage");
 
     category1.addQuestion(question1);
     category1.addQuestion(question2);
