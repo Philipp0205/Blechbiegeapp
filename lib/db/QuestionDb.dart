@@ -1,3 +1,4 @@
+import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/models/question.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -54,6 +55,17 @@ class QuestionDb {
     );
   }
 
+  void categoryTable() async {
+    final db = await database;
+    db.execute(
+      'CREATE TABLE categories('
+      'id INTEGER PRIMARY KEY, '
+      'name TEXT, '
+      'imagePath TEXT'
+      ')',
+    );
+  }
+
   Future _createDB(Database db, int version) async {
     return db.execute(
       'CREATE TABLE questions('
@@ -96,8 +108,30 @@ class QuestionDb {
       options.addAll([option1, option2, option3]);
       return Question(
         id: maps[i]['id'],
+        category: maps[i]['category'],
         question: maps[i]['question'],
         options: options,
+      );
+    });
+  }
+
+  Future<List<Category>> getCategories() async {
+    // Get a reference to the database.
+    final db = await database;
+
+    // Query the table for all The Dogs.
+    final List<Map<String, dynamic>> maps = await db.query('categories');
+
+    // Convert the List<Map<String, dynamic> into a List<Dog>.
+    return List.generate(maps.length, (i) {
+      String name = maps[i]['imagePath'];
+      print('category: $name');
+
+      return Category(
+        id: maps[i]['id'],
+        name: maps[i]['name'],
+        imagePath: maps[i]['imagePath'],
+        color: maps[i]['color'],
       );
     });
   }
@@ -113,6 +147,38 @@ class QuestionDb {
     );
   }
 
+  Future<void> insertCategory(Category category) async {
+    final db = await instance.database;
+
+    await db.insert(
+      'categories',
+      category.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Question>> getAllQuestionsOfCategory(String category) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps =
+        await db.query('questions', where: 'category = ?', whereArgs: [category]);
+
+    return List.generate(maps.length, (i) {
+      List<Option> options = [
+        Option(true, maps[i]['correctAnswer']),
+        Option(false, maps[i]['falseAnswer1']),
+        Option(false, maps[i]['falseAnswer2']),
+      ];
+
+      return Question(
+        id: maps[i]['id'],
+        category: maps[i]['category'],
+        question: maps[i]['question'],
+        options: options,
+      );
+    });
+  }
+
   testInsert() async {
     Option option1 = new Option(true, "Antwort 1");
     Option option2 = new Option(false, "Antwort 2");
@@ -123,8 +189,11 @@ class QuestionDb {
     options.add(option2);
     options.add(option3);
 
-    var sampleQuestion =
-        new Question(id: 1, question: "Testfrage", options: options);
+    var sampleQuestion = new Question(
+        id: 1,
+        category: "Testkategorie",
+        question: "Testfrage",
+        options: options);
     await insertQuestion(sampleQuestion);
   }
 
@@ -132,5 +201,4 @@ class QuestionDb {
     final db = await instance.database;
     db.close();
   }
-
 }

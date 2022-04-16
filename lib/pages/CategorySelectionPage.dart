@@ -1,128 +1,139 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:open_bsp/common/ApplicationsColors.dart';
+import 'package:open_bsp/db/CsvService.dart';
 import 'package:open_bsp/models/category.dart';
-import 'package:open_bsp/models/question.dart';
+import 'package:open_bsp/pages/QuizPage.dart';
 
-class QuizCategoryPage extends StatefulWidget {
+import '../db/QuestionDb.dart';
+import 'Settings.dart';
+import 'loading.dart';
+
+class QuizCategoryPage2 extends StatefulWidget {
   static const routeName = '/';
 
-  const QuizCategoryPage({Key? key}) : super(key: key);
+  const QuizCategoryPage2({Key? key}) : super(key: key);
 
   @override
-  _QuizCategoryPageState createState() => _QuizCategoryPageState();
+  _QuizCategoryPage2State createState() => _QuizCategoryPage2State();
 }
 
-class _QuizCategoryPageState extends State<QuizCategoryPage> {
-  late List<Category> categoryList = [];
+class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
+  CsvService csvService = new CsvService();
+  List<Category> categories = [];
+
+  QuestionDb db = QuestionDb.instance;
 
   @override
   void initState() {
-    Category category1 =
-        new Category(1, "Allgemeine Fragen zum Bodensee", "waves.png");
-
-    Option option1 = new Option(false, "30km/h");
-    Option option2 = new Option(true, "40km/h");
-    Option option3 = new Option(false, "10km/h");
-
-    List<Option> options1 = [];
-    options1.add(option1);
-    options1.add(option2);
-    options1.add(option3);
-
-    Question question1 = new Question(id: 2, question: "Das ist eine Testfrage", options: options1);
-
-    Option option4 = new Option(false, "Antwort 1");
-    Option option5 = new Option(true, "Antwort 2 ");
-    Option option6 = new Option(false, "Antwort 3");
-
-    List<Option> options2 = [];
-    options2.add(option4);
-    options2.add(option5);
-    options2.add(option6);
-
-    Question question2 = new Question(id: 3, options: options2, question: "Die ist eine weitere Frage");
-
-    category1.addQuestion(question1);
-    category1.addQuestion(question2);
-    categoryList.add(category1);
-
-    categoryList.add(new Category(1, "Schallzeichen", "bell.png"));
-    categoryList.add(new Category(1, "Navigation", "compass.png"));
-    categoryList.add(new Category(1, "Lichtzeichen", "lighthouse.png"));
-    categoryList.add(new Category(1, "Umweltschutz", "seagull.png"));
-    categoryList.add(new Category(1, "Seemannschaft", "knot.png"));
-    categoryList.add(new Category(1, "Motorboot Fahrregeln", "propeller.png"));
-    categoryList.add(new Category(1, "Segeln Allgemient", "sailboat.png"));
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-      appBar: AppBar(
-        title: const Text("Kategorien"),
-      ),
-      body: Container(
-        padding: EdgeInsets.only(left: 10, right: 10),
-        alignment: Alignment.center,
-        child: Column(
-          children: [
-            Expanded(
-                child: SingleChildScrollView(
-              child: Wrap(
-                direction: Axis.horizontal,
-                children: categoryList
-                    .map((category) => GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(context, "/Quiz",
-                                arguments: category.questions);
-                          },
-                          child: Container(
-                            width: 140,
-                            height: 140,
-                            alignment: Alignment.center,
-                            padding: EdgeInsets.all(5),
-                            margin: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 5,
-                                    blurRadius: 7,
-                                    offset: Offset(
-                                        0, 3), // changes position of shadow
-                                  ),
-                                ],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Image(
-                                  image: AssetImage(
-                                      "assets/images/" + category.imagePath),
-                                  width: 50,
-                                ),
-                                Text(
-                                  category.name,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ))
-                    .toList(),
+    return FutureBuilder<List<Category>>(
+      future: db.getCategories(),
+      builder: (context, snapshot) {
+        var quiz = snapshot.data!;
+        if (!snapshot.hasData || snapshot.hasError) {
+          return Loader();
+        } else {
+          return Scaffold(
+            appBar: AppBar(title: const Text("Kategorien"), actions: [
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => Settings(),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                ),
               ),
-            ))
+            ]),
+            body: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10.0,
+              primary: false,
+              padding: const EdgeInsets.all(20.0),
+              children: snapshot.data!
+                  .map((category) => CategoryCard(category))
+                  .toList(),
+              // children: snapshot.data!
+              //     .map((category) => CategoryCard(category))
+              //     .toList(),
+            ),
+          );
+        }
+      },
+    );
+  }
+}
+
+class CategoryCard extends StatelessWidget {
+  final Category category;
+
+  CategoryCard(this.category);
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(8),
+        ),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => QuizPage4(category: category),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Hero(
+              tag: category.imagePath,
+              child: Container(
+                height: 100,
+                color: Color(int.parse('0xff${category.color}')),
+                // color: Colors.red,
+                child: Center(
+                    child: Container(
+                      height: 80,
+                        child: Image.asset('assets/images/${category.imagePath}'))),
+              ),
+              // child: Image.asset(
+              //   'assets/images/${category.imagePath}',
+              // ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 5, left: 10, right: 10),
+                    child: Text(
+                      category.name,
+                      style:
+                          TextStyle(height: 1.5, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-    ));
+    );
   }
 }

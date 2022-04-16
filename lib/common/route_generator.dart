@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:open_bsp/pages/CategorySelectionPage.dart';
-import 'package:open_bsp/pages/QuizPage.dart';
+
+import '../pages/CategorySelectionPage.dart';
 
 class RouteGenerator {
 
@@ -8,7 +8,7 @@ class RouteGenerator {
     final args = settings.arguments;
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => QuizCategoryPage());
+        return MaterialPageRoute(builder: (_) => QuizCategoryPage2());
       case '/Quiz':
         //return MaterialPageRoute(builder: (_) => QuizPage4());
       default:

@@ -1,14 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:open_bsp/db/QuestionDb.dart';
 import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/models/question.dart';
 import 'package:provider/provider.dart';
 
+import 'loading.dart';
+
 class QuizPageState with ChangeNotifier {
   double _progress = -1;
   Option? _selected;
-
+  MaterialColor _cardColor = Colors.blue;
 
   late Category category;
 
@@ -17,6 +20,8 @@ class QuizPageState with ChangeNotifier {
   get getSelected => _selected;
 
   get getProgress => _progress;
+
+  get getCardColor => _cardColor;
 
   set setSelected(Option option) {
     _selected = option;
@@ -29,71 +34,126 @@ class QuizPageState with ChangeNotifier {
     notifyListeners();
   }
 
+  set setCardColor(MaterialColor color) {
+    _cardColor = color;
+    notifyListeners();
+  }
+
   void nextPage() async {
     await controller.nextPage(
       duration: Duration(milliseconds: 500),
       curve: Curves.easeOut,
     );
   }
+
+  void setColor(MaterialColor color) {
+    _cardColor = color;
+    notifyListeners();
+  }
+
+  void setSelected2(Option option) {
+    _selected = option;
+    notifyListeners();
+  }
 }
 
 class QuizPage4 extends StatelessWidget {
   final Category category;
 
-  QuizPage4(this.category);
+  // final QuestionDb db = QuestionDb.instance;
+
+  const QuizPage4({Key? key, required this.category}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // final questions =
-    //     ModalRoute.of(context)?.settings.arguments as List<Question>;
-    final questions = category.questions;
+    QuestionDb questionDb = QuestionDb.instance;
+
+    List<Question> emptyQuestions = [];
 
     return ChangeNotifierProvider(
       create: (_) => QuizPageState(),
-      child: Builder(builder: (context) {
-        var state = Provider.of<QuizPageState>(context);
+      child: FutureBuilder<List<Question>>(
+        initialData: emptyQuestions,
+        future: questionDb.getAllQuestionsOfCategory(category.name),
+        builder: (context, snapshot) {
+          var state = Provider.of<QuizPageState>(context);
 
-        return Scaffold(
-          appBar: AppBar(
-            title: Text("Quiz4"),
-          ),
-          body: PageView.builder(
-            controller: state.controller,
-            onPageChanged: (int index) =>
-                state.setProgress = (index / (questions.length + 1)),
-            itemBuilder: (context, index) {
-              print(index);
-              if (index == 0) {
-                return StartPage(category);
-              } else if (index == questions.length + 1) {
-                return ResultPage();
-              } else {
-                return QuestionPage(questions[index - 1]);
-              }
-            },
-          ),
-        );
-      }),
+          if (!snapshot.hasData || snapshot.hasError) {
+            return Loader();
+          } else {
+            List<Question> questions = snapshot.data!;
+            print("questions length " + questions.length.toString());
+            return Scaffold(
+              appBar: AppBar(
+                title: Text("Quiz4"),
+              ),
+              body: PageView.builder(
+                controller: state.controller,
+                onPageChanged: (int index) =>
+                    state.setProgress = (index / (questions.length + 1)),
+                itemBuilder: (context, index) {
+                  print(index);
+                  if (index == 0) {
+                    return StartPage(category);
+                  } else if (index == questions.length + 1) {
+                    return ResultPage();
+                  } else {
+                    return QuestionPage(questions[index - 1]);
+                  }
+                },
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
-  createQuestionPages(List<Question> questions) {
-    // var state = Provider.of<QuizPageState>(context);
-    List<Widget> widgets =
-        questions.map((question) => QuestionPage(question)).toList();
-    return widgets;
-    // return PageView.builder(
-    //   controller: state.controller,
-    //   onPageChanged: (int index) =>
-    //   state.setProgress = (index / (questions.length + 1)),
-    //   itemBuilder: (context, index) {
-    //     return QuestionPage(questions[index]);
-    //   },
-    // );
-  }
+// @override
+// Widget build(BuildContext context) {
+//
+//   QuestionDb questionDb = QuestionDb.instance;
+//
+//   return Scaffold(
+//     appBar: AppBar(
+//       backgroundColor: Colors.transparent,
+//     ),
+//     body: ListView(children: [
+//       Hero(
+//         tag: category.imagePath,
+//         child: Image.asset('assets/images/${category.imagePath}',
+//             width: MediaQuery.of(context).size.width),
+//       ),
+//       Text(
+//         category.name,
+//         style:
+//         const TextStyle(height: 2, fontSize: 20, fontWeight: FontWeight.bold),
+//       ),
+//       // QuizList(topic: topic)
+//     ]),
+//   );
+// }
+
+}
+
+createQuestionPages(List<Question> questions) {
+  // var state = Provider.of<QuizPageState>(context);
+  List<Widget> widgets =
+      questions.map((question) => QuestionPage(question)).toList();
+  return widgets;
+  // return PageView.builder(
+  //   controller: state.controller,
+  //   onPageChanged: (int index) =>
+  //   state.setProgress = (index / (questions.length + 1)),
+  //   itemBuilder: (context, index) {
+  //     return QuestionPage(questions[index]);
+  //   },
+  // );
 }
 
 class QuestionPage extends StatelessWidget {
+  bool fastAnswerMode = true;
+
   final Question question;
 
   QuestionPage(this.question);
@@ -122,14 +182,18 @@ class QuestionPage extends StatelessWidget {
                     borderRadius: BorderRadius.all(
                       Radius.circular(20),
                     ),
-                    color: Colors.blue,
+                    color: _colorRightAnswer(context, question)
                   ),
                   height: 70,
                   margin: EdgeInsets.only(bottom: 10),
                   child: InkWell(
                     onTap: () {
                       state.setSelected = question;
-                      _bottomSheet(context, question);
+                      if (!fastAnswerMode) {
+                        _bottomSheet(context, question);
+                      } else {
+                        _colorRightAnswer(context, question);
+                      }
                     },
                     child: Container(
                       padding: EdgeInsets.all(16),
@@ -163,8 +227,8 @@ class QuestionPage extends StatelessWidget {
   }
 
   /// Bottom sheet shown when Question is answered
-  _bottomSheet(BuildContext context, Option opt) {
-    bool correct = opt.correct;
+  _bottomSheet(BuildContext context, Option option) {
+    bool correct = option.correct;
     var state = Provider.of<QuizPageState>(context, listen: false);
     showModalBottomSheet(
       context: context,
@@ -178,7 +242,7 @@ class QuestionPage extends StatelessWidget {
             children: <Widget>[
               Text(correct ? 'Good Job!' : 'Wrong'),
               Text(
-                opt.value,
+                option.value,
                 style: TextStyle(fontSize: 18, color: Colors.white54),
               ),
               FlatButton(
@@ -204,6 +268,21 @@ class QuestionPage extends StatelessWidget {
       },
     );
   }
+
+  MaterialColor _colorRightAnswer(BuildContext context, Option option) {
+    var state = Provider.of<QuizPageState>(context, listen: false);
+    bool correct = option.correct;
+
+    if (state.getSelected != null) {
+      if (correct) {
+        state.nextPage();
+        return Colors.green;
+      } else {
+        return Colors.blue;
+      }
+    }
+    return Colors.blue;
+  }
 }
 
 class StartPage extends StatelessWidget {
@@ -219,11 +298,20 @@ class StartPage extends StatelessWidget {
         children: [
           Hero(
             tag: category.imagePath,
-            child: Image.asset('assets/images/${category.imagePath}',
-                width: MediaQuery.of(context).size.width),
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              color: Color(int.parse('0xff${category.color}')),
+              child: Center(
+                  child: Container(
+                      height: 200,
+                      child:
+                          Image.asset('assets/images/${category.imagePath}'))),
+            ),
+            // child: Image.asset('assets/images/${category.imagePath}',
+            //     width: MediaQuery.of(context).size.width),
           ),
           Container(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.only(top: 5, left: 10, right: 10),
             child: Text(
               category.name,
               style: Theme.of(context).textTheme.headline4,

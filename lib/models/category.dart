@@ -4,15 +4,21 @@ class Category {
   final int id;
   final String name;
   final String imagePath;
-  final List<Question> questions = [];
+  final String color;
 
-  Category(this.id, this.name, this.imagePath);
+  const Category({
+    required this.id,
+    required this.name,
+    required this.imagePath,
+    required this.color,
+  });
 
-  addQuestion(Question question) {
-    this.questions.add(question);
-  }
-
-  static jsonToObject(dynamic json) {
-    return Category(json["id"], json["name"], json["imagePath"]);
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'imagePath': imagePath,
+      'color': color,
+    };
   }
 }

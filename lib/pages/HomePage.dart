@@ -3,8 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:open_bsp/darktheme.dart';
 import 'package:open_bsp/db/CsvService.dart';
 import 'CategorySelectionPage.dart';
-import 'CategorySelectionPage2.dart';
-import 'QuizPage.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key, required this.title}) : super(key: key);
@@ -27,7 +25,7 @@ class _HomepageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
 	  CsvService csvService = new CsvService();
-	  csvService.loadCsv();
+	  //csvService.loadCsv();
 
     return MaterialApp(
       title: 'Open BSP',
