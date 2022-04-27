@@ -18,6 +18,7 @@ class CsvService {
   }
 
   Future<List<Category>> mapCsvToCategories(pathToCsv) async {
+    print('mapCsvToCategories');
     final _rawData = await rootBundle.loadString(pathToCsv);
 
     var d = new FirstOccurrenceSettingsDetector(
@@ -32,6 +33,7 @@ class CsvService {
       categories.add(new Category(
           id: index, name: row[0], imagePath: row[1], color: row[2]));
       index++;
+      print('Question ${row[0]}');
     });
     return categories;
   }
@@ -55,7 +57,7 @@ class CsvService {
         new Option(false, row[4])
       ];
       questions.add(new Question(
-          id: index, category: row[0], question: row[1], options: options));
+          id: index, category: row[5], question: row[1], options: options));
       index++;
     });
     return questions;

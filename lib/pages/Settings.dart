@@ -26,11 +26,19 @@ class Settings extends StatelessWidget {
                   debugFunction();
                 },
               ),
-              SettingsTile.switchTile(
-                onToggle: (value) {},
-                initialValue: true,
-                leading: Icon(Icons.format_paint),
-                title: Text('Enable custom theme'),
+              SettingsTile.navigation(
+                leading: Icon(Icons.code),
+                title: Text('Categories to DB'),
+                onPressed: (value) {
+                  categoriesCsvToDatabase();
+                },
+              ),
+              SettingsTile.navigation(
+                leading: Icon(Icons.code),
+                title: Text('Questions to DB'),
+                onPressed: (value) {
+                  questionCsvToDatabase();
+                },
               ),
             ],
           ),
@@ -51,7 +59,8 @@ class Settings extends StatelessWidget {
             tiles: <SettingsTile>[
               SettingsTile.switchTile(
                 title: Text('Schnelle Antwort'),
-                description: Text('Wechselt direkt zur nächsten Frage nach Antwort.'),
+                description:
+                    Text('Wechselt direkt zur nächsten Frage nach Antwort.'),
                 initialValue: false,
                 onToggle: (bool value) {},
                 onPressed: (value) {
@@ -65,10 +74,7 @@ class Settings extends StatelessWidget {
     );
   }
 
-  void fastAnswerMode() {
-
-
-  }
+  void fastAnswerMode() {}
 
   void debugFunction() async {
     print("Debug Function pressed");
@@ -83,5 +89,19 @@ class Settings extends StatelessWidget {
     //List<Question> questions = await csvService.mapCsvToQuestions('assets/misc/questions.csv');
     //csvService.saveQuestionsToDatabase(questions);
     //print("Question: " + questions[0].question);
+  }
+
+  void categoriesCsvToDatabase() async {
+    CsvService csvService = new CsvService();
+    List<Category> categories =
+        await csvService.mapCsvToCategories('assets/misc/test.csv');
+    csvService.saveCategoriesToDatabase(categories);
+  }
+
+  void questionCsvToDatabase() async {
+    CsvService csvService = new CsvService();
+    List<Question> questions =
+        await csvService.mapCsvToQuestions('assets/misc/questions.csv');
+    csvService.saveQuestionsToDatabase(questions);
   }
 }

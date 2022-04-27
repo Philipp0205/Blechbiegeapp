@@ -19,8 +19,8 @@ class QuizCategoryPage2 extends StatefulWidget {
 }
 
 class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
-  CsvService csvService = new CsvService();
   List<Category> categories = [];
+  CsvService csvService = new CsvService();
 
   QuestionDb db = QuestionDb.instance;
 
@@ -34,8 +34,10 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
     return FutureBuilder<List<Category>>(
       future: db.getCategories(),
       builder: (context, snapshot) {
-        var quiz = snapshot.data!;
         if (!snapshot.hasData || snapshot.hasError) {
+          // db.initQuestionsTable();
+          // db.categoryTable();
+          csvService.mapCsvToCategories('assets/misc/test.csv');
           return Loader();
         } else {
           return Scaffold(
@@ -66,6 +68,22 @@ class _QuizCategoryPage2State extends State<QuizCategoryPage2> {
               //     .map((category) => CategoryCard(category))
               //     .toList(),
             ),
+            bottomNavigationBar: BottomNavigationBar(
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.school),
+                  label: 'Lernen',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.schedule),
+                  label: 'Prüfung',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.bar_chart),
+                  label: 'Statistik',
+                ),
+              ],
+            ),
           );
         }
       },
@@ -80,7 +98,6 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
@@ -107,8 +124,9 @@ class CategoryCard extends StatelessWidget {
                 // color: Colors.red,
                 child: Center(
                     child: Container(
-                      height: 80,
-                        child: Image.asset('assets/images/${category.imagePath}'))),
+                        height: 80,
+                        child: Image.asset(
+                            'assets/images/${category.imagePath}'))),
               ),
               // child: Image.asset(
               //   'assets/images/${category.imagePath}',

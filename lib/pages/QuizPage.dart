@@ -10,6 +10,7 @@ import 'loading.dart';
 
 class QuizPageState with ChangeNotifier {
   double _progress = -1;
+  int _index = 0;
   Option? _selected;
   MaterialColor _cardColor = Colors.blue;
 
@@ -23,6 +24,8 @@ class QuizPageState with ChangeNotifier {
 
   get getCardColor => _cardColor;
 
+  get getIndex => _index;
+
   set setSelected(Option option) {
     _selected = option;
     notifyListeners();
@@ -32,6 +35,10 @@ class QuizPageState with ChangeNotifier {
     print("set progress $progress");
     _progress = progress;
     notifyListeners();
+  }
+
+  set setIndex(int index) {
+    _index = index;
   }
 
   set setCardColor(MaterialColor color) {
@@ -66,6 +73,7 @@ class QuizPage4 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Category ${category.name}');
     QuestionDb questionDb = QuestionDb.instance;
 
     List<Question> emptyQuestions = [];
@@ -85,22 +93,38 @@ class QuizPage4 extends StatelessWidget {
             print("questions length " + questions.length.toString());
             return Scaffold(
               appBar: AppBar(
-                title: Text("Quiz4"),
+                title: Container(
+                    child: Row(
+                  children: [
+                    Text("Quiz"),
+                  ],
+                )),
               ),
-              body: PageView.builder(
-                controller: state.controller,
-                onPageChanged: (int index) =>
-                    state.setProgress = (index / (questions.length + 1)),
-                itemBuilder: (context, index) {
-                  print(index);
-                  if (index == 0) {
-                    return StartPage(category);
-                  } else if (index == questions.length + 1) {
-                    return ResultPage();
-                  } else {
-                    return QuestionPage(questions[index - 1]);
-                  }
-                },
+              body: Column(
+                children: [
+                  LinearProgressIndicator(
+                    value: state.getProgress,
+                  ),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: state.controller,
+                      onPageChanged: (int index) {
+                        state.setProgress = (index / (questions.length + 1));
+                        state.setIndex = index - 1;
+                      },
+                      itemBuilder: (context, index) {
+                        print(index);
+                        if (index == 0) {
+                          return StartPage(category);
+                        } else if (index == questions.length + 1) {
+                          return ResultPage();
+                        } else {
+                          return QuestionPage(questions[index - 1]);
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
             );
           }
@@ -153,7 +177,6 @@ createQuestionPages(List<Question> questions) {
 
 class QuestionPage extends StatelessWidget {
   bool fastAnswerMode = true;
-
   final Question question;
 
   QuestionPage(this.question);
@@ -161,6 +184,7 @@ class QuestionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = Provider.of<QuizPageState>(context);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -182,18 +206,14 @@ class QuestionPage extends StatelessWidget {
                     borderRadius: BorderRadius.all(
                       Radius.circular(20),
                     ),
-                    color: _colorRightAnswer(context, question)
+                    color: Colors.blue,
                   ),
                   height: 70,
                   margin: EdgeInsets.only(bottom: 10),
                   child: InkWell(
                     onTap: () {
                       state.setSelected = question;
-                      if (!fastAnswerMode) {
-                        _bottomSheet(context, question);
-                      } else {
-                        _colorRightAnswer(context, question);
-                      }
+                      _bottomSheet(context, question);
                     },
                     child: Container(
                       padding: EdgeInsets.all(16),
@@ -221,7 +241,7 @@ class QuestionPage extends StatelessWidget {
               }).toList(),
             ),
           ),
-        )
+        ),
       ],
     );
   }

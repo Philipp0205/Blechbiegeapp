@@ -42,7 +42,7 @@ class QuestionDb {
     );
   }
 
-  void testTable() async {
+  void initQuestionsTable() async {
     final db = await database;
     db.execute(
       'CREATE TABLE questions('
@@ -63,6 +63,17 @@ class QuestionDb {
       'name TEXT, '
       'imagePath TEXT'
       ')',
+    );
+  }
+
+  void initUserTable() async {
+    final db = await database;
+    db.execute(
+      'CREATE TABLE user('
+          'id INTEGER PRIMARY KEY, '
+          'name TEXT, '
+          'imagePath TEXT'
+          ')',
     );
   }
 
