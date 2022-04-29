@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:open_bsp/constants.dart';
 import 'package:open_bsp/db/CsvService.dart';
 import 'package:open_bsp/models/category.dart';
 import 'package:open_bsp/pages/FileInfoCard.dart';
@@ -121,7 +122,8 @@ class _CategoryCardState extends State<CategoryCard> {
                           children: [
                             ProgressLine(
                                 percentage:
-                                    updateCompletionRate(widget.category)),
+                                    updateCompletionRate(widget.category),
+                                color: getBarColorForCategoryCompletionRate(widget.category.timesCompleted)),
                           ],
                         ))),
               ],
@@ -134,6 +136,22 @@ class _CategoryCardState extends State<CategoryCard> {
 
   int updateCompletionRate(Category category) {
     return (category.completionRate.toDouble() * 100).toInt();
+  }
+
+  Color getBarColorForCategoryCompletionRate(int timesCompleted) {
+    print('timesCompleted ${timesCompleted}');
+    switch (timesCompleted) {
+      case 0:
+        return auroraRed;
+      case 1:
+        return auroraOrange;
+      case 2:
+        return auroraYellow;
+      case 3:
+        return auroraGreen;
+      default:
+        return auroraPurple;
+    }
   }
 }
 

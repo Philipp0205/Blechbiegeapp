@@ -187,6 +187,7 @@ class QuestionDb {
         imagePath: maps[i]['imagePath'],
         color: maps[i]['color'],
         completionRate: maps[i]['completion'],
+        timesCompleted: maps[i]['timesCompleted'],
       );
     });
   }

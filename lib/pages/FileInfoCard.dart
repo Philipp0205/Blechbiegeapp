@@ -79,8 +79,8 @@ class FileInfoCard extends StatelessWidget {
 class ProgressLine extends StatelessWidget {
   const ProgressLine({
     Key? key,
-    this.color = primaryColor,
     required this.percentage,
+    required this.color,
   }) : super(key: key);
 
   final Color? color;

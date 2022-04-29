@@ -31,7 +31,12 @@ class CsvService {
     int index = 0;
     listData.forEach((row) {
       categories.add(new Category(
-          id: index, name: row[0], imagePath: row[1], color: row[2], completionRate: row[3]));
+          id: index,
+          name: row[0],
+          imagePath: row[1],
+          color: row[2],
+          completionRate: row[3],
+          timesCompleted: row[4]));
       index++;
       print('Question ${row[0]}');
     });

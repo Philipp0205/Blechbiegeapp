@@ -14,6 +14,7 @@ class Category {
     required this.imagePath,
     required this.color,
     required this.completionRate,
+    required this.timesCompleted,
   });
 
   Map<String, dynamic> toMap() {
