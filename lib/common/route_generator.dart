@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../pages/CategorySelectionPage.dart';
+import '../pages/HomePage.dart';
+import '../pages/quiz/CategorySelectionPage.dart';
 
 class RouteGenerator {
 
@@ -8,9 +9,9 @@ class RouteGenerator {
     final args = settings.arguments;
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => QuizCategoryPage2());
-      case '/Quiz':
-        //return MaterialPageRoute(builder: (_) => QuizPage4());
+        return MaterialPageRoute(builder: (_) => HomePage(title: '',));
+      case '/CategoryPage':
+        return MaterialPageRoute(builder: (_) => CategorySelectionPage());
       default:
         return _errorRoute();
     }

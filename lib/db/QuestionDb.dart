@@ -42,6 +42,49 @@ class QuestionDb {
     );
   }
 
+  void incrementStat(String name) async {
+    final db = await database;
+
+    List<Map<String, Object?>> records =
+        await db.query('stats', where: 'name = ?', whereArgs: ['${name}']);
+    Map<String, Object?> mapRead = records.first;
+
+    Map<String, Object?> map = Map<String, Object?>.from(mapRead);
+    double? value = map['value'] as double?;
+
+    db.rawQuery(
+        'UPDATE stats SET value = ${value! + 1} WHERE name = "${name}"');
+  }
+
+  void updateStat(String name, double statValue) async {
+    String statName = name.replaceAll(' ', '');
+    print('Updating ${statName} to ${statValue}');
+    final db = await database;
+
+    List<Map<String, Object?>> records =
+        await db.query('stats', where: 'name = ?', whereArgs: ['${statName}']);
+    Map<String, Object?> mapRead = records.first;
+
+    Map<String, Object?> map = Map<String, Object?>.from(mapRead);
+
+    db.rawQuery(
+        'UPDATE stats SET value = ${statValue} WHERE name = "${statName}"');
+  }
+
+  Future<double?> getStat(String name) async {
+    final db = await database;
+
+    List<Map<String, Object?>> records =
+        await db.query('stats', where: 'name = ?', whereArgs: ['${name}']);
+    Map<String, Object?> mapRead = records.first;
+
+    Map<String, Object?> map = Map<String, Object?>.from(mapRead);
+    double? value = map['name'] as double?;
+
+    print('getStat for ${name}: ${value}');
+    return value;
+  }
+
   void initQuestionsTable() async {
     final db = await database;
     db.execute(
@@ -70,10 +113,10 @@ class QuestionDb {
     final db = await database;
     db.execute(
       'CREATE TABLE user('
-          'id INTEGER PRIMARY KEY, '
-          'name TEXT, '
-          'imagePath TEXT'
-          ')',
+      'id INTEGER PRIMARY KEY, '
+      'statName TEXT, '
+      'value REAL'
+      ')',
     );
   }
 
@@ -143,8 +186,17 @@ class QuestionDb {
         name: maps[i]['name'],
         imagePath: maps[i]['imagePath'],
         color: maps[i]['color'],
+        completionRate: maps[i]['completion'],
       );
     });
+  }
+
+  void updateCategory(Category category) async {
+    print('update Category completion rate ${category.completionRate}');
+    print('id: ${category.id}');
+    final db = await database;
+    db.update('categories', category.toMap(),
+        where: 'id = ?', whereArgs: [category.id]);
   }
 
 // Define a function that inserts dogs into the database
@@ -171,8 +223,8 @@ class QuestionDb {
   Future<List<Question>> getAllQuestionsOfCategory(String category) async {
     final db = await database;
 
-    final List<Map<String, dynamic>> maps =
-        await db.query('questions', where: 'category = ?', whereArgs: [category]);
+    final List<Map<String, dynamic>> maps = await db
+        .query('questions', where: 'category = ?', whereArgs: [category]);
 
     return List.generate(maps.length, (i) {
       List<Option> options = [

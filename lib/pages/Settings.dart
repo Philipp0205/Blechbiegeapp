@@ -40,6 +40,13 @@ class Settings extends StatelessWidget {
                   questionCsvToDatabase();
                 },
               ),
+              SettingsTile.navigation(
+                leading: Icon(Icons.code),
+                title: Text('User DB'),
+                onPressed: (value) {
+                  userStatsToDatabse();
+                },
+              ),
             ],
           ),
           SettingsSection(
@@ -103,5 +110,10 @@ class Settings extends StatelessWidget {
     List<Question> questions =
         await csvService.mapCsvToQuestions('assets/misc/questions.csv');
     csvService.saveQuestionsToDatabase(questions);
+  }
+
+  void userStatsToDatabse() {
+    QuestionDb db = QuestionDb.instance;
+    db.incrementStat('totalAnsweredQuestions');
   }
 }
