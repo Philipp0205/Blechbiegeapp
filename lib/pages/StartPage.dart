@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
@@ -14,23 +15,24 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartPageState extends State<StartPage> {
-  StreamController<DrawnLine> currentLineStreamController =
-      StreamController<DrawnLine>.broadcast();
+  StreamController<Segment> currentLineStreamController =
+      StreamController<Segment>.broadcast();
 
-  StreamController<List<DrawnLine>> linesStreamController =
-      StreamController<List<DrawnLine>>.broadcast();
+  StreamController<List<Segment>> linesStreamController =
+      StreamController<List<Segment>>.broadcast();
 
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
   GlobalKey _globalKey = new GlobalKey();
   bool selectionMode = false;
+  bool edgeMode = false;
   String modeText = '';
 
-  List<DrawnLine> lines = [];
-  DrawnLine line =
-      new DrawnLine([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-  DrawnLine selectedLine =
-      new DrawnLine([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+  List<Segment> lines = [];
+  Segment segment =
+      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+  Segment selectedSegment =
+      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,8 @@ class _StartPageState extends State<StartPage> {
           SpeedDialChild(
               child: Icon(Icons.arrow_forward), onTap: straightenLines),
           SpeedDialChild(
-              child: Icon(Icons.select_all), onTap: toggleSelectionMode)
+              child: Icon(Icons.select_all), onTap: toggleSelectionMode),
+          SpeedDialChild(child: Icon(Icons.circle), onTap: toggleEdgeMode),
         ],
       ),
     );
@@ -63,22 +66,24 @@ class _StartPageState extends State<StartPage> {
   Future<void> clear() async {
     setState(() {
       lines = [];
-      line = new DrawnLine([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+      segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+      selectedSegment =
+          new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     });
   }
 
   straightenLines() {
     setState(() {
-      List<DrawnLine> straigtenedLines = [];
+      List<Segment> straigtenedLines = [];
       print('lines.lenght ${lines.length}');
 
       lines.forEach((line) {
-        straigtenedLines.add(new DrawnLine(
+        straigtenedLines.add(new Segment(
             [line.path.first, line.path.last], selectedColor, selectedWidth));
       });
 
       lines = straigtenedLines;
-      line = new DrawnLine([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+      segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     });
   }
 
@@ -95,12 +100,12 @@ class _StartPageState extends State<StartPage> {
             padding: EdgeInsets.all(4.0),
             color: Colors.transparent,
             alignment: Alignment.topLeft,
-            child: StreamBuilder<DrawnLine>(
+            child: StreamBuilder<Segment>(
               stream: currentLineStreamController.stream,
               builder: (context, snapshot) {
                 return CustomPaint(
                   painter: Sketcher(
-                    lines: [line],
+                    lines: [segment],
                     // lines: lines,
                   ),
                 );
@@ -111,60 +116,103 @@ class _StartPageState extends State<StartPage> {
   }
 
   void onPanStart(DragStartDetails details) {
-    if (selectionMode) {
-      RenderBox box = context.findRenderObject() as RenderBox;
-      Offset point = box.globalToLocal(details.globalPosition);
-      Offset point2 = new Offset(point.dx, point.dy - 80);
-      line = DrawnLine([point2], selectedColor, selectedWidth);
-    }
-  }
+    print('onPanStart');
+    RenderBox box = context.findRenderObject() as RenderBox;
+    Offset point = box.globalToLocal(details.globalPosition);
+    Offset point2 = new Offset(point.dx, point.dy - 80);
 
-  void onPanEnd(DragEndDetails details) {
-    if (selectionMode) {
-      print('onPanEnd');
-      lines = List.from(lines)..add(line);
-      linesStreamController.add(lines);
+    if (!selectionMode) {
+      segment = Segment([point2], selectedColor, selectedWidth);
+    }
+    if (edgeMode) {
+      print('onPanStart with edgeMode');
+      Segment segment = new Segment([new Offset(point2.dx, point2.dy),
+          selectedSegment.path.last], selectedColor, selectedWidth);
+      this.segment = segment;
     }
   }
 
   void onPanUpdate(DragUpdateDetails details) {
-    if (selectionMode) {
-      RenderBox box = context.findRenderObject() as RenderBox;
+    print('onPanUpdate');
+    RenderBox box = context.findRenderObject() as RenderBox;
+    Offset point = box.globalToLocal(details.globalPosition);
+    Offset point2 = new Offset(point.dx, point.dy - 80);
 
-      Offset point = box.globalToLocal(details.globalPosition);
-      Offset point2 = new Offset(point.dx, point.dy - 80);
+    if (!selectionMode && !edgeMode) {
+      print('PanUpdate with selectionMode');
+      List<Offset> path = List.from(segment.path)..add(point2);
+      segment = Segment(path, selectedColor, selectedWidth);
+      currentLineStreamController.add(segment);
+    }
+    if (edgeMode) {
+      print('PanUpdate with edgeMode');
+      Segment segment = new Segment([new Offset(point2.dx, point2.dy),
+        selectedSegment.path.last], selectedColor, selectedWidth);
+      this.segment = segment;
+      deleteSegment(selectedSegment);
+      currentLineStreamController.add(segment);
+    }
+  }
 
-      List<Offset> path = List.from(line.path)..add(point2);
-      line = DrawnLine(path, selectedColor, selectedWidth);
-      currentLineStreamController.add(line);
+  void onPanEnd(DragEndDetails details) {
+    if (!selectionMode | edgeMode) {
+      print('onPanEnd with selectionMode');
+      lines = List.from(lines)..add(segment);
+      linesStreamController.add(lines);
     }
   }
 
   void onPanDown(DragDownDetails details) {
-    if (selectionMode == false) {
-      selectLine(details);
+    if (selectionMode == true) {
+      print('selectionMode ${selectionMode}');
+      selectSegment(details);
+    } else if (edgeMode == true) {
+      print('edgeMode ${edgeMode}');
+      selectEdge(details);
     }
   }
 
-  void selectLine(DragDownDetails details) {
-    DrawnLine lowestDistanceLine = getLowestDistanceLine(details);
+  void selectSegment(DragDownDetails details) {
+    Segment lowestDistanceLine = getNearestSegment(details);
     lowestDistanceLine.color = Colors.red;
-    changeSelectedLine(lowestDistanceLine);
+    changeSelectedSegment(lowestDistanceLine);
+
     _bottomSheet(context, lowestDistanceLine);
   }
 
-  void changeSelectedLine(DrawnLine line) {
+  void selectEdge(DragDownDetails details) {
+    print('Select edge');
+    Point currentPoint = new Point(
+            details.globalPosition.dx, details.globalPosition.dy - 80),
+        edgeA = new Point(
+            selectedSegment.path.first.dx, selectedSegment.path.first.dy),
+        edgeB = new Point(
+            selectedSegment.path.last.dx, selectedSegment.path.last.dy);
+
+    if (currentPoint.distanceTo(edgeA) < currentPoint.distanceTo(edgeB)) {
+      selectedSegment.selectedEdge =
+          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+    } else {
+      selectedSegment.selectedEdge =
+          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+    }
+  }
+
+  void updateSegment() {}
+
+  void changeSelectedSegment(Segment line) {
     setState(() {
-      if (selectedLine != line) {
-        selectedLine.color = Colors.black;
-        selectedLine = line;
-        line = line;
+      if (selectedSegment != line) {
+        selectedSegment.isSelected = false;
+        line.isSelected = true;
+        selectedSegment.color = Colors.black;
+        selectedSegment = line;
       }
     });
   }
 
-  DrawnLine getLowestDistanceLine(DragDownDetails details) {
-    Map<DrawnLine, double> distances = {};
+  Segment getNearestSegment(DragDownDetails details) {
+    Map<Segment, double> distances = {};
 
     lines.forEach((line) {
       distances.addEntries([MapEntry(line, getDistanceToLine(details, line))]);
@@ -179,14 +227,34 @@ class _StartPageState extends State<StartPage> {
     return distances.keys.toList().first;
   }
 
-  /*
+  Offset getNearestEdge(DragDownDetails details) {
+    print('getNearestEdge');
+    Segment nearestSegment = getNearestSegment(details);
+    Offset nearestEdge;
+
+    Point currentPoint = new Point(
+            details.globalPosition.dx, details.globalPosition.dy - 80),
+        edgeA = new Point(
+            nearestSegment.path.first.dx, nearestSegment.path.first.dy),
+        edgeB =
+            new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
+
+    currentPoint.distanceTo(edgeA) > currentPoint.distanceTo(edgeB)
+        ? nearestEdge = nearestSegment.path.last
+        : nearestEdge = nearestSegment.path.first;
+
+    print('nearestEdge = ${nearestEdge}');
+    return nearestEdge;
+  }
+
+/*
        Distance(point1, currPoint)
      + Distance(currPoint, point2)
     == Distance(point1, point2)
 
     https://stackoverflow.com/questions/11907947/how-to-check-if-a-point-lies-on-a-line-between-2-other-points/11912171#11912171
    */
-  double getDistanceToLine(DragDownDetails details, DrawnLine line) {
+  double getDistanceToLine(DragDownDetails details, Segment line) {
     Point currentPoint =
         new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
     Point startPoint = new Point(line.path.first.dx, line.path.first.dy);
@@ -197,10 +265,10 @@ class _StartPageState extends State<StartPage> {
         startPoint.distanceTo(endPoint);
   }
 
-  DrawnLine init(DragStartDetails details) {
+  Segment init(DragStartDetails details) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
-    return DrawnLine([point], selectedColor, selectedWidth);
+    return Segment([point], selectedColor, selectedWidth);
   }
 
   Widget buildAllPaths(BuildContext context) {
@@ -212,7 +280,7 @@ class _StartPageState extends State<StartPage> {
         color: Colors.transparent,
         padding: EdgeInsets.all(4.0),
         alignment: Alignment.topLeft,
-        child: StreamBuilder<List<DrawnLine>>(
+        child: StreamBuilder<List<Segment>>(
           stream: linesStreamController.stream,
           builder: (context, snapshot) {
             return CustomPaint(
@@ -229,18 +297,34 @@ class _StartPageState extends State<StartPage> {
   void toggleSelectionMode() {
     if (selectionMode) {
       setState(() {
-        modeText = 'Selection Mode';
+        modeText = '';
         selectionMode = false;
       });
     } else {
       setState(() {
-        modeText = '';
+        modeText = 'Selection Mode';
         selectionMode = true;
       });
     }
+    print('selectionMode: ${selectionMode}');
   }
 
-  void extendSegment(DrawnLine line, double length) {
+  void toggleEdgeMode() {
+    if (edgeMode) {
+      setState(() {
+        modeText = '';
+        edgeMode = false;
+      });
+    } else {
+      setState(() {
+        modeText = 'Edge Mode';
+        edgeMode = true;
+      });
+    }
+    print('edgeMode: ${edgeMode}');
+  }
+
+  void extendSegment(Segment line, double length) {
     // deleteLine(line);
     Point pointA = new Point(line.path.first.dx, line.path.first.dy);
     Point pointB = new Point(line.path.last.dx, line.path.last.dy);
@@ -250,8 +334,11 @@ class _StartPageState extends State<StartPage> {
     double x = pointB.x + (pointB.x - pointA.x) / lengthAB * length;
     double y = pointB.y + (pointB.y - pointA.y) / lengthAB * length;
 
-    Offset pointC = new Offset(x, x);
-    // DrawnLine newLine = new DrawnLine([pointC], currentColor, width)
+    Offset pointC = new Offset(x, y);
+    Segment newLine =
+        new Segment([line.path.first, pointC], selectedColor, selectedWidth);
+
+    this.segment = newLine;
 
     // DrawnLine newLine = new DrawnLine([
     //   line.path.first,
@@ -259,18 +346,21 @@ class _StartPageState extends State<StartPage> {
     // ], selectedColor, selectedWidth);
     //
     // this.line = newLine;
-    //
-
-
-
   }
 
-  void deleteLine(DrawnLine selectedLine) {
-    DrawnLine line = lines.firstWhere((line) => line.path == selectedLine.path);
-    lines.remove(line);
+  void deleteSegment(Segment segment) {
+    setState(() {
+      Segment line = lines.firstWhere((line) => line.path == segment.path);
+      lines.remove(line);
+    });
   }
 
-  _bottomSheet(BuildContext context, DrawnLine selectedLine) {
+  void saveLine(Segment line) {
+    lines.add(selectedSegment);
+    deleteSegment(selectedSegment);
+  }
+
+  _bottomSheet(BuildContext context, Segment selectedLine) {
     double _currentSliderValue = selectedLine.width;
 
     showModalBottomSheet(
@@ -285,9 +375,9 @@ class _StartPageState extends State<StartPage> {
                   Padding(padding: EdgeInsets.all(10), child: Text('Länge')),
                   Slider(
                     value: _currentSliderValue,
-                    max: selectedLine.width + 50,
+                    max: selectedLine.width + 100,
                     divisions: 5,
-                    min: selectedLine.width - 50,
+                    min: selectedLine.width - 100,
                     label: _currentSliderValue.round().toString(),
                     onChanged: (double value) {
                       state(() {
@@ -297,10 +387,29 @@ class _StartPageState extends State<StartPage> {
                       setState(() {});
                     },
                   ),
-                  Container(
-                    width: 50,
-                    child: TextField(
-                      keyboardType: TextInputType.number,
+                  Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {
+                              deleteSegment(selectedLine);
+                            },
+                            child: const Text('Löschen')),
+                        Container(
+                          width: 80,
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        ElevatedButton(
+                            onPressed: () {
+                              saveLine(selectedLine);
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Speichern')),
+                      ],
                     ),
                   )
                 ],
