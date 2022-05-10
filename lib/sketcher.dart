@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'draw_line.dart';
+import 'model/draw_line.dart';
 
 class Sketcher extends CustomPainter {
   final List<Segment> lines;

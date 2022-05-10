@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
-import '../draw_line.dart';
+import '../model/appmodes.dart';
+import '../model/draw_line.dart';
 import '../sketcher.dart';
 
 class StartPage extends StatefulWidget {
@@ -26,8 +26,7 @@ class _StartPageState extends State<StartPage> {
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
   GlobalKey _globalKey = new GlobalKey();
-  bool selectionMode = false;
-  bool edgeMode = false;
+  Modes selectedMode = Modes.defaultMode;
   String modeText = '';
 
   List<Segment> segments = [];
@@ -42,7 +41,10 @@ class _StartPageState extends State<StartPage> {
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text('Biegeapp'), Text(modeText)],
+          children: [
+            Text('Biegeapp'),
+            Text(AppModes().getModeName(selectedMode))
+          ],
         ),
       ),
       backgroundColor: Colors.yellow[50],
@@ -56,7 +58,7 @@ class _StartPageState extends State<StartPage> {
         children: [
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
-              child: Icon(Icons.arrow_forward), onTap: straightenLines),
+              child: Icon(Icons.arrow_forward), onTap: straightenSegments),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
           SpeedDialChild(child: Icon(Icons.circle), onTap: debugFunction),
@@ -71,24 +73,24 @@ class _StartPageState extends State<StartPage> {
       segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
       selectedSegment =
           new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+      selectedMode = Modes.defaultMode;
     });
   }
 
-  straightenLines() {
+  straightenSegments() {
+    print('straightenSegments');
     setState(() {
       List<Segment> straigtenedLines = [];
-      print('lines.lenght ${segments.length}');
 
       segments.forEach((line) {
         straigtenedLines.add(new Segment(
             [line.path.first, line.path.last], selectedColor, selectedWidth));
       });
-
       segments = straigtenedLines;
       segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     });
   }
-  
+
   void debugFunction() {
     print('segments: ${segments.length}');
   }
@@ -122,46 +124,49 @@ class _StartPageState extends State<StartPage> {
   }
 
   void onPanStart(DragStartDetails details) {
-    print('onPanStart');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy - 80);
 
-    if (!selectionMode) {
+    if (selectedMode == Modes.defaultMode) {
+      print('onPanStart with default Mode');
       segment = Segment([point2], selectedColor, selectedWidth);
     }
-    if (edgeMode) {
+    if (selectedMode == Modes.edgeMode) {
       print('onPanStart with edgeMode');
       Segment segment = new Segment(
           [new Offset(point2.dx, point2.dy), selectedSegment.path.last],
           selectedColor,
           selectedWidth);
       this.segment = segment;
+
       segment.isSelected = true;
       deleteSegment(selectedSegment);
+      selectedSegment = segment;
     }
   }
 
+  // TODO Clean up
   void onPanUpdate(DragUpdateDetails details) {
     print('onPanUpdate');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy - 80);
 
-    if (!selectionMode && !edgeMode) {
+    if (selectedMode == Modes.selectionMode ||
+        selectedMode == Modes.defaultMode) {
       print('PanUpdate with selectionMode');
       List<Offset> path = List.from(segment.path)..add(point2);
       segment = Segment(path, selectedColor, selectedWidth);
       currentLineStreamController.add(segment);
     }
-    if (edgeMode) {
+    if (selectedMode == Modes.edgeMode || selectedMode == Modes.selectionMode) {
       print('PanUpdate with edgeMode');
       Segment segment = new Segment(
           [new Offset(point2.dx, point2.dy), selectedSegment.path.last],
           selectedColor,
           selectedWidth);
       this.segment = segment;
-      // deleteSegment(selectedSegment);
       selectedSegment = segment;
       segment.edgeCoordinates = true;
       segment.isSelected = true;
@@ -170,24 +175,23 @@ class _StartPageState extends State<StartPage> {
   }
 
   void onPanEnd(DragEndDetails details) {
-    if (!selectionMode | edgeMode) {
-      print('onPanEnd with selectionMode');
-      segments = List.from(segments)..add(segment);
-      linesStreamController.add(segments);
+    if (selectedMode == Modes.edgeMode) {
+      print('segments: ${this.segments.length}');
+      segment.isSelected = true;
     }
+    segments = List.from(segments)..add(segment);
+    linesStreamController.add(segments);
 
-    if (edgeMode) {
-      // toggleEdgeMode();
+    if (selectedMode == Modes.defaultMode) {
+      straightenSegments();
     }
   }
 
   void onPanDown(DragDownDetails details) {
-    if (selectionMode ) {
-      print('selectionMode ${selectionMode}');
+    if (selectedMode == Modes.selectionMode) {
       selectSegment(details);
     }
-    if (edgeMode == true) {
-      print('edgeMode ${edgeMode}');
+    if (selectedMode == Modes.edgeMode) {
       selectEdge(details);
     }
   }
@@ -210,13 +214,26 @@ class _StartPageState extends State<StartPage> {
         edgeB = new Point(
             selectedSegment.path.last.dx, selectedSegment.path.last.dy);
 
-    if (currentPoint.distanceTo(edgeA) < currentPoint.distanceTo(edgeB)) {
+    double threshold = 100;
+    double distanceToA = currentPoint.distanceTo(edgeA);
+    double distanceToB = currentPoint.distanceTo(edgeB);
+
+    if (distanceToA < distanceToB &&
+        (distanceToA < threshold || distanceToB < threshold)) {
       selectedSegment.selectedEdge =
           new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
     } else {
       selectedSegment.selectedEdge =
           new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
     }
+
+    // if (currentPoint.distanceTo(edgeA) < currentPoint.distanceTo(edgeB)) {
+    //   selectedSegment.selectedEdge =
+    //       new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+    // } else {
+    //   selectedSegment.selectedEdge =
+    //       new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+    // }
   }
 
   void changeSelectedSegment(Segment segment) {
@@ -315,35 +332,41 @@ class _StartPageState extends State<StartPage> {
   }
 
   void toggleSelectionMode() {
-    if (selectionMode) {
-      setState(() {
-        modeText = '';
-        selectionMode = false;
-      });
-    } else {
-      setState(() {
-        modeText = 'Selection Mode';
-        selectionMode = true;
-      });
-    }
-    print('selectionMode: ${selectionMode}');
+    setState(() {
+      selectedMode = Modes.selectionMode;
+    });
+    // if (selectionMode) {
+    //   setState(() {
+    //     modeText = '';
+    //     selectionMode = false;
+    //   });
+    // } else {
+    //   setState(() {
+    //     modeText = 'Selection Mode';
+    //     selectionMode = true;
+    //   });
+    // }
+    // print('selectionMode: ${selectionMode}');
   }
 
   void toggleEdgeMode() {
-    if (edgeMode) {
-      setState(() {
-        modeText = '';
-        edgeMode = false;
-        selectionMode = false;
-      });
-    } else {
-      setState(() {
-        modeText = 'Edge Mode';
-        edgeMode = true;
-        selectionMode = false;
-      });
-    }
-    print('edgeMode: ${edgeMode}');
+    setState(() {
+      selectedMode = Modes.edgeMode;
+    });
+    // if (edgeMode) {
+    //   setState(() {
+    //     modeText = '';
+    //     edgeMode = false;
+    //     selectionMode = false;
+    //   });
+    // } else {
+    //   setState(() {
+    //     modeText = 'Edge Mode';
+    //     edgeMode = true;
+    //     selectionMode = false;
+    //   });
+    // }
+    // print('edgeMode: ${edgeMode}');
   }
 
   void extendSegment(Segment line, double length) {
