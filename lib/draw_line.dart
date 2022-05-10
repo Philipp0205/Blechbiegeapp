@@ -5,7 +5,9 @@ class Segment {
   Offset selectedEdge = new Offset(0, 0);
   Color color;
   bool isSelected = false;
+  bool edgeCoordinates = false;
   final double width;
+
 
   Segment(this.path, this.color, this.width);
 }

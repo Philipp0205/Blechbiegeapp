@@ -21,6 +21,8 @@ class _StartPageState extends State<StartPage> {
   StreamController<List<Segment>> linesStreamController =
       StreamController<List<Segment>>.broadcast();
 
+  GlobalKey key = new GlobalKey();
+
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
   GlobalKey _globalKey = new GlobalKey();
@@ -28,7 +30,7 @@ class _StartPageState extends State<StartPage> {
   bool edgeMode = false;
   String modeText = '';
 
-  List<Segment> lines = [];
+  List<Segment> segments = [];
   Segment segment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
   Segment selectedSegment =
@@ -57,7 +59,7 @@ class _StartPageState extends State<StartPage> {
               child: Icon(Icons.arrow_forward), onTap: straightenLines),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-          SpeedDialChild(child: Icon(Icons.circle), onTap: toggleEdgeMode),
+          SpeedDialChild(child: Icon(Icons.circle), onTap: debugFunction),
         ],
       ),
     );
@@ -65,7 +67,7 @@ class _StartPageState extends State<StartPage> {
 
   Future<void> clear() async {
     setState(() {
-      lines = [];
+      segments = [];
       segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
       selectedSegment =
           new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
@@ -75,16 +77,20 @@ class _StartPageState extends State<StartPage> {
   straightenLines() {
     setState(() {
       List<Segment> straigtenedLines = [];
-      print('lines.lenght ${lines.length}');
+      print('lines.lenght ${segments.length}');
 
-      lines.forEach((line) {
+      segments.forEach((line) {
         straigtenedLines.add(new Segment(
             [line.path.first, line.path.last], selectedColor, selectedWidth));
       });
 
-      lines = straigtenedLines;
+      segments = straigtenedLines;
       segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     });
+  }
+  
+  void debugFunction() {
+    print('segments: ${segments.length}');
   }
 
   Widget buildCurrentPath(BuildContext buildContext) {
@@ -126,9 +132,13 @@ class _StartPageState extends State<StartPage> {
     }
     if (edgeMode) {
       print('onPanStart with edgeMode');
-      Segment segment = new Segment([new Offset(point2.dx, point2.dy),
-          selectedSegment.path.last], selectedColor, selectedWidth);
+      Segment segment = new Segment(
+          [new Offset(point2.dx, point2.dy), selectedSegment.path.last],
+          selectedColor,
+          selectedWidth);
       this.segment = segment;
+      segment.isSelected = true;
+      deleteSegment(selectedSegment);
     }
   }
 
@@ -146,10 +156,15 @@ class _StartPageState extends State<StartPage> {
     }
     if (edgeMode) {
       print('PanUpdate with edgeMode');
-      Segment segment = new Segment([new Offset(point2.dx, point2.dy),
-        selectedSegment.path.last], selectedColor, selectedWidth);
+      Segment segment = new Segment(
+          [new Offset(point2.dx, point2.dy), selectedSegment.path.last],
+          selectedColor,
+          selectedWidth);
       this.segment = segment;
-      deleteSegment(selectedSegment);
+      // deleteSegment(selectedSegment);
+      selectedSegment = segment;
+      segment.edgeCoordinates = true;
+      segment.isSelected = true;
       currentLineStreamController.add(segment);
     }
   }
@@ -157,22 +172,28 @@ class _StartPageState extends State<StartPage> {
   void onPanEnd(DragEndDetails details) {
     if (!selectionMode | edgeMode) {
       print('onPanEnd with selectionMode');
-      lines = List.from(lines)..add(segment);
-      linesStreamController.add(lines);
+      segments = List.from(segments)..add(segment);
+      linesStreamController.add(segments);
+    }
+
+    if (edgeMode) {
+      // toggleEdgeMode();
     }
   }
 
   void onPanDown(DragDownDetails details) {
-    if (selectionMode == true) {
+    if (selectionMode ) {
       print('selectionMode ${selectionMode}');
       selectSegment(details);
-    } else if (edgeMode == true) {
+    }
+    if (edgeMode == true) {
       print('edgeMode ${edgeMode}');
       selectEdge(details);
     }
   }
 
   void selectSegment(DragDownDetails details) {
+    print('selectSegment');
     Segment lowestDistanceLine = getNearestSegment(details);
     lowestDistanceLine.color = Colors.red;
     changeSelectedSegment(lowestDistanceLine);
@@ -198,15 +219,14 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
-  void updateSegment() {}
-
-  void changeSelectedSegment(Segment line) {
+  void changeSelectedSegment(Segment segment) {
+    print('changeSelectedSegment');
     setState(() {
-      if (selectedSegment != line) {
+      if (selectedSegment != segment) {
         selectedSegment.isSelected = false;
-        line.isSelected = true;
+        segment.isSelected = true;
         selectedSegment.color = Colors.black;
-        selectedSegment = line;
+        selectedSegment = segment;
       }
     });
   }
@@ -214,7 +234,7 @@ class _StartPageState extends State<StartPage> {
   Segment getNearestSegment(DragDownDetails details) {
     Map<Segment, double> distances = {};
 
-    lines.forEach((line) {
+    segments.forEach((line) {
       distances.addEntries([MapEntry(line, getDistanceToLine(details, line))]);
     });
 
@@ -285,7 +305,7 @@ class _StartPageState extends State<StartPage> {
           builder: (context, snapshot) {
             return CustomPaint(
               painter: Sketcher(
-                lines: lines,
+                lines: segments,
               ),
             );
           },
@@ -314,11 +334,13 @@ class _StartPageState extends State<StartPage> {
       setState(() {
         modeText = '';
         edgeMode = false;
+        selectionMode = false;
       });
     } else {
       setState(() {
         modeText = 'Edge Mode';
         edgeMode = true;
+        selectionMode = false;
       });
     }
     print('edgeMode: ${edgeMode}');
@@ -350,13 +372,14 @@ class _StartPageState extends State<StartPage> {
 
   void deleteSegment(Segment segment) {
     setState(() {
-      Segment line = lines.firstWhere((line) => line.path == segment.path);
-      lines.remove(line);
+      Segment line = segments
+          .firstWhere((currentSegment) => currentSegment.path == segment.path);
+      segments.remove(line);
     });
   }
 
   void saveLine(Segment line) {
-    lines.add(selectedSegment);
+    segments.add(selectedSegment);
     deleteSegment(selectedSegment);
   }
 
@@ -364,6 +387,7 @@ class _StartPageState extends State<StartPage> {
     double _currentSliderValue = selectedLine.width;
 
     showModalBottomSheet(
+      enableDrag: true,
       context: context,
       builder: (BuildContext context) {
         return Container(
@@ -397,12 +421,18 @@ class _StartPageState extends State<StartPage> {
                               deleteSegment(selectedLine);
                             },
                             child: const Text('Löschen')),
-                        Container(
-                          width: 80,
-                          child: TextField(
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
+                        // Container(
+                        //   width: 80,
+                        //   child: TextField(
+                        //     keyboardType: TextInputType.number,
+                        //   ),
+                        // ),
+                        ElevatedButton(
+                            onPressed: () {
+                              toggleEdgeMode();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Edge M.')),
                         ElevatedButton(
                             onPressed: () {
                               saveLine(selectedLine);
@@ -411,7 +441,7 @@ class _StartPageState extends State<StartPage> {
                             child: const Text('Speichern')),
                       ],
                     ),
-                  )
+                  ),
                 ],
               );
             },

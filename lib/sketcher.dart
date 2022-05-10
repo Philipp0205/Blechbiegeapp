@@ -13,6 +13,8 @@ class Sketcher extends CustomPainter {
   late Canvas recordingCanvas;
   late Canvas canvas;
 
+  String lastDrawnText = '';
+
   Segment selectedSegment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
 
@@ -38,6 +40,18 @@ class Sketcher extends CustomPainter {
           // toggleEdgeSelection(lines[i], canvas);
           if (lines[i].selectedEdge.dx != 0) {
             toggleEdgeSelection(lines[i], canvas);
+          }
+
+          if (lines[i].edgeCoordinates) {
+            Offset offset =
+                new Offset(lines[i].path.first.dx - 50, lines[i].path.first.dy + 20);
+            if (lastDrawnText != '') {
+              drawText(canvas, lastDrawnText, offset,
+                  Colors.yellow[50] as Color);
+            }
+            String text =
+                '${lines[i].path.first.dx.toStringAsFixed(2)} / ${lines[i].path.first.dy.toStringAsFixed(2)}';
+            drawText(canvas, text, offset, Colors.yellow[50] as Color);
           }
         }
       }
@@ -71,6 +85,39 @@ class Sketcher extends CustomPainter {
 
     paint.color = Colors.red;
     canvas.drawCircle(line.selectedEdge, 10, paint);
+  }
+
+  void drawText(
+      Canvas canvas, String text, Offset offset, Color color) {
+    print('drawText $text');
+    // TextSpan span =
+    //     new TextSpan(style: new TextStyle(color: color), text: text);
+    // TextPainter tp = new TextPainter(
+    //     text: span,
+    //     textAlign: TextAlign.left,
+    //     textDirection: TextDirection.ltr);
+    // tp.layout();
+    // tp.paint(canvas, offset);
+
+    TextStyle style = TextStyle(
+        color: Colors.black,
+        backgroundColor: Colors.green[100],
+        decorationStyle: TextDecorationStyle.dotted,
+        decorationColor: Colors.green,
+        decorationThickness: 0.25);
+
+    TextPainter textPainter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        // TextSpan could be whole TextSpans tree :)
+        textAlign: TextAlign.start,
+        //maxLines: 25, // In both TextPainter and Paragraph there is no option to define max height, but there is `maxLines`
+        textDirection: TextDirection
+            .ltr // It is necessary for some weird reason... IMO should be LTR for default since well-known international languages (english, esperanto) are written left to right.
+        )
+      ..layout(
+          maxWidth: 500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
+    // BTW: using the TextPainter you can check size the text take to be rendered (without `paint`ing it).
+    textPainter.paint(canvas, offset);
   }
 
   void makeSegmentSelected(Segment line, Canvas canvas) {
