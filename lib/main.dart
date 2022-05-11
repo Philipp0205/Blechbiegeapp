@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:open_bsp/pages/StartPage.dart';
+import 'package:open_bsp/pages/drawing_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      home: StartPage(),
+      home: DrawingPage(),
       initialRoute: '/',
     );
   }

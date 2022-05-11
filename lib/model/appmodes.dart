@@ -1,9 +1,9 @@
-enum Modes { defaultMode, edgeMode, selectionMode }
+enum Modes { defaultMode, pointMode, selectionMode }
 
 class AppModes {
   String getModeName(var selectedMode) {
     switch (selectedMode) {
-      case Modes.edgeMode:
+      case Modes.pointMode:
         return 'Edge Mode';
       case Modes.selectionMode:
         return 'Selection Mode';

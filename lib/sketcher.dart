@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'model/draw_line.dart';
+import 'model/segment.dart';
 
 class Sketcher extends CustomPainter {
   final List<Segment> lines;
@@ -42,15 +42,16 @@ class Sketcher extends CustomPainter {
             toggleEdgeSelection(lines[i], canvas);
           }
 
-          if (lines[i].edgeCoordinates) {
+          if (lines[i].highlightPoints) {
             Offset offset =
-                new Offset(lines[i].path.first.dx - 50, lines[i].path.first.dy + 20);
+                new Offset(lines[i].selectedEdge.dx - 50, lines[i].selectedEdge.dy + 20);
             if (lastDrawnText != '') {
               drawText(canvas, lastDrawnText, offset,
                   Colors.yellow[50] as Color);
             }
+
             String text =
-                '${lines[i].path.first.dx.toStringAsFixed(2)} / ${lines[i].path.first.dy.toStringAsFixed(2)}';
+                '${lines[i].selectedEdge.dx.toStringAsFixed(2)} / ${lines[i].selectedEdge.dy.toStringAsFixed(2)}';
             drawText(canvas, text, offset, Colors.yellow[50] as Color);
           }
         }
@@ -90,14 +91,6 @@ class Sketcher extends CustomPainter {
   void drawText(
       Canvas canvas, String text, Offset offset, Color color) {
     print('drawText $text');
-    // TextSpan span =
-    //     new TextSpan(style: new TextStyle(color: color), text: text);
-    // TextPainter tp = new TextPainter(
-    //     text: span,
-    //     textAlign: TextAlign.left,
-    //     textDirection: TextDirection.ltr);
-    // tp.layout();
-    // tp.paint(canvas, offset);
 
     TextStyle style = TextStyle(
         color: Colors.black,

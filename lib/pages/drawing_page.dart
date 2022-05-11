@@ -3,18 +3,19 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import '../model/appmodes.dart';
-import '../model/draw_line.dart';
+import '../model/segment.dart';
 import '../sketcher.dart';
 
-class StartPage extends StatefulWidget {
+class DrawingPage extends StatefulWidget {
   @override
-  _StartPageState createState() => _StartPageState();
+  _DrawingPageState createState() => _DrawingPageState();
 }
 
-class _StartPageState extends State<StartPage> {
+class _DrawingPageState extends State<DrawingPage> {
   StreamController<Segment> currentLineStreamController =
       StreamController<Segment>.broadcast();
 
@@ -126,27 +127,53 @@ class _StartPageState extends State<StartPage> {
   void onPanStart(DragStartDetails details) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
-    Offset point2 = new Offset(point.dx, point.dy - 80);
+    // Compensate height of AppBar
+    Offset offset = new Offset(point.dx, point.dy - 80);
 
-    if (selectedMode == Modes.defaultMode) {
-      print('onPanStart with default Mode');
-      segment = Segment([point2], selectedColor, selectedWidth);
-    }
-    if (selectedMode == Modes.edgeMode) {
-      print('onPanStart with edgeMode');
-      Segment segment = new Segment(
-          [new Offset(point2.dx, point2.dy), selectedSegment.path.last],
-          selectedColor,
-          selectedWidth);
-      this.segment = segment;
-
-      segment.isSelected = true;
-      deleteSegment(selectedSegment);
-      selectedSegment = segment;
+    switch (selectedMode) {
+      case Modes.defaultMode:
+        onPanStartWithDefaultMode(offset);
+        break;
+      case Modes.pointMode:
+        onPanStartWithPointMode(details, offset);
+        break;
+      case Modes.selectionMode:
+        // TODO: Handle this case.
+        break;
     }
   }
 
-  // TODO Clean up
+  void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
+    print('onPanStart with edgeMode');
+    selectPoint(details);
+    Segment segment;
+    Offset newOffset = new Offset(offset.dx, offset.dy);
+
+    if (selectedSegment.selectedEdge == selectedSegment.path.first) {
+      segment = new Segment(
+          [newOffset, selectedSegment.path.last], selectedColor, selectedWidth);
+    } else {
+      segment = new Segment([selectedSegment.path.first, newOffset],
+          selectedColor, selectedWidth);
+    }
+
+    Offset pointA = new Offset(0, 0);
+    Offset pointB = new Offset(0, 0);
+
+    Segment segment2 = new Segment([pointA, pointB], selectedColor, selectedWidth);
+
+    segment.selectedEdge = newOffset;
+    deleteSegment(selectedSegment);
+    this.segment = segment;
+    segment.isSelected = true;
+    selectedSegment = segment;
+  }
+
+  void onPanStartWithDefaultMode(Offset offset) {
+    print('onPanStart with default Mode');
+    segment = Segment([offset], selectedColor, selectedWidth);
+  }
+
   void onPanUpdate(DragUpdateDetails details) {
     print('onPanUpdate');
     RenderBox box = context.findRenderObject() as RenderBox;
@@ -160,24 +187,41 @@ class _StartPageState extends State<StartPage> {
       segment = Segment(path, selectedColor, selectedWidth);
       currentLineStreamController.add(segment);
     }
-    if (selectedMode == Modes.edgeMode || selectedMode == Modes.selectionMode) {
+
+    if (selectedMode == Modes.pointMode ||
+        selectedMode == Modes.selectionMode) {
       print('PanUpdate with edgeMode');
-      Segment segment = new Segment(
-          [new Offset(point2.dx, point2.dy), selectedSegment.path.last],
-          selectedColor,
-          selectedWidth);
+      Segment segment;
+      Offset newOffset = new Offset(point2.dx, point2.dy);
+
+      if (selectedSegment.path.first == selectedSegment.selectedEdge) {
+        print('Frist edge');
+        segment = new Segment([newOffset, selectedSegment.path.last],
+            selectedColor, selectedWidth);
+      } else if (selectedSegment.path.last == selectedSegment.selectedEdge) {
+        print('Last edge');
+        segment = new Segment([selectedSegment.path.first, newOffset],
+            selectedColor, selectedWidth);
+      } else {
+        segment = new Segment(
+            [new Offset(0, 0), new Offset(0, 0)], selectedColor, selectedWidth);
+      }
+
       this.segment = segment;
       selectedSegment = segment;
-      segment.edgeCoordinates = true;
+      selectedSegment.selectedEdge = newOffset;
+      segment.highlightPoints = true;
       segment.isSelected = true;
       currentLineStreamController.add(segment);
     }
   }
 
   void onPanEnd(DragEndDetails details) {
-    if (selectedMode == Modes.edgeMode) {
+    if (selectedMode == Modes.pointMode) {
+      print('onPanEnd with edgeMode');
       print('segments: ${this.segments.length}');
       segment.isSelected = true;
+      selectedSegment.selectedEdge = new Offset(0, 0);
     }
     segments = List.from(segments)..add(segment);
     linesStreamController.add(segments);
@@ -188,11 +232,12 @@ class _StartPageState extends State<StartPage> {
   }
 
   void onPanDown(DragDownDetails details) {
+    print('onPanDown');
     if (selectedMode == Modes.selectionMode) {
       selectSegment(details);
     }
-    if (selectedMode == Modes.edgeMode) {
-      selectEdge(details);
+    if (selectedMode == Modes.pointMode) {
+      // selectEdge(details);
     }
   }
 
@@ -204,6 +249,8 @@ class _StartPageState extends State<StartPage> {
 
     _bottomSheet(context, lowestDistanceLine);
   }
+
+  void getSeleectedEdge(DragDownDetails detials) {}
 
   void selectEdge(DragDownDetails details) {
     print('Select edge');
@@ -226,14 +273,37 @@ class _StartPageState extends State<StartPage> {
       selectedSegment.selectedEdge =
           new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
     }
+  }
 
-    // if (currentPoint.distanceTo(edgeA) < currentPoint.distanceTo(edgeB)) {
-    //   selectedSegment.selectedEdge =
-    //       new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
-    // } else {
-    //   selectedSegment.selectedEdge =
-    //       new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
-    // }
+  void selectPoint(DragStartDetails details) {
+    print('Select edge2');
+    Point currentPoint = new Point(
+            details.globalPosition.dx, details.globalPosition.dy - 80),
+        edgeA = new Point(
+            selectedSegment.path.first.dx, selectedSegment.path.first.dy),
+        edgeB = new Point(
+            selectedSegment.path.last.dx, selectedSegment.path.last.dy);
+
+    double threshold = 50;
+    double distanceToA = currentPoint.distanceTo(edgeA);
+    double distanceToB = currentPoint.distanceTo(edgeB);
+
+    print('currentPoint : ${currentPoint.x} / ${currentPoint.y}');
+    print('Point A: ${edgeA.x} / ${edgeA.y}');
+    print('Point B: ${edgeB.x} / ${edgeB.y}');
+    print('distance to A: $distanceToA');
+    print('distance to B: $distanceToB');
+
+    if (distanceToA < distanceToB &&
+        (distanceToA < threshold || distanceToB < threshold)) {
+      selectedSegment.selectedEdge =
+          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+      print('selectedEdge is ${selectedSegment.selectedEdge}');
+    } else {
+      selectedSegment.selectedEdge =
+          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+      print('selectedEdge is ${selectedSegment.selectedEdge}');
+    }
   }
 
   void changeSelectedSegment(Segment segment) {
@@ -351,7 +421,7 @@ class _StartPageState extends State<StartPage> {
 
   void toggleEdgeMode() {
     setState(() {
-      selectedMode = Modes.edgeMode;
+      selectedMode = Modes.pointMode;
     });
     // if (edgeMode) {
     //   setState(() {
