@@ -59,7 +59,7 @@ class _DrawingPageState extends State<DrawingPage> {
         children: [
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
-              child: Icon(Icons.arrow_forward), onTap: straightenSegments),
+              child: Icon(Icons.arrow_forward), onTap: onPanEndWithDefaultMode),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
           SpeedDialChild(child: Icon(Icons.circle), onTap: debugFunction),
@@ -78,18 +78,15 @@ class _DrawingPageState extends State<DrawingPage> {
     });
   }
 
-  straightenSegments() {
-    print('straightenSegments');
-    setState(() {
-      List<Segment> straigtenedLines = [];
+  List<Segment> straightenSegments(List<Segment> segments) {
+    print('straightenSegments: ${segments.length} segments');
+    List<Segment> straightSegments = [];
 
-      segments.forEach((line) {
-        straigtenedLines.add(new Segment(
-            [line.path.first, line.path.last], selectedColor, selectedWidth));
-      });
-      segments = straigtenedLines;
-      segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+    segments.forEach((line) {
+      straightSegments.add(new Segment(
+          [line.path.first, line.path.last], selectedColor, selectedWidth));
     });
+    return straightSegments;
   }
 
   void debugFunction() {
@@ -124,6 +121,7 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  /// Logic when user starts drawing in the canvas.
   void onPanStart(DragStartDetails details) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
@@ -160,6 +158,11 @@ class _DrawingPageState extends State<DrawingPage> {
     selectedSegment = newSegment;
   }
 
+  void onPanStartWithDefaultMode(Offset offset) {
+    print('onPanStart with default Mode');
+    segment = Segment([offset], selectedColor, selectedWidth);
+  }
+
   Segment createNewSegmentDependingOnSelectedPoint(
       Offset selectedEdge, Offset newOffset) {
     Segment segment;
@@ -173,66 +176,79 @@ class _DrawingPageState extends State<DrawingPage> {
     return segment;
   }
 
-  void onPanStartWithDefaultMode(Offset offset) {
-    print('onPanStart with default Mode');
-    segment = Segment([offset], selectedColor, selectedWidth);
-  }
-
+  /// Logic when user continuous drawing in the canvas while holding down finger.
   void onPanUpdate(DragUpdateDetails details) {
     print('onPanUpdate');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy - 80);
 
-    if (selectedMode == Modes.selectionMode ||
-        selectedMode == Modes.defaultMode) {
-      print('PanUpdate with selectionMode');
-      List<Offset> path = List.from(segment.path)..add(point2);
-      segment = Segment(path, selectedColor, selectedWidth);
-      currentLineStreamController.add(segment);
-    }
-
-    if (selectedMode == Modes.pointMode ||
-        selectedMode == Modes.selectionMode) {
-      print('PanUpdate with edgeMode');
-      Segment segment;
-      Offset newOffset = new Offset(point2.dx, point2.dy);
-
-      if (selectedSegment.path.first == selectedSegment.selectedEdge) {
-        print('Frist edge');
-        segment = new Segment([newOffset, selectedSegment.path.last],
-            selectedColor, selectedWidth);
-      } else if (selectedSegment.path.last == selectedSegment.selectedEdge) {
-        print('Last edge');
-        segment = new Segment([selectedSegment.path.first, newOffset],
-            selectedColor, selectedWidth);
-      } else {
-        segment = new Segment(
-            [new Offset(0, 0), new Offset(0, 0)], selectedColor, selectedWidth);
-      }
-
-      this.segment = segment;
-      selectedSegment = segment;
-      selectedSegment.selectedEdge = newOffset;
-      segment.highlightPoints = true;
-      segment.isSelected = true;
-      currentLineStreamController.add(segment);
+    switch (selectedMode) {
+      case Modes.defaultMode:
+        onPanUpdateWithSelectionMode(point2);
+        break;
+      case Modes.pointMode:
+        onPanUpdateWithPointMode(point2);
+        break;
+      case Modes.selectionMode:
+        onPanUpdateWithSelectionMode(point2);
+        break;
     }
   }
 
+  void onPanUpdateWithPointMode(Offset offset) {
+    print('PanUpdate with edgeMode');
+
+    Segment segment = createNewSegmentDependingOnSelectedPoint(
+        selectedSegment.selectedEdge, offset);
+
+    this.segment = segment;
+    selectedSegment = segment;
+    selectedSegment.selectedEdge = offset;
+    segment.highlightPoints = true;
+    segment.isSelected = true;
+    currentLineStreamController.add(segment);
+  }
+
+  void onPanUpdateWithSelectionMode(Offset offset) {
+    print('PanUpdate with selectionMode');
+    List<Offset> path = List.from(segment.path)..add(offset);
+    segment = Segment(path, selectedColor, selectedWidth);
+    currentLineStreamController.add(segment);
+  }
+
+  /// Logic when user stops drawing in the canvas.
   void onPanEnd(DragEndDetails details) {
-    if (selectedMode == Modes.pointMode) {
-      print('onPanEnd with edgeMode');
-      print('segments: ${this.segments.length}');
-      segment.isSelected = true;
-      selectedSegment.selectedEdge = new Offset(0, 0);
+    switch (selectedMode) {
+      case Modes.defaultMode:
+        onPanEndWithDefaultMode();
+        break;
+      case Modes.pointMode:
+        onPanEndWithPointMode();
+        break;
+      case Modes.selectionMode:
+        break;
     }
+  }
+
+  void onPanEndWithPointMode() {
+    print('onPanEnd with edgeMode');
+    segment.isSelected = true;
+    selectedSegment.selectedEdge = new Offset(0, 0);
+
+    segments = List.from(segments)..add(segment);
+    linesStreamController.add(segments);
+  }
+
+  void onPanEndWithDefaultMode() {
     segments = List.from(segments)..add(segment);
     linesStreamController.add(segments);
 
-    if (selectedMode == Modes.defaultMode) {
-      straightenSegments();
-    }
+    List<Segment> straightSegments = straightenSegments(segments);
+    this.segments = straightSegments;
+    print('straightSegments ${straightSegments.length}');
+    this.segment =
+        new Segment([new Offset(0, 0)], selectedColor, selectedWidth);
   }
 
   void onPanDown(DragDownDetails details) {
