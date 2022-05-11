@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import '../model/appmodes.dart';
@@ -59,10 +58,10 @@ class _DrawingPageState extends State<DrawingPage> {
         children: [
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
-              child: Icon(Icons.arrow_forward), onTap: onPanEndWithDefaultMode),
+              child: Icon(Icons.arrow_forward), onTap: straightenSegments),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-          SpeedDialChild(child: Icon(Icons.circle), onTap: debugFunction),
+          SpeedDialChild(child: Icon(Icons.circle), onTap: toggleDefaultMode),
         ],
       ),
     );
@@ -78,15 +77,18 @@ class _DrawingPageState extends State<DrawingPage> {
     });
   }
 
-  List<Segment> straightenSegments(List<Segment> segments) {
-    print('straightenSegments: ${segments.length} segments');
-    List<Segment> straightSegments = [];
+  straightenSegments() {
+    setState(() {
+      print('straightenSegments: ${segments.length} segments');
+      List<Segment> straightSegments = [];
 
-    segments.forEach((line) {
-      straightSegments.add(new Segment(
-          [line.path.first, line.path.last], selectedColor, selectedWidth));
+      segments.forEach((line) {
+        straightSegments.add(new Segment(
+            [line.path.first, line.path.last], selectedColor, selectedWidth));
+      });
+
+      this.segments = straightSegments;
     });
-    return straightSegments;
   }
 
   void debugFunction() {
@@ -136,7 +138,6 @@ class _DrawingPageState extends State<DrawingPage> {
         onPanStartWithPointMode(details, offset);
         break;
       case Modes.selectionMode:
-        // TODO: Handle this case.
         break;
     }
   }
@@ -244,9 +245,10 @@ class _DrawingPageState extends State<DrawingPage> {
     segments = List.from(segments)..add(segment);
     linesStreamController.add(segments);
 
-    List<Segment> straightSegments = straightenSegments(segments);
-    this.segments = straightSegments;
-    print('straightSegments ${straightSegments.length}');
+    // List<Segment> straightSegments = straightenSegments(segments);
+    // this.segments = straightSegments;
+    // print('straightSegments ${straightSegments.length}');
+    this.segments = segments;
     this.segment =
         new Segment([new Offset(0, 0)], selectedColor, selectedWidth);
   }
@@ -370,7 +372,6 @@ class _DrawingPageState extends State<DrawingPage> {
         ? nearestEdge = nearestSegment.path.last
         : nearestEdge = nearestSegment.path.first;
 
-    print('nearestEdge = ${nearestEdge}');
     return nearestEdge;
   }
 
@@ -425,38 +426,21 @@ class _DrawingPageState extends State<DrawingPage> {
     setState(() {
       selectedMode = Modes.selectionMode;
     });
-    // if (selectionMode) {
-    //   setState(() {
-    //     modeText = '';
-    //     selectionMode = false;
-    //   });
-    // } else {
-    //   setState(() {
-    //     modeText = 'Selection Mode';
-    //     selectionMode = true;
-    //   });
-    // }
-    // print('selectionMode: ${selectionMode}');
   }
 
   void toggleEdgeMode() {
     setState(() {
       selectedMode = Modes.pointMode;
     });
-    // if (edgeMode) {
-    //   setState(() {
-    //     modeText = '';
-    //     edgeMode = false;
-    //     selectionMode = false;
-    //   });
-    // } else {
-    //   setState(() {
-    //     modeText = 'Edge Mode';
-    //     edgeMode = true;
-    //     selectionMode = false;
-    //   });
-    // }
-    // print('edgeMode: ${edgeMode}');
+  }
+
+  void toggleDefaultMode() {
+    setState(() {
+      Offset offset = new Offset(0, 0);
+      selectedSegment.selectedEdge = offset;
+      selectedSegment.isSelected = false;
+      selectedMode = Modes.defaultMode;
+    });
   }
 
   void extendSegment(Segment line, double length) {

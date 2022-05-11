@@ -36,11 +36,18 @@ class Sketcher extends CustomPainter {
           paint.strokeWidth = lines[i].width;
           canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
 
-          toggleSegmentSelection(lines[i], canvas);
+          // toggleSegmentSelection(lines[i], canvas);
           // toggleEdgeSelection(lines[i], canvas);
-          if (lines[i].selectedEdge.dx != 0) {
-            toggleEdgeSelection(lines[i], canvas);
+          // if (lines[i].selectedEdge.dx != 0) {
+          //   toggleEdgeSelection(lines[i], canvas);
+          // }
+
+          if (lines[i].isSelected)  {
+            print('line is Selected');
+               togglePointSelection(lines[i], canvas);
+               toggleSegmentSelection(lines[i], canvas);
           }
+
 
           if (lines[i].highlightPoints) {
             Offset offset =
@@ -60,6 +67,7 @@ class Sketcher extends CustomPainter {
   }
 
   void toggleSegmentSelection(Segment line, Canvas canvas) {
+    print('toggleSegmentSelection');
     Paint paint = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round
@@ -75,7 +83,8 @@ class Sketcher extends CustomPainter {
     }
   }
 
-  void toggleEdgeSelection(Segment line, Canvas canvas) {
+  void togglePointSelection(Segment line, Canvas canvas) {
+    print('togglePointSelection');
     Paint paint = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round
