@@ -146,27 +146,31 @@ class _DrawingPageState extends State<DrawingPage> {
   void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
     print('onPanStart with edgeMode');
     selectPoint(details);
-    Segment segment;
     Offset newOffset = new Offset(offset.dx, offset.dy);
 
-    if (selectedSegment.selectedEdge == selectedSegment.path.first) {
-      segment = new Segment(
-          [newOffset, selectedSegment.path.last], selectedColor, selectedWidth);
-    } else {
-      segment = new Segment([selectedSegment.path.first, newOffset],
-          selectedColor, selectedWidth);
-    }
+    Segment newSegment = createNewSegmentDependingOnSelectedPoint(
+        selectedSegment.selectedEdge, newOffset);
 
-    Offset pointA = new Offset(0, 0);
-    Offset pointB = new Offset(0, 0);
-
-    Segment segment2 = new Segment([pointA, pointB], selectedColor, selectedWidth);
-
-    segment.selectedEdge = newOffset;
     deleteSegment(selectedSegment);
-    this.segment = segment;
-    segment.isSelected = true;
-    selectedSegment = segment;
+
+    newSegment.selectedEdge = newOffset;
+    newSegment.isSelected = true;
+
+    this.segment = newSegment;
+    selectedSegment = newSegment;
+  }
+
+  Segment createNewSegmentDependingOnSelectedPoint(
+      Offset selectedEdge, Offset newOffset) {
+    Segment segment;
+
+    selectedSegment.selectedEdge == selectedSegment.path.first
+        ? segment = new Segment([newOffset, selectedSegment.path.last],
+            selectedColor, selectedWidth)
+        : segment = new Segment([selectedSegment.path.first, newOffset],
+            selectedColor, selectedWidth);
+
+    return segment;
   }
 
   void onPanStartWithDefaultMode(Offset offset) {
