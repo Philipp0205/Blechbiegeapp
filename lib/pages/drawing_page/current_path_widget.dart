@@ -1,101 +1,50 @@
+import 'package:flutter/cupertino.dart';
 import 'dart:async';
 
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:open_bsp/model/painter_data.dart';
+import 'package:provider/provider.dart';
 
-import '../model/appmodes.dart';
-import '../model/segment.dart';
-import '../sketcher.dart';
+import '../../model/appmodes.dart';
+import '../../model/segment.dart';
+import '../../sketcher.dart';
 
-class DrawingPage extends StatefulWidget {
+
+class CurrentPathWidget extends StatefulWidget {
+  final Modes selectedMode;
+
+  const CurrentPathWidget (this.selectedMode);
+
   @override
-  _DrawingPageState createState() => _DrawingPageState();
+  _CurrentPathWidgetState createState() => _CurrentPathWidgetState();
 }
 
-class _DrawingPageState extends State<DrawingPage> {
+class _CurrentPathWidgetState extends State<CurrentPathWidget> {
+
   StreamController<Segment> currentLineStreamController =
-      StreamController<Segment>.broadcast();
+  StreamController<Segment>.broadcast();
 
   StreamController<List<Segment>> linesStreamController =
-      StreamController<List<Segment>>.broadcast();
+  StreamController<List<Segment>>.broadcast();
+
+  PainterData data = new PainterData();
 
   GlobalKey key = new GlobalKey();
 
-  Color selectedColor = Colors.black;
-  double selectedWidth = 5.0;
-  GlobalKey _globalKey = new GlobalKey();
-  Modes selectedMode = Modes.defaultMode;
-  String modeText = '';
-
   List<Segment> segments = [];
   Segment segment =
-      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+  new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
   Segment selectedSegment =
-      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+  new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+
+  Modes selectedMode = Modes.defaultMode;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Biegeapp'),
-            Text(AppModes().getModeName(selectedMode))
-          ],
-        ),
-      ),
-      backgroundColor: Colors.yellow[50],
-      body: Container(
-        child: Stack(
-            children: [buildAllPaths(context), buildCurrentPath(context)]),
-      ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.add,
-        activeIcon: Icons.close,
-        children: [
-          SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
-          SpeedDialChild(
-              child: Icon(Icons.arrow_forward), onTap: straightenSegments),
-          SpeedDialChild(
-              child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-          SpeedDialChild(child: Icon(Icons.circle), onTap: toggleDefaultMode),
-        ],
-      ),
-    );
-  }
-
-  Future<void> clear() async {
-    setState(() {
-      segments = [];
-      segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-      selectedSegment =
-          new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-      selectedMode = Modes.defaultMode;
-    });
-  }
-
-  straightenSegments() {
-    setState(() {
-      print('straightenSegments: ${segments.length} segments');
-      List<Segment> straightSegments = [];
-
-      segments.forEach((line) {
-        straightSegments.add(new Segment(
-            [line.path.first, line.path.last], selectedColor, selectedWidth));
-      });
-
-      this.segments = straightSegments;
-    });
-  }
-
-  void debugFunction() {
-    print('segments: ${segments.length}');
-  }
-
-  Widget buildCurrentPath(BuildContext buildContext) {
+    selectedMode = widget.selectedMode;
+    print('selectedMode:');
     return GestureDetector(
       onPanStart: onPanStart,
       onPanUpdate: onPanUpdate,
@@ -128,9 +77,9 @@ class _DrawingPageState extends State<DrawingPage> {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     // Compensate height of AppBar
-    Offset offset = new Offset(point.dx, point.dy - 80);
+    Offset offset = new Offset(point.dx, point.dy);
 
-    switch (selectedMode) {
+    switch (data.selectedMode) {
       case Modes.defaultMode:
         onPanStartWithDefaultMode(offset);
         break;
@@ -161,7 +110,7 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void onPanStartWithDefaultMode(Offset offset) {
     print('onPanStart with default Mode');
-    segment = Segment([offset], selectedColor, selectedWidth);
+    segment = Segment([offset], data.selectedColor, data.selectedWidth);
   }
 
   Segment createNewSegmentDependingOnSelectedPoint(
@@ -170,9 +119,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
     selectedSegment.selectedEdge == selectedSegment.path.first
         ? segment = new Segment([newOffset, selectedSegment.path.last],
-            selectedColor, selectedWidth)
+        data.selectedColor, data.selectedWidth)
         : segment = new Segment([selectedSegment.path.first, newOffset],
-            selectedColor, selectedWidth);
+        data.selectedColor, data.selectedWidth);
 
     return segment;
   }
@@ -182,9 +131,9 @@ class _DrawingPageState extends State<DrawingPage> {
     print('onPanUpdate');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
-    Offset point2 = new Offset(point.dx, point.dy - 80);
+    Offset point2 = new Offset(point.dx, point.dy);
 
-    switch (selectedMode) {
+    switch (data.selectedMode) {
       case Modes.defaultMode:
         onPanUpdateWithSelectionMode(point2);
         break;
@@ -214,13 +163,13 @@ class _DrawingPageState extends State<DrawingPage> {
   void onPanUpdateWithSelectionMode(Offset offset) {
     print('PanUpdate with selectionMode');
     List<Offset> path = List.from(segment.path)..add(offset);
-    segment = Segment(path, selectedColor, selectedWidth);
+    segment = Segment(path, data.selectedColor, data.selectedWidth);
     currentLineStreamController.add(segment);
   }
 
   /// Logic when user stops drawing in the canvas.
   void onPanEnd(DragEndDetails details) {
-    switch (selectedMode) {
+    switch (data.selectedMode) {
       case Modes.defaultMode:
         onPanEndWithDefaultMode();
         break;
@@ -250,34 +199,27 @@ class _DrawingPageState extends State<DrawingPage> {
     // print('straightSegments ${straightSegments.length}');
     this.segments = segments;
     this.segment =
-        new Segment([new Offset(0, 0)], selectedColor, selectedWidth);
+    new Segment([new Offset(0, 0)], data.selectedColor, data.selectedWidth);
   }
 
   void onPanDown(DragDownDetails details) {
     print('onPanDown');
-    if (selectedMode == Modes.selectionMode) {
+    if (data.selectedMode == Modes.selectionMode) {
       selectSegment(details);
     }
-    if (selectedMode == Modes.pointMode) {
+    if (data.selectedMode == Modes.pointMode) {
       // selectEdge(details);
     }
   }
 
-  void selectSegment(DragDownDetails details) {
-    print('selectSegment');
-    Segment lowestDistanceLine = getNearestSegment(details);
-    lowestDistanceLine.color = Colors.red;
-    changeSelectedSegment(lowestDistanceLine);
 
-    _bottomSheet(context, lowestDistanceLine);
-  }
 
   void getSeleectedEdge(DragDownDetails detials) {}
 
   void selectEdge(DragDownDetails details) {
     print('Select edge');
     Point currentPoint = new Point(
-            details.globalPosition.dx, details.globalPosition.dy - 80),
+        details.globalPosition.dx, details.globalPosition.dy),
         edgeA = new Point(
             selectedSegment.path.first.dx, selectedSegment.path.first.dy),
         edgeB = new Point(
@@ -290,17 +232,17 @@ class _DrawingPageState extends State<DrawingPage> {
     if (distanceToA < distanceToB &&
         (distanceToA < threshold || distanceToB < threshold)) {
       selectedSegment.selectedEdge =
-          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+      new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
     } else {
       selectedSegment.selectedEdge =
-          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+      new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
     }
   }
 
   void selectPoint(DragStartDetails details) {
     print('Select edge2');
     Point currentPoint = new Point(
-            details.globalPosition.dx, details.globalPosition.dy - 80),
+        details.globalPosition.dx, details.globalPosition.dy),
         edgeA = new Point(
             selectedSegment.path.first.dx, selectedSegment.path.first.dy),
         edgeB = new Point(
@@ -319,11 +261,11 @@ class _DrawingPageState extends State<DrawingPage> {
     if (distanceToA < distanceToB &&
         (distanceToA < threshold || distanceToB < threshold)) {
       selectedSegment.selectedEdge =
-          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+      new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
       print('selectedEdge is ${selectedSegment.selectedEdge}');
     } else {
       selectedSegment.selectedEdge =
-          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+      new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
       print('selectedEdge is ${selectedSegment.selectedEdge}');
     }
   }
@@ -362,11 +304,11 @@ class _DrawingPageState extends State<DrawingPage> {
     Offset nearestEdge;
 
     Point currentPoint = new Point(
-            details.globalPosition.dx, details.globalPosition.dy - 80),
+        details.globalPosition.dx, details.globalPosition.dy),
         edgeA = new Point(
             nearestSegment.path.first.dx, nearestSegment.path.first.dy),
         edgeB =
-            new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
+        new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
 
     currentPoint.distanceTo(edgeA) > currentPoint.distanceTo(edgeB)
         ? nearestEdge = nearestSegment.path.last
@@ -384,7 +326,7 @@ class _DrawingPageState extends State<DrawingPage> {
    */
   double getDistanceToLine(DragDownDetails details, Segment line) {
     Point currentPoint =
-        new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
+    new Point(details.globalPosition.dx, details.globalPosition.dy);
     Point startPoint = new Point(line.path.first.dx, line.path.first.dy);
     Point endPoint = new Point(line.path.last.dx, line.path.last.dy);
 
@@ -396,51 +338,7 @@ class _DrawingPageState extends State<DrawingPage> {
   Segment init(DragStartDetails details) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
-    return Segment([point], selectedColor, selectedWidth);
-  }
-
-  Widget buildAllPaths(BuildContext context) {
-    return RepaintBoundary(
-      key: _globalKey,
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        color: Colors.transparent,
-        padding: EdgeInsets.all(4.0),
-        alignment: Alignment.topLeft,
-        child: StreamBuilder<List<Segment>>(
-          stream: linesStreamController.stream,
-          builder: (context, snapshot) {
-            return CustomPaint(
-              painter: Sketcher(
-                lines: segments,
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  void toggleSelectionMode() {
-    setState(() {
-      selectedMode = Modes.selectionMode;
-    });
-  }
-
-  void toggleEdgeMode() {
-    setState(() {
-      selectedMode = Modes.pointMode;
-    });
-  }
-
-  void toggleDefaultMode() {
-    setState(() {
-      Offset offset = new Offset(0, 0);
-      selectedSegment.selectedEdge = offset;
-      selectedSegment.isSelected = false;
-      selectedMode = Modes.defaultMode;
-    });
+    return Segment([point], data.selectedColor, data.selectedWidth);
   }
 
   void extendSegment(Segment line, double length) {
@@ -455,14 +353,14 @@ class _DrawingPageState extends State<DrawingPage> {
 
     Offset pointC = new Offset(x, y);
     Segment newLine =
-        new Segment([line.path.first, pointC], selectedColor, selectedWidth);
+    new Segment([line.path.first, pointC], data.selectedColor, data.selectedWidth);
 
     this.segment = newLine;
 
     // DrawnLine newLine = new DrawnLine([
     //   line.path.first,
     //   Offset(line.path.last.dx + length, line.path.last.dy + length)
-    // ], selectedColor, selectedWidth);
+    // ], data.selectedColor, data.selectedWidth);
     //
     // this.line = newLine;
   }
@@ -478,6 +376,15 @@ class _DrawingPageState extends State<DrawingPage> {
   void saveLine(Segment line) {
     segments.add(selectedSegment);
     deleteSegment(selectedSegment);
+  }
+
+  void selectSegment(DragDownDetails details) {
+    print('selectSegment');
+    Segment lowestDistanceLine = getNearestSegment(details);
+    lowestDistanceLine.color = Colors.red;
+    changeSelectedSegment(lowestDistanceLine);
+
+    _bottomSheet(context, lowestDistanceLine);
   }
 
   _bottomSheet(BuildContext context, Segment selectedLine) {
@@ -526,7 +433,7 @@ class _DrawingPageState extends State<DrawingPage> {
                         // ),
                         ElevatedButton(
                             onPressed: () {
-                              toggleEdgeMode();
+                              context.read<AppModes>().setSelectedMode(Modes.pointMode);
                               Navigator.of(context).pop();
                             },
                             child: const Text('Edge M.')),
@@ -547,4 +454,5 @@ class _DrawingPageState extends State<DrawingPage> {
       },
     );
   }
+
 }
