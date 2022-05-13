@@ -25,8 +25,6 @@ class _DrawingPageState extends State<DrawingPage> {
   SketcherData data = new SketcherData();
   GlobalKey _globalKey = new GlobalKey();
 
-  Modes selectedMode = Modes.defaultMode;
-
   // List<Segment> segments = [];
 
   SketcherDataViewModel viewModel =  getIt<SketcherDataViewModel>();
@@ -39,7 +37,7 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Biegeapp'),
-            Text(AppModes().getModeName(selectedMode))
+            Text(AppModes().getModeName(viewModel.selectedMode))
           ],
         ),
       ),
@@ -118,13 +116,13 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void toggleSelectionMode() {
     setState(() {
-      selectedMode = Modes.selectionMode;
+      viewModel.selectedMode = Modes.selectionMode;
     });
   }
 
   void toggleEdgeMode() {
     setState(() {
-      selectedMode = Modes.pointMode;
+      viewModel.selectedMode = Modes.pointMode;
     });
   }
 
@@ -133,7 +131,7 @@ class _DrawingPageState extends State<DrawingPage> {
       Offset offset = new Offset(0, 0);
       viewModel.selectedSegment.selectedEdge = offset;
       viewModel.selectedSegment.isSelected = false;
-      selectedMode = Modes.defaultMode;
+      viewModel.selectedMode = Modes.defaultMode;
     });
   }
 
@@ -152,25 +150,8 @@ class _DrawingPageState extends State<DrawingPage> {
         [line.path.first, pointC], data.selectedColor, data.selectedWidth);
 
     viewModel.segment = newLine;
-
-    // DrawnLine newLine = new DrawnLine([
-    //   line.path.first,
-    //   Offset(line.path.last.dx + length, line.path.last.dy + length)
-    // ], data.selectedColor, data.selectedWidth);
-    //
-    // this.line = newLine;
   }
 
-  void deleteSegment(Segment segment) {
-    setState(() {
-      Segment line = viewModel.segments
-          .firstWhere((currentSegment) => currentSegment.path == segment.path);
-      viewModel.segments.remove(line);
-    });
-  }
 
-  void saveLine(Segment line) {
-    viewModel.segments.add(viewModel.selectedSegment);
-    deleteSegment(viewModel.selectedSegment);
-  }
+
 }

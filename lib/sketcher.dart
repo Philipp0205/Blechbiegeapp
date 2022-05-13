@@ -37,12 +37,6 @@ class Sketcher extends CustomPainter {
           paint.strokeWidth = lines[i].width;
           canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
 
-          // toggleSegmentSelection(lines[i], canvas);
-          // toggleEdgeSelection(lines[i], canvas);
-          // if (lines[i].selectedEdge.dx != 0) {
-          //   toggleEdgeSelection(lines[i], canvas);
-          // }
-
           if (lines[i].isSelected)  {
             print('line is Selected');
                togglePointSelection(lines[i], canvas);
