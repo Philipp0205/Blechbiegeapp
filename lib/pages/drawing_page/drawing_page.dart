@@ -3,10 +3,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:open_bsp/model/painter_data.dart';
+import 'package:open_bsp/model/sketcher_data.dart';
 import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
+import 'package:open_bsp/view_model/sketcher_data_service.dart';
+import 'package:provider/provider.dart';
+import 'package:open_bsp/services/service_locator.dart';
 
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
@@ -18,23 +20,18 @@ class DrawingPage extends StatefulWidget {
 }
 
 class _DrawingPageState extends State<DrawingPage> {
-  StreamController<Segment> currentLineStreamController =
-      StreamController<Segment>.broadcast();
-
   StreamController<List<Segment>> linesStreamController =
       StreamController<List<Segment>>.broadcast();
 
   GlobalKey key = new GlobalKey();
-  PainterData data = new PainterData();
+  SketcherData data = new SketcherData();
   GlobalKey _globalKey = new GlobalKey();
-  
+
   Modes selectedMode = Modes.defaultMode;
-  
-  List<Segment> segments = [];
-  Segment segment =
-      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-  Segment selectedSegment =
-      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+
+  // List<Segment> segments = [];
+
+  SketcherDataViewModel viewModel =  getIt<SketcherDataViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +47,11 @@ class _DrawingPageState extends State<DrawingPage> {
       ),
       backgroundColor: Colors.yellow[50],
       body: Container(
-        child: Stack(
-            children: [buildAllPaths(context),
-              // buildCurrentPath(context),
-              CurrentPathWidget(selectedMode)
-            ]),
+        child: Stack(children: [
+          buildAllPaths(context, viewModel),
+          // buildCurrentPath(context),
+          CurrentPathWidget()
+        ]),
       ),
       floatingActionButton: SpeedDial(
         icon: Icons.add,
@@ -72,35 +69,28 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    setState(() {
-      segments = [];
-      segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-      selectedSegment =
-          new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-      selectedMode = Modes.defaultMode;
-    });
-
+    viewModel.clear();
   }
 
   straightenSegments() {
     setState(() {
-      print('straightenSegments: ${segments.length} segments');
+      print('straightenSegments: ${viewModel.segments.length} segments');
       List<Segment> straightSegments = [];
 
-      segments.forEach((line) {
-        straightSegments.add(new Segment(
-            [line.path.first, line.path.last], data.selectedColor, data.selectedWidth));
+      viewModel.segments.forEach((line) {
+        straightSegments.add(new Segment([line.path.first, line.path.last],
+            data.selectedColor, data.selectedWidth));
       });
 
-      this.segments = straightSegments;
+      this.viewModel.segments = straightSegments;
     });
   }
 
   void debugFunction() {
-    print('segments: ${segments.length}');
+    print('segments: ${viewModel.segments.length}');
   }
 
-  Widget buildAllPaths(BuildContext context) {
+  Widget buildAllPaths(BuildContext context, SketcherDataViewModel viewModel) {
     return RepaintBoundary(
       key: _globalKey,
       child: Container(
@@ -112,9 +102,12 @@ class _DrawingPageState extends State<DrawingPage> {
         child: StreamBuilder<List<Segment>>(
           stream: linesStreamController.stream,
           builder: (context, snapshot) {
-            return CustomPaint(
-              painter: Sketcher(
-                lines: segments,
+            return ChangeNotifierProvider<SketcherDataViewModel>(
+              create: (context) => viewModel,
+              child: CustomPaint(
+                painter: Sketcher(
+                  lines: viewModel.segments,
+                ),
               ),
             );
           },
@@ -138,8 +131,8 @@ class _DrawingPageState extends State<DrawingPage> {
   void toggleDefaultMode() {
     setState(() {
       Offset offset = new Offset(0, 0);
-      selectedSegment.selectedEdge = offset;
-      selectedSegment.isSelected = false;
+      viewModel.selectedSegment.selectedEdge = offset;
+      viewModel.selectedSegment.isSelected = false;
       selectedMode = Modes.defaultMode;
     });
   }
@@ -155,10 +148,10 @@ class _DrawingPageState extends State<DrawingPage> {
     double y = pointB.y + (pointB.y - pointA.y) / lengthAB * length;
 
     Offset pointC = new Offset(x, y);
-    Segment newLine =
-        new Segment([line.path.first, pointC], data.selectedColor, data.selectedWidth);
+    Segment newLine = new Segment(
+        [line.path.first, pointC], data.selectedColor, data.selectedWidth);
 
-    this.segment = newLine;
+    viewModel.segment = newLine;
 
     // DrawnLine newLine = new DrawnLine([
     //   line.path.first,
@@ -170,18 +163,14 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void deleteSegment(Segment segment) {
     setState(() {
-      Segment line = segments
+      Segment line = viewModel.segments
           .firstWhere((currentSegment) => currentSegment.path == segment.path);
-      segments.remove(line);
+      viewModel.segments.remove(line);
     });
   }
 
   void saveLine(Segment line) {
-    segments.add(selectedSegment);
-    deleteSegment(selectedSegment);
+    viewModel.segments.add(viewModel.selectedSegment);
+    deleteSegment(viewModel.selectedSegment);
   }
-
-
-
-
 }

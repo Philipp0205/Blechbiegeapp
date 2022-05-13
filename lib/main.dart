@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
-import 'package:provider/provider.dart';
+import 'package:open_bsp/services/service_locator.dart';
 
 void main() {
-  runApp(
-    MultiProvider(providers: [
-      ChangeNotifierProvider(create: (_) => AppModes()),
-    ], child: MyApp()),
-  );
+  setup();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'appmodes.dart';
 
-class PainterData {
+class SketcherData {
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
   Modes selectedMode = Modes.defaultMode;
