@@ -16,20 +16,16 @@ import '../../sketcher.dart';
 class CurrentPathWidget extends StatefulWidget {
   // final Modes selectedMode;
   // final Segment segment;
-  // final List<Segment> viewModel.segments;
+  // final List<Segment> model.segments;
 
-const CurrentPathWidget();
+  const CurrentPathWidget();
 
   @override
   _CurrentPathWidgetState createState() => _CurrentPathWidgetState();
 }
 
 class _CurrentPathWidgetState extends State<CurrentPathWidget> {
-  StreamController<Segment> currentLineStreamController =
-      StreamController<Segment>.broadcast();
 
-  StreamController<List<Segment>> linesStreamController =
-      StreamController<List<Segment>>.broadcast();
 
   SketcherData data = new SketcherData();
 
@@ -38,38 +34,38 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   Segment selectedSegment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
 
-  SketcherDataViewModel viewModel = getIt<SketcherDataViewModel>();
+  SketcherDataViewModel model = getIt<SketcherDataViewModel>();
 
   @override
   Widget build(BuildContext context) {
-    viewModel.segments = viewModel.segments;
-    print('build selectedMode: ${viewModel.selectedMode}');
-    print('build selectedMode: ${viewModel.segments.length}');
-    return GestureDetector(
-      onPanStart: onPanStart,
-      onPanUpdate: onPanUpdate,
-      onPanEnd: onPanEnd,
-      onPanDown: onPanDown,
-      child: RepaintBoundary(
-        child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            padding: EdgeInsets.all(4.0),
-            color: Colors.transparent,
-            alignment: Alignment.topLeft,
-            child: StreamBuilder<Segment>(
-              stream: currentLineStreamController.stream,
-              builder: (context, snapshot) {
-                return ChangeNotifierProvider(
-                    create: (context) => viewModel,
-                    child: CustomPaint(
-                      painter: Sketcher(
-                        lines: [viewModel.segment],
-                        // lines: lines,
-                      ),
-                    ));
-              },
-            )),
+    print('build selectedMode: ${model.selectedMode}');
+    print('build selectedMode: ${model.segments.length}');
+    return ChangeNotifierProvider<SketcherDataViewModel>(
+      create: (context) => model,
+      child: GestureDetector(
+        onPanStart: onPanStart,
+        onPanUpdate: onPanUpdate,
+        onPanEnd: onPanEnd,
+        onPanDown: onPanDown,
+        child: RepaintBoundary(
+          child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              padding: EdgeInsets.all(4.0),
+              color: Colors.transparent,
+              alignment: Alignment.topLeft,
+              child: StreamBuilder<Segment>(
+                stream: model.currentLineStreamController.stream,
+                builder: (context, snapshot) {
+                  return CustomPaint(
+                    painter: Sketcher(
+                      lines: [model.segment],
+                      // lines: lines,
+                    ),
+                  );
+                },
+              )),
+        ),
       ),
     );
   }
@@ -106,13 +102,13 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     newSegment.selectedEdge = newOffset;
     newSegment.isSelected = true;
 
-    viewModel.segment = newSegment;
+    model.segment = newSegment;
     selectedSegment = newSegment;
   }
 
   void onPanStartWithDefaultMode(Offset offset) {
     print('onPanStart with default Mode');
-    viewModel.segment = Segment([offset], data.selectedColor, data.selectedWidth);
+    model.segment = Segment([offset], data.selectedColor, data.selectedWidth);
   }
 
   Segment createNewSegmentDependingOnSelectedPoint(
@@ -154,20 +150,20 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Segment segment = createNewSegmentDependingOnSelectedPoint(
         selectedSegment.selectedEdge, offset);
 
-    viewModel.segment = segment;
+    model.segment = segment;
     selectedSegment = segment;
     selectedSegment.selectedEdge = offset;
     segment.highlightPoints = true;
     segment.isSelected = true;
-    currentLineStreamController.add(segment);
+    model.currentLineStreamController.add(segment);
   }
 
   void onPanUpdateWithSelectionMode(Offset offset) {
     print('PanUpdate with selectionMode or defaultMode');
-    print('viewModel.segments: ${viewModel.segments.length}');
-    List<Offset> path = List.from(viewModel.segment.path)..add(offset);
-    viewModel.segment = Segment(path, data.selectedColor, data.selectedWidth);
-    currentLineStreamController.add(viewModel.segment);
+    print('current path model.segments: ${model.segments.length}');
+    List<Offset> path = List.from(model.segment.path)..add(offset);
+    model.segment = Segment(path, data.selectedColor, data.selectedWidth);
+    model.currentLineStreamController.add(model.segment);
   }
 
   /// Logic when user stops drawing in the canvas.
@@ -186,24 +182,24 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void onPanEndWithPointMode() {
     print('onPanEnd with edgeMode');
-    viewModel.segment.isSelected = true;
+    model.segment.isSelected = true;
     selectedSegment.selectedEdge = new Offset(0, 0);
 
-    viewModel.segments = List.from(viewModel.segments)..add(viewModel.segment);
-    linesStreamController.add(viewModel.segments);
+    model.segments = List.from(model.segments)..add(model.segment);
+    model.linesStreamController.add(model.segments);
   }
 
   void onPanEndWithDefaultMode() {
-    viewModel.segments = List.from(viewModel.segments)..add(viewModel.segment);
+    model.segments = List.from(model.segments)..add(model.segment);
 
-    // List<Segment> straightviewModel.segments = straightenviewModel.segments(viewModel.segments);
-    // this.viewModel.segments = straightviewModel.segments;
-    // print('straightviewModel.segments ${straightviewModel.segments.length}');
-    this.viewModel.segments = viewModel.segments;
-    viewModel.segment =
+    // List<Segment> straightmodel.segments = straightenmodel.segments(model.segments);
+    // this.model.segments = straightmodel.segments;
+    // print('straightmodel.segments ${straightmodel.segments.length}');
+    this.model.segments = model.segments;
+    model.segment =
         new Segment([new Offset(0, 0)], data.selectedColor, data.selectedWidth);
 
-    linesStreamController.add(viewModel.segments);
+    model.linesStreamController.add(model.segments);
   }
 
   void onPanDown(DragDownDetails details) {
@@ -287,7 +283,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   Segment getNearestSegment(DragDownDetails details) {
     Map<Segment, double> distances = {};
 
-    viewModel.segments.forEach((line) {
+    model.segments.forEach((line) {
       distances.addEntries([MapEntry(line, getDistanceToLine(details, line))]);
     });
 
@@ -357,7 +353,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Segment newLine = new Segment(
         [line.path.first, pointC], data.selectedColor, data.selectedWidth);
 
-    viewModel.segment = newLine;
+    model.segment = newLine;
 
     // DrawnLine newLine = new DrawnLine([
     //   line.path.first,
@@ -369,14 +365,14 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void deleteSegment(Segment segment) {
     setState(() {
-      Segment line = viewModel.segments
+      Segment line = model.segments
           .firstWhere((currentSegment) => currentSegment.path == segment.path);
-      viewModel.segments.remove(line);
+      model.segments.remove(line);
     });
   }
 
   void saveLine(Segment line) {
-    viewModel.segments.add(selectedSegment);
+    model.segments.add(selectedSegment);
     deleteSegment(selectedSegment);
   }
 

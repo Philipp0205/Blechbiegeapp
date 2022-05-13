@@ -20,8 +20,6 @@ class DrawingPage extends StatefulWidget {
 }
 
 class _DrawingPageState extends State<DrawingPage> {
-  StreamController<List<Segment>> linesStreamController =
-      StreamController<List<Segment>>.broadcast();
 
   GlobalKey key = new GlobalKey();
   SketcherData data = new SketcherData();
@@ -69,7 +67,9 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    viewModel.clear();
+    setState(() {
+      viewModel.clear();
+    });
   }
 
   straightenSegments() {
@@ -90,7 +90,7 @@ class _DrawingPageState extends State<DrawingPage> {
     print('segments: ${viewModel.segments.length}');
   }
 
-  Widget buildAllPaths(BuildContext context, SketcherDataViewModel viewModel) {
+  Widget buildAllPaths(BuildContext context, SketcherDataViewModel model) {
     return RepaintBoundary(
       key: _globalKey,
       child: Container(
@@ -100,13 +100,13 @@ class _DrawingPageState extends State<DrawingPage> {
         padding: EdgeInsets.all(4.0),
         alignment: Alignment.topLeft,
         child: StreamBuilder<List<Segment>>(
-          stream: linesStreamController.stream,
+          stream: model.linesStreamController.stream,
           builder: (context, snapshot) {
             return ChangeNotifierProvider<SketcherDataViewModel>(
-              create: (context) => viewModel,
+              create: (context) => model,
               child: CustomPaint(
                 painter: Sketcher(
-                  lines: viewModel.segments,
+                  lines: model.segments,
                 ),
               ),
             );
