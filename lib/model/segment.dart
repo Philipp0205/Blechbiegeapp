@@ -9,4 +9,9 @@ class Segment {
   final double width;
 
   Segment(this.path, this.color, this.width);
+
+  void setIsSelected(Offset? selectedEdge) {
+    this.isSelected = true;
+    this.selectedEdge = selectedEdge;
+  }
 }

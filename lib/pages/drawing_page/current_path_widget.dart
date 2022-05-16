@@ -65,7 +65,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     print('onPanStart');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
-    // Compensate height of AppBar
     Offset offset = new Offset(point.dx, point.dy);
 
     switch (model.selectedMode) {
@@ -81,29 +80,20 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanStartWithDefaultMode(Offset offset) {
-    print('onPanStart with default Mode');
     model.setSegment(
         Segment([offset], model.selectedColor, model.selectedWidth));
   }
 
   void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
     if (model.selectedSegment.selectedEdge != null) {
-      print('onPanStart with pointMode');
-      // model.selectPoint(details);
       Offset newOffset = new Offset(offset.dx, offset.dy);
 
       Segment newSegment = createNewSegmentDependingOnSelectedPoint(
           model.selectedSegment.selectedEdge, newOffset);
-      newSegment.selectedEdge = newOffset;
-      newSegment.isSelected = true;
+
       model.deleteSegment(model.selectedSegment);
-
-      model.setSegment(newSegment);
-      model.setSelectedSegment(newSegment);
-      model.addSegment(newSegment);
-      // model.addToCurrentLineStreamController(newSegment);
-      // model.updateLinesStreamController();
-
+      model.setSelectedSegment(newSegment, newOffset);
+      model.updateSegment(newSegment);
     }
   }
 
@@ -112,18 +102,12 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     print('createNewSEgmentDependingOnSelectedPoint');
 
     Segment segment;
-    if (selectedEdge == model.selectedSegment.path.first) {
-      print('selected edge is first edge');
-      segment = new Segment([model.selectedSegment.path.last, newOffset],
-          model.selectedColor, model.selectedWidth);
-    } else {
-      print('selected edge is last edge');
-      segment = new Segment([newOffset, model.selectedSegment.path.first],
-          model.selectedColor, model.selectedWidth);
-    }
 
-    // model.selectedSegment.selectedEdge == model.selectedSegment.path.first
-    //     ?
+    model.selectedSegment.selectedEdge == model.selectedSegment.path.first
+        ? segment = new Segment([model.selectedSegment.path.last, newOffset],
+            model.selectedColor, model.selectedWidth)
+        : segment = new Segment([newOffset, model.selectedSegment.path.first],
+            model.selectedColor, model.selectedWidth);
 
     return segment;
   }
@@ -173,8 +157,8 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     model.deleteSegment(model.selectedSegment);
 
     model.setSegment(segment);
-    model.setSelectedSegment(segment);
-    model.addSegment(segment);
+    model.setSelectedSegment(segment, offset);
+    model.updateSegment(segment);
   }
 
   /// Logic when user stops drawing in the canvas.

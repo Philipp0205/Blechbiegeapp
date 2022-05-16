@@ -40,7 +40,6 @@ class Sketcher extends CustomPainter {
 
           if (lines[i].isSelected) {
             print('line is Selected');
-            togglePointSelection(lines[i], canvas);
             toggleSegmentSelection(lines[i], canvas);
           }
 
@@ -69,7 +68,8 @@ class Sketcher extends CustomPainter {
     Paint paint = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0;
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
 
     if (line.isSelected) {
       if (line.selectedEdge == line.path.first) {
@@ -85,21 +85,6 @@ class Sketcher extends CustomPainter {
       paint.color = Colors.yellow[50] as Color;
       canvas.drawCircle(line.path.first, 10, paint);
       canvas.drawCircle(line.path.last, 10, paint);
-    }
-  }
-
-  void togglePointSelection(Segment line, Canvas canvas) {
-    print('togglePointSelection');
-    Paint paint = Paint()
-      ..color = Colors.red
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0;
-
-    if (line.selectedEdge != null) {
-      paint.color = Colors.yellow[50] as Color;
-      canvas.drawCircle(line.selectedEdge!, 10, paint);
-      paint.color = Colors.red;
-      canvas.drawCircle(line.selectedEdge!, 10, paint);
     }
   }
 

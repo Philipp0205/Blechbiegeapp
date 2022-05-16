@@ -36,13 +36,16 @@ class SketcherDataViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedSegment(Segment segment) {
+  void setSelectedSegment(Segment segment, Offset selectedPoint) {
+    segment.setIsSelected(selectedPoint);
     this.selectedSegment = segment;
     segment.isSelected = true;
+    
+    
     notifyListeners();
   }
 
-  void addSegment(Segment segment) {
+  void updateSegment(Segment segment) {
     segments.add(segment);
     currentLineStreamController.add(segment);
     linesStreamController.add(segments);
