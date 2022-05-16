@@ -93,6 +93,7 @@ class SketcherController extends ChangeNotifier {
 
   void clearSegmentSelection(Segment segment) {
     segment.isSelected = false;
+    segment.color = Colors.black;
     segment.highlightPoints = false;
     updateLinesStreamController();
   }
@@ -237,33 +238,34 @@ class SketcherController extends ChangeNotifier {
     if (distanceToA < distanceToB && distanceToA < threshold) {
       selectedSegment.selectedEdge =
           new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
-      print('selectedPoint is $edgeA');
     } else if (distanceToB < distanceToA && distanceToB < threshold) {
       selectedSegment.selectedEdge =
           new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
-      print('selectedPoint is $edgeB');
     } else {
       selectedSegment.selectedEdge = null;
+      print('onPanDown above offset');
+      toggleSelectionMode();
     }
     notifyListeners();
   }
 
   void toggleSelectionMode() {
-      selectedMode = Modes.selectionMode;
-      clearSegmentSelection(selectedSegment);
-      notifyListeners();
+    print('toggleSelectionMode');
+    selectedMode = Modes.selectionMode;
+    clearSegmentSelection(selectedSegment);
+    notifyListeners();
   }
 
   void toggleEdgeMode() {
-      selectedMode = Modes.pointMode;
-      notifyListeners();
+    selectedMode = Modes.pointMode;
+    notifyListeners();
   }
 
   void toggleDefaultMode() {
-      Offset offset = new Offset(0, 0);
-      selectedSegment.selectedEdge = offset;
-      selectedSegment.isSelected = false;
-      selectedMode = Modes.defaultMode;
-      notifyListeners();
+    Offset offset = new Offset(0, 0);
+    selectedSegment.selectedEdge = offset;
+    selectedSegment.isSelected = false;
+    selectedMode = Modes.defaultMode;
+    notifyListeners();
   }
 }
