@@ -25,7 +25,7 @@ class Sketcher extends CustomPainter {
     recordingCanvas = new Canvas(pictureRecorder);
 
     Paint paint = Paint()
-      ..color = Colors.redAccent
+      ..color = Colors.red
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0;
 
@@ -34,8 +34,8 @@ class Sketcher extends CustomPainter {
       for (int j = 0; j < lines[i].path.length - 1; ++j) {
         if (lines[i].path[j] != null && lines[i].path[j + 1] != null) {
           paint.color = lines[i].color;
+          print('Drawing line: ${lines[i].color}');
           paint.strokeWidth = lines[i].width;
-          print('Drawing line: ${lines[i].path}');
           canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
 
           if (lines[i].isSelected) {
@@ -74,11 +74,11 @@ class Sketcher extends CustomPainter {
     if (line.isSelected) {
       if (line.selectedEdge == line.path.first) {
         canvas.drawCircle(line.path.last, 10, paint);
-        paint.color = Colors.red;
+        paint.color = Colors.green;
         canvas.drawCircle(line.path.first, 10, paint);
       } else {
         canvas.drawCircle(line.path.first, 10, paint);
-        paint.color = Colors.red;
+        paint.color = Colors.green;
         canvas.drawCircle(line.path.last, 10, paint);
       }
     } else {

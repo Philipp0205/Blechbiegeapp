@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/model/sketcher_data.dart';
 import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
-import 'package:open_bsp/view_model/sketcher_data_service.dart';
 import 'package:provider/provider.dart';
 import 'package:open_bsp/services/service_locator.dart';
 
+import '../../controller/sketcher_controller.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 import '../../sketcher.dart';
@@ -27,7 +27,7 @@ class _DrawingPageState extends State<DrawingPage> {
 
   // List<Segment> segments = [];
 
-  SketcherDataViewModel model =  getIt<SketcherDataViewModel>();
+  SketcherController controller =  getIt<SketcherController>();
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +37,14 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Biegeapp'),
-            Text(AppModes().getModeName(model.selectedMode))
+            Text(AppModes().getModeName(controller.selectedMode))
           ],
         ),
       ),
       backgroundColor: Colors.yellow[50],
       body: Container(
         child: Stack(children: [
-          buildAllPaths(context, model),
+          buildAllPaths(context, controller),
           // buildCurrentPath(context),
           CurrentPathWidget()
         ]),
@@ -57,8 +57,8 @@ class _DrawingPageState extends State<DrawingPage> {
           SpeedDialChild(
               child: Icon(Icons.arrow_forward), onTap: straightenSegments),
           SpeedDialChild(
-              child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-          SpeedDialChild(child: Icon(Icons.circle), onTap: toggleDefaultMode),
+              child: Icon(Icons.select_all), onTap: controller.toggleSelectionMode),
+          SpeedDialChild(child: Icon(Icons.circle), onTap: controller.toggleDefaultMode),
         ],
       ),
     );
@@ -66,29 +66,29 @@ class _DrawingPageState extends State<DrawingPage> {
 
   Future<void> clear() async {
     setState(() {
-      model.clear();
+      controller.clear();
     });
   }
 
   straightenSegments() {
     setState(() {
-      print('straightenSegments: ${model.segments.length} segments');
+      print('straightenSegments: ${controller.segments.length} segments');
       List<Segment> straightSegments = [];
 
-      model.segments.forEach((line) {
+      controller.segments.forEach((line) {
         straightSegments.add(new Segment([line.path.first, line.path.last],
             data.selectedColor, data.selectedWidth));
       });
 
-      this.model.segments = straightSegments;
+      this.controller.segments = straightSegments;
     });
   }
 
   void debugFunction() {
-    print('segments: ${model.segments.length}');
+    print('segments: ${controller.segments.length}');
   }
 
-  Widget buildAllPaths(BuildContext context, SketcherDataViewModel model) {
+  Widget buildAllPaths(BuildContext context, SketcherController model) {
     return RepaintBoundary(
       key: _globalKey,
       child: Container(
@@ -100,7 +100,7 @@ class _DrawingPageState extends State<DrawingPage> {
         child: StreamBuilder<List<Segment>>(
           stream: model.linesStreamController.stream,
           builder: (context, snapshot) {
-            return ChangeNotifierProvider<SketcherDataViewModel>(
+            return ChangeNotifierProvider<SketcherController>(
               create: (context) => model,
               child: CustomPaint(
                 painter: Sketcher(
@@ -114,27 +114,7 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  void toggleSelectionMode() {
-    setState(() {
-      model.selectedMode = Modes.selectionMode;
-      model.clearSegmentSelection(model.selectedSegment);
-    });
-  }
 
-  void toggleEdgeMode() {
-    setState(() {
-      model.selectedMode = Modes.pointMode;
-    });
-  }
-
-  void toggleDefaultMode() {
-    setState(() {
-      Offset offset = new Offset(0, 0);
-      model.selectedSegment.selectedEdge = offset;
-      model.selectedSegment.isSelected = false;
-      model.selectedMode = Modes.defaultMode;
-    });
-  }
 
   void extendSegment(Segment line, double length) {
     // deleteLine(line);
@@ -150,7 +130,7 @@ class _DrawingPageState extends State<DrawingPage> {
     Segment newLine = new Segment(
         [line.path.first, pointC], data.selectedColor, data.selectedWidth);
 
-    model.segment = newLine;
+    controller.segment = newLine;
   }
 
 

@@ -13,5 +13,6 @@ class Segment {
   void setIsSelected(Offset? selectedEdge) {
     this.isSelected = true;
     this.selectedEdge = selectedEdge;
+    this.color = Colors.red;
   }
 }

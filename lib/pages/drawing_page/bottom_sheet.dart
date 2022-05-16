@@ -1,8 +1,8 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/view_model/sketcher_data_service.dart';
 
+import '../../controller/sketcher_controller.dart';
 import '../../model/appmodes.dart';
 import '../../services/service_locator.dart';
 
@@ -16,7 +16,7 @@ class AppBottomSheet extends StatefulWidget {
 }
 
 class _AppBottomSheetState extends State<AppBottomSheet> {
-  SketcherDataViewModel model = getIt<SketcherDataViewModel>();
+  SketcherController model = getIt<SketcherController>();
 
 
   @override

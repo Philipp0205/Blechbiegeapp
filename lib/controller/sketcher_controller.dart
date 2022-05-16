@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../model/appmodes.dart';
 import '../model/segment.dart';
 
-class SketcherDataViewModel extends ChangeNotifier {
+class SketcherController extends ChangeNotifier {
   List<Segment> segments = [];
   Segment segment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
@@ -40,8 +40,7 @@ class SketcherDataViewModel extends ChangeNotifier {
     segment.setIsSelected(selectedPoint);
     this.selectedSegment = segment;
     segment.isSelected = true;
-    
-    
+
     notifyListeners();
   }
 
@@ -53,6 +52,16 @@ class SketcherDataViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateSelectedSegment(Segment segment, Offset offset) {
+    deleteSegment(selectedSegment);
+    this.segment = segment;
+    segments.add(segment);
+    currentLineStreamController.add(segment);
+    linesStreamController.add(segments);
+    setSelectedSegment(segment, offset);
+    updateLinesStreamController();
+    notifyListeners();
+  }
 
   void clear() {
     segments = [];
@@ -86,7 +95,6 @@ class SketcherDataViewModel extends ChangeNotifier {
     segment.isSelected = false;
     segment.highlightPoints = false;
     updateLinesStreamController();
-
   }
 
   void extendSegment(Segment line, double length) {
@@ -138,9 +146,12 @@ class SketcherDataViewModel extends ChangeNotifier {
   void changeSelectedSegment(Segment segment) {
     print('changeSelectedSegment');
     if (selectedSegment != segment) {
+      selectedSegment.color = Colors.red;
       selectedSegment.isSelected = false;
-      segment.isSelected = true;
       selectedSegment.color = Colors.black;
+
+      segment.isSelected = true;
+      segment.color = Colors.red;
       selectedSegment = segment;
       linesStreamController.add(segments);
       notifyListeners();
@@ -184,7 +195,7 @@ class SketcherDataViewModel extends ChangeNotifier {
   void selectPoint(DragStartDetails details) {
     print('Select edge2');
     Point currentPoint =
-    new Point(details.globalPosition.dx, details.globalPosition.dy),
+            new Point(details.globalPosition.dx, details.globalPosition.dy),
         edgeA = new Point(
             selectedSegment.path.first.dx, selectedSegment.path.first.dy),
         edgeB = new Point(
@@ -203,12 +214,56 @@ class SketcherDataViewModel extends ChangeNotifier {
     if (distanceToA < distanceToB &&
         (distanceToA < threshold || distanceToB < threshold)) {
       selectedSegment.selectedEdge =
-      new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
       print('selectedEdge is first');
     } else {
       selectedSegment.selectedEdge =
-      new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
       print('selectedEdge is last');
     }
+  }
+
+  void selectEdge(Point point) {
+    Point currentPoint = point,
+        edgeA = new Point(
+            selectedSegment.path.first.dx, selectedSegment.path.first.dy),
+        edgeB = new Point(
+            selectedSegment.path.last.dx, selectedSegment.path.last.dy);
+
+    double threshold = 100,
+        distanceToA = currentPoint.distanceTo(edgeA),
+        distanceToB = currentPoint.distanceTo(edgeB);
+
+    if (distanceToA < distanceToB && distanceToA < threshold) {
+      selectedSegment.selectedEdge =
+          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+      print('selectedPoint is $edgeA');
+    } else if (distanceToB < distanceToA && distanceToB < threshold) {
+      selectedSegment.selectedEdge =
+          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+      print('selectedPoint is $edgeB');
+    } else {
+      selectedSegment.selectedEdge = null;
+    }
+    notifyListeners();
+  }
+
+  void toggleSelectionMode() {
+      selectedMode = Modes.selectionMode;
+      clearSegmentSelection(selectedSegment);
+      notifyListeners();
+  }
+
+  void toggleEdgeMode() {
+      selectedMode = Modes.pointMode;
+      notifyListeners();
+  }
+
+  void toggleDefaultMode() {
+      Offset offset = new Offset(0, 0);
+      selectedSegment.selectedEdge = offset;
+      selectedSegment.isSelected = false;
+      selectedMode = Modes.defaultMode;
+      notifyListeners();
   }
 }
