@@ -5,14 +5,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/model/sketcher_data.dart';
+import 'package:open_bsp/pages/drawing_page/build_all_paths.dart';
 import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
-import 'package:provider/provider.dart';
 import 'package:open_bsp/services/service_locator.dart';
 
 import '../../controller/sketcher_controller.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
-import '../../sketcher.dart';
 
 class DrawingPage extends StatefulWidget {
   @override
@@ -23,9 +22,6 @@ class _DrawingPageState extends State<DrawingPage> {
 
   GlobalKey key = new GlobalKey();
   SketcherData data = new SketcherData();
-  GlobalKey _globalKey = new GlobalKey();
-
-  // List<Segment> segments = [];
 
   SketcherController controller =  getIt<SketcherController>();
 
@@ -44,7 +40,7 @@ class _DrawingPageState extends State<DrawingPage> {
       backgroundColor: Colors.yellow[50],
       body: Container(
         child: Stack(children: [
-          buildAllPaths(context, controller),
+          BuildAllPaths(),
           // buildCurrentPath(context),
           CurrentPathWidget()
         ]),
@@ -93,34 +89,6 @@ class _DrawingPageState extends State<DrawingPage> {
   void debugFunction() {
     print('segments: ${controller.segments.length}');
   }
-
-  Widget buildAllPaths(BuildContext context, SketcherController model) {
-    return RepaintBoundary(
-      key: _globalKey,
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        color: Colors.transparent,
-        padding: EdgeInsets.all(4.0),
-        alignment: Alignment.topLeft,
-        child: StreamBuilder<List<Segment>>(
-          stream: model.linesStreamController.stream,
-          builder: (context, snapshot) {
-            return ChangeNotifierProvider<SketcherController>(
-              create: (context) => model,
-              child: CustomPaint(
-                painter: Sketcher(
-                  lines: model.segments,
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-
 
   void extendSegment(Segment line, double length) {
     // deleteLine(line);
