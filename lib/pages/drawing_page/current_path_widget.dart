@@ -24,9 +24,6 @@ class CurrentPathWidget extends StatefulWidget {
 class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   GlobalKey key = new GlobalKey();
 
-  Segment selectedSegment =
-      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-
   SketcherDataViewModel model = getIt<SketcherDataViewModel>();
 
   @override
@@ -65,6 +62,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   /// Logic when user starts drawing in the canvas.
   void onPanStart(DragStartDetails details) {
+    print('onPanStart');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     // Compensate height of AppBar
@@ -82,41 +80,50 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     }
   }
 
-  void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
-    print('onPanStart with edgeMode');
-    selectPoint(details);
-    Offset newOffset = new Offset(offset.dx, offset.dy);
-
-    model.deleteSegment(model.selectedSegment);
-
-    Segment newSegment = createNewSegmentDependingOnSelectedPoint(
-        selectedSegment.selectedEdge, newOffset);
-    newSegment.selectedEdge = newOffset;
-    newSegment.isSelected = true;
-
-    model.setSegment(newSegment);
-    model.setSelectedSegment(newSegment);
-
-  }
-
   void onPanStartWithDefaultMode(Offset offset) {
     print('onPanStart with default Mode');
-    model.segment = Segment([offset], model.selectedColor, model.selectedWidth);
-    // print('onPanStart with default Mode');
-    // Segment segment = Segment([offset], model.selectedColor, model.selectedWidth);
-    // model.setSegment(segment);
-    // model.currentLineStreamController.add(segment);
+    model.setSegment(
+        Segment([offset], model.selectedColor, model.selectedWidth));
+  }
+
+  void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
+    if (model.selectedSegment.selectedEdge != null) {
+      print('onPanStart with pointMode');
+      // model.selectPoint(details);
+      Offset newOffset = new Offset(offset.dx, offset.dy);
+
+      Segment newSegment = createNewSegmentDependingOnSelectedPoint(
+          model.selectedSegment.selectedEdge, newOffset);
+      newSegment.selectedEdge = newOffset;
+      newSegment.isSelected = true;
+      model.deleteSegment(model.selectedSegment);
+
+      model.setSegment(newSegment);
+      model.setSelectedSegment(newSegment);
+      model.addSegment(newSegment);
+      // model.addToCurrentLineStreamController(newSegment);
+      // model.updateLinesStreamController();
+
+    }
   }
 
   Segment createNewSegmentDependingOnSelectedPoint(
-      Offset selectedEdge, Offset newOffset) {
-    Segment segment;
+      Offset? selectedEdge, Offset newOffset) {
+    print('createNewSEgmentDependingOnSelectedPoint');
 
-    selectedSegment.selectedEdge == selectedSegment.path.first
-        ? segment = new Segment([newOffset, selectedSegment.path.last],
-            model.selectedColor, model.selectedWidth)
-        : segment = new Segment([selectedSegment.path.first, newOffset],
-            model.selectedColor, model.selectedWidth);
+    Segment segment;
+    if (selectedEdge == model.selectedSegment.path.first) {
+      print('selected edge is first edge');
+      segment = new Segment([model.selectedSegment.path.last, newOffset],
+          model.selectedColor, model.selectedWidth);
+    } else {
+      print('selected edge is last edge');
+      segment = new Segment([newOffset, model.selectedSegment.path.first],
+          model.selectedColor, model.selectedWidth);
+    }
+
+    // model.selectedSegment.selectedEdge == model.selectedSegment.path.first
+    //     ?
 
     return segment;
   }
@@ -141,24 +148,33 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     }
   }
 
-  void onPanUpdateWithPointMode(Offset offset) {
-    print('PanUpdate with edgeMode');
-
-    Segment segment = createNewSegmentDependingOnSelectedPoint(
-        selectedSegment.selectedEdge, offset);
-
-    model.segment = segment;
-    selectedSegment = segment;
-    selectedSegment.selectedEdge = offset;
-    segment.highlightPoints = true;
-    segment.isSelected = true;
-    model.addToCurrentLineStreamController(segment);
-    // model.currentLineStreamController.add(segment);
-  }
-
   void onPanUpdateWithSelectionMode(Offset offset) {
     print('PanUpdate with selectionMode or defaultMode');
     model.addToPathOfSegment(offset);
+  }
+
+  void onPanUpdateWithPointMode(Offset offset) {
+    print('PanUpdate with edgeMode');
+
+    // selectEdge2(new Point(offset.dx, offset.dy));
+
+    Segment segment = createNewSegmentDependingOnSelectedPoint(
+        model.selectedSegment.selectedEdge, offset);
+
+    segment.selectedEdge = offset;
+    segment.highlightPoints = true;
+    segment.isSelected = true;
+
+    print('Selected segment: ${model.selectedSegment.path}');
+    print('New selected segment: ${model.selectedSegment.path}');
+
+    // model.addToPathOfSegment(offset);
+    // model.setSegment(segment);
+    model.deleteSegment(model.selectedSegment);
+
+    model.setSegment(segment);
+    model.setSelectedSegment(segment);
+    model.addSegment(segment);
   }
 
   /// Logic when user stops drawing in the canvas.
@@ -177,10 +193,10 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void onPanEndWithPointMode() {
     print('onPanEnd with edgeMode');
-    model.segment.isSelected = true;
-    selectedSegment.selectedEdge = new Offset(0, 0);
-
-    model.addSegment(model.segment);
+    //  model.segment.isSelected = true;
+    // model.selectedSegment.selectedEdge = new Offset(0, 0);
+    //
+    // model.addSegment(model.segment);
   }
 
   void onPanEndWithDefaultMode() {
@@ -200,74 +216,46 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
       selectSegment(details);
     }
     if (model.selectedMode == Modes.pointMode) {
+      print('onPanDownwithPointMode');
       // selectEdge(details);
+      selectEdge(
+          new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
     }
   }
 
-  void getSeleectedEdge(DragDownDetails detials) {}
-
-  void selectEdge(DragDownDetails details) {
-    print('Select edge');
-    Point currentPoint =
-            new Point(details.globalPosition.dx, details.globalPosition.dy),
-        edgeA = new Point(
-            selectedSegment.path.first.dx, selectedSegment.path.first.dy),
-        edgeB = new Point(
-            selectedSegment.path.last.dx, selectedSegment.path.last.dy);
-
-    double threshold = 100;
-    double distanceToA = currentPoint.distanceTo(edgeA);
-    double distanceToB = currentPoint.distanceTo(edgeB);
-
-    if (distanceToA < distanceToB &&
-        (distanceToA < threshold || distanceToB < threshold)) {
-      selectedSegment.selectedEdge =
-          new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
-    } else {
-      selectedSegment.selectedEdge =
-          new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
-    }
-  }
-
-  void selectPoint(DragStartDetails details) {
+  void selectEdge(Point point) {
     print('Select edge2');
-    Point currentPoint =
-            new Point(details.globalPosition.dx, details.globalPosition.dy),
-        edgeA = new Point(
-            selectedSegment.path.first.dx, selectedSegment.path.first.dy),
-        edgeB = new Point(
-            selectedSegment.path.last.dx, selectedSegment.path.last.dy);
+    Point currentPoint = point,
+        edgeA = new Point(model.selectedSegment.path.first.dx,
+            model.selectedSegment.path.first.dy),
+        edgeB = new Point(model.selectedSegment.path.last.dx,
+            model.selectedSegment.path.last.dy);
 
-    double threshold = 50;
-    double distanceToA = currentPoint.distanceTo(edgeA);
-    double distanceToB = currentPoint.distanceTo(edgeB);
+    double threshold = 100,
+        distanceToA = currentPoint.distanceTo(edgeA),
+        distanceToB = currentPoint.distanceTo(edgeB);
 
-    print('currentPoint : ${currentPoint.x} / ${currentPoint.y}');
-    print('Point A: ${edgeA.x} / ${edgeA.y}');
-    print('Point B: ${edgeB.x} / ${edgeB.y}');
-    print('distance to A: $distanceToA');
-    print('distance to B: $distanceToB');
-
-    if (distanceToA < distanceToB &&
-        (distanceToA < threshold || distanceToB < threshold)) {
-      selectedSegment.selectedEdge =
+    if (distanceToA < distanceToB && distanceToA < threshold) {
+      model.selectedSegment.selectedEdge =
           new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
-      print('selectedEdge is ${selectedSegment.selectedEdge}');
-    } else {
-      selectedSegment.selectedEdge =
+      print('selectedPoint is $edgeA');
+    } else if (distanceToB < distanceToA && distanceToB < threshold) {
+      model.selectedSegment.selectedEdge =
           new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
-      print('selectedEdge is ${selectedSegment.selectedEdge}');
+      print('selectedPoint is $edgeB');
+    } else {
+      model.selectedSegment.selectedEdge = null;
     }
   }
 
   void changeSelectedSegment(Segment segment) {
     print('changeSelectedSegment');
     setState(() {
-      if (selectedSegment != segment) {
-        selectedSegment.isSelected = false;
+      if (model.selectedSegment != segment) {
+        model.selectedSegment.isSelected = false;
         segment.isSelected = true;
-        selectedSegment.color = Colors.black;
-        selectedSegment = segment;
+        model.selectedSegment.color = Colors.black;
+        model.selectedSegment = segment;
       }
     });
   }
@@ -288,7 +276,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     return distances.keys.toList().first;
   }
 
-  Offset getNearestEdge(DragDownDetails details) {
+  Offset getNearestPoint(DragDownDetails details) {
     print('getNearestEdge');
     Segment nearestSegment = getNearestSegment(details);
     Offset nearestEdge;

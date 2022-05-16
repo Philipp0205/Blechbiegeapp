@@ -27,7 +27,7 @@ class _DrawingPageState extends State<DrawingPage> {
 
   // List<Segment> segments = [];
 
-  SketcherDataViewModel viewModel =  getIt<SketcherDataViewModel>();
+  SketcherDataViewModel model =  getIt<SketcherDataViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +37,14 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Biegeapp'),
-            Text(AppModes().getModeName(viewModel.selectedMode))
+            Text(AppModes().getModeName(model.selectedMode))
           ],
         ),
       ),
       backgroundColor: Colors.yellow[50],
       body: Container(
         child: Stack(children: [
-          buildAllPaths(context, viewModel),
+          buildAllPaths(context, model),
           // buildCurrentPath(context),
           CurrentPathWidget()
         ]),
@@ -66,26 +66,26 @@ class _DrawingPageState extends State<DrawingPage> {
 
   Future<void> clear() async {
     setState(() {
-      viewModel.clear();
+      model.clear();
     });
   }
 
   straightenSegments() {
     setState(() {
-      print('straightenSegments: ${viewModel.segments.length} segments');
+      print('straightenSegments: ${model.segments.length} segments');
       List<Segment> straightSegments = [];
 
-      viewModel.segments.forEach((line) {
+      model.segments.forEach((line) {
         straightSegments.add(new Segment([line.path.first, line.path.last],
             data.selectedColor, data.selectedWidth));
       });
 
-      this.viewModel.segments = straightSegments;
+      this.model.segments = straightSegments;
     });
   }
 
   void debugFunction() {
-    print('segments: ${viewModel.segments.length}');
+    print('segments: ${model.segments.length}');
   }
 
   Widget buildAllPaths(BuildContext context, SketcherDataViewModel model) {
@@ -116,22 +116,23 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void toggleSelectionMode() {
     setState(() {
-      viewModel.selectedMode = Modes.selectionMode;
+      model.selectedMode = Modes.selectionMode;
+      model.clearSegmentSelection(model.selectedSegment);
     });
   }
 
   void toggleEdgeMode() {
     setState(() {
-      viewModel.selectedMode = Modes.pointMode;
+      model.selectedMode = Modes.pointMode;
     });
   }
 
   void toggleDefaultMode() {
     setState(() {
       Offset offset = new Offset(0, 0);
-      viewModel.selectedSegment.selectedEdge = offset;
-      viewModel.selectedSegment.isSelected = false;
-      viewModel.selectedMode = Modes.defaultMode;
+      model.selectedSegment.selectedEdge = offset;
+      model.selectedSegment.isSelected = false;
+      model.selectedMode = Modes.defaultMode;
     });
   }
 
@@ -149,7 +150,7 @@ class _DrawingPageState extends State<DrawingPage> {
     Segment newLine = new Segment(
         [line.path.first, pointC], data.selectedColor, data.selectedWidth);
 
-    viewModel.segment = newLine;
+    model.segment = newLine;
   }
 
 

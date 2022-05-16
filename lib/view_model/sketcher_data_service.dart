@@ -38,12 +38,15 @@ class SketcherDataViewModel extends ChangeNotifier {
 
   void setSelectedSegment(Segment segment) {
     this.selectedSegment = segment;
+    segment.isSelected = true;
     notifyListeners();
   }
 
   void addSegment(Segment segment) {
     segments.add(segment);
+    currentLineStreamController.add(segment);
     linesStreamController.add(segments);
+    updateLinesStreamController();
     notifyListeners();
   }
 
@@ -59,10 +62,12 @@ class SketcherDataViewModel extends ChangeNotifier {
 
   void addToCurrentLineStreamController(Segment segment) {
     currentLineStreamController.add(segment);
+    updateLinesStreamController();
     notifyListeners();
   }
 
   void updateLinesStreamController() {
+    print('updateLinesStreamController');
     linesStreamController.add(segments);
     notifyListeners();
   }
@@ -72,6 +77,13 @@ class SketcherDataViewModel extends ChangeNotifier {
   void addToLinesStreamController(List<Segment> segments) {
     linesStreamController.add(segments);
     notifyListeners();
+  }
+
+  void clearSegmentSelection(Segment segment) {
+    segment.isSelected = false;
+    segment.highlightPoints = false;
+    updateLinesStreamController();
+
   }
 
   void extendSegment(Segment line, double length) {
@@ -95,9 +107,10 @@ class SketcherDataViewModel extends ChangeNotifier {
   void deleteSegment(Segment segment) {
     print('deleteSegment');
     print('selectedSegment ${selectedSegment.path}');
-    Segment line = segments
+    print('segmentToDelete ${segment.path}');
+    Segment segmentToDelete = segments
         .firstWhere((currentSegment) => currentSegment.path == segment.path);
-    segments.remove(line);
+    segments.remove(segmentToDelete);
     linesStreamController.add(segments);
     notifyListeners();
   }
@@ -163,5 +176,36 @@ class SketcherDataViewModel extends ChangeNotifier {
     return startPoint.distanceTo(currentPoint) +
         currentPoint.distanceTo(endPoint) -
         startPoint.distanceTo(endPoint);
+  }
+
+  void selectPoint(DragStartDetails details) {
+    print('Select edge2');
+    Point currentPoint =
+    new Point(details.globalPosition.dx, details.globalPosition.dy),
+        edgeA = new Point(
+            selectedSegment.path.first.dx, selectedSegment.path.first.dy),
+        edgeB = new Point(
+            selectedSegment.path.last.dx, selectedSegment.path.last.dy);
+
+    double threshold = 50;
+    double distanceToA = currentPoint.distanceTo(edgeA);
+    double distanceToB = currentPoint.distanceTo(edgeB);
+
+    print('currentPoint : ${currentPoint.x} / ${currentPoint.y}');
+    print('Point first: ${edgeA.x} / ${edgeA.y}');
+    print('Point last: ${edgeB.x} / ${edgeB.y}');
+    print('distance to first: $distanceToA');
+    print('distance to last: $distanceToB');
+
+    if (distanceToA < distanceToB &&
+        (distanceToA < threshold || distanceToB < threshold)) {
+      selectedSegment.selectedEdge =
+      new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+      print('selectedEdge is first');
+    } else {
+      selectedSegment.selectedEdge =
+      new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+      print('selectedEdge is last');
+    }
   }
 }

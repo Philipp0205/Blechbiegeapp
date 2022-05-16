@@ -35,26 +35,29 @@ class Sketcher extends CustomPainter {
         if (lines[i].path[j] != null && lines[i].path[j + 1] != null) {
           paint.color = lines[i].color;
           paint.strokeWidth = lines[i].width;
+          print('Drawing line: ${lines[i].path}');
           canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
 
-          if (lines[i].isSelected)  {
+          if (lines[i].isSelected) {
             print('line is Selected');
-               togglePointSelection(lines[i], canvas);
-               toggleSegmentSelection(lines[i], canvas);
+            togglePointSelection(lines[i], canvas);
+            toggleSegmentSelection(lines[i], canvas);
           }
 
+          if (lines[i].selectedEdge != null) {
+            if (lines[i].highlightPoints) {
+              print('Sketcher segment: ${lines[i].path}');
+              Offset offset = new Offset(lines[i].selectedEdge!.dx - 50,
+                  lines[i].selectedEdge!.dy + 20);
+              if (lastDrawnText != '') {
+                drawText(
+                    canvas, lastDrawnText, offset, Colors.yellow[50] as Color);
+              }
 
-          if (lines[i].highlightPoints) {
-            Offset offset =
-                new Offset(lines[i].selectedEdge.dx - 50, lines[i].selectedEdge.dy + 20);
-            if (lastDrawnText != '') {
-              drawText(canvas, lastDrawnText, offset,
-                  Colors.yellow[50] as Color);
+              String text =
+                  '${lines[i].selectedEdge!.dx.toStringAsFixed(2)} / ${lines[i].selectedEdge!.dy.toStringAsFixed(2)}';
+              drawText(canvas, text, offset, Colors.yellow[50] as Color);
             }
-
-            String text =
-                '${lines[i].selectedEdge.dx.toStringAsFixed(2)} / ${lines[i].selectedEdge.dy.toStringAsFixed(2)}';
-            drawText(canvas, text, offset, Colors.yellow[50] as Color);
           }
         }
       }
@@ -69,8 +72,15 @@ class Sketcher extends CustomPainter {
       ..strokeWidth = 5.0;
 
     if (line.isSelected) {
-      canvas.drawCircle(line.path.first, 10, paint);
-      canvas.drawCircle(line.path.last, 10, paint);
+      if (line.selectedEdge == line.path.first) {
+        canvas.drawCircle(line.path.last, 10, paint);
+        paint.color = Colors.red;
+        canvas.drawCircle(line.path.first, 10, paint);
+      } else {
+        canvas.drawCircle(line.path.first, 10, paint);
+        paint.color = Colors.red;
+        canvas.drawCircle(line.path.last, 10, paint);
+      }
     } else {
       paint.color = Colors.yellow[50] as Color;
       canvas.drawCircle(line.path.first, 10, paint);
@@ -81,19 +91,19 @@ class Sketcher extends CustomPainter {
   void togglePointSelection(Segment line, Canvas canvas) {
     print('togglePointSelection');
     Paint paint = Paint()
-      ..color = Colors.blueAccent
+      ..color = Colors.red
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0;
 
-    paint.color = Colors.yellow[50] as Color;
-    canvas.drawCircle(line.selectedEdge, 10, paint);
-
-    paint.color = Colors.red;
-    canvas.drawCircle(line.selectedEdge, 10, paint);
+    if (line.selectedEdge != null) {
+      paint.color = Colors.yellow[50] as Color;
+      canvas.drawCircle(line.selectedEdge!, 10, paint);
+      paint.color = Colors.red;
+      canvas.drawCircle(line.selectedEdge!, 10, paint);
+    }
   }
 
-  void drawText(
-      Canvas canvas, String text, Offset offset, Color color) {
+  void drawText(Canvas canvas, String text, Offset offset, Color color) {
     print('drawText $text');
 
     TextStyle style = TextStyle(
@@ -112,7 +122,8 @@ class Sketcher extends CustomPainter {
             .ltr // It is necessary for some weird reason... IMO should be LTR for default since well-known international languages (english, esperanto) are written left to right.
         )
       ..layout(
-          maxWidth: 500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
+          maxWidth:
+              500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
     // BTW: using the TextPainter you can check size the text take to be rendered (without `paint`ing it).
     textPainter.paint(canvas, offset);
   }
