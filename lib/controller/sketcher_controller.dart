@@ -1,16 +1,14 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:open_bsp/controller/linking_controller.dart';
-import 'package:open_bsp/model/linked_segment.dart';
 
 import '../model/appmodes.dart';
 import '../model/segment.dart';
 
 class SketcherController extends ChangeNotifier {
   List<Segment> segments = [];
-  List<Segment> linkedSegments = [];
 
   Segment segment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
@@ -27,8 +25,6 @@ class SketcherController extends ChangeNotifier {
 
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
-
-  LinkingController _linkingController = new LinkingController();
 
   void setSegment(Segment segment) {
     this.segment = segment;
@@ -51,21 +47,31 @@ class SketcherController extends ChangeNotifier {
   }
 
   void updateSegment(Segment segment) {
-    segments.add(segment);
-    currentLineStreamController.add(segment);
-    linesStreamController.add(segments);
-    updateLinesStreamController();
-    notifyListeners();
-  }
-
-  void updateSelectedSegment(Segment segment, Offset offset) {
     deleteSegment(selectedSegment);
     this.segment = segment;
     segments.add(segment);
     currentLineStreamController.add(segment);
     linesStreamController.add(segments);
-    setSelectedSegment(segment, offset);
+    this.selectedSegment = segment;
     updateLinesStreamController();
+    segment.setIsSelected(null);
+    this.selectedSegment = segment;
+    segment.isSelected = true;
+    notifyListeners();
+  }
+
+  void updateSelectedSegmentPointMode(Segment segment, Offset offset) {
+    segment.highlightPoints = true;
+    segment.isSelected = true;
+    segment.color = Colors.red;
+
+    deleteSegment(selectedSegment);
+    this.segment = segment;
+    segments.add(segment);
+    currentLineStreamController.add(segment);
+    linesStreamController.add(segments);
+    updateLinesStreamController();
+    this.selectedSegment = segment;
     notifyListeners();
   }
 
@@ -269,34 +275,55 @@ class SketcherController extends ChangeNotifier {
     this.segments.add(segment);
   }
 
-  void linkSegments(Segment segment, double threshold) {
-    print('link Semgents');
+  Segment linkSegments(Segment segment, double threshold) {
+    print('linkSegments');
 
     Offset firstOffset = segment.path.first;
     Offset lastOffset = segment.path.last;
 
     this.segments.forEach((currentSegment) {
-      if ((segment.path.first - currentSegment.path.first).distance <
-          threshold) {
-        print('condition 1');
-        firstOffset = currentSegment.path.first;
-      }
-      if ((segment.path.first - currentSegment.path.last).distance <
-          threshold) {
-        print('condition 2');
-        firstOffset = currentSegment.path.last;
-      }
+      if (currentSegment.path != segment.path) {
+        if ((segment.path.first - currentSegment.path.first).distance <
+            threshold) {
+          print('condition 1');
+          firstOffset = currentSegment.path.first;
+        }
+        if ((segment.path.first - currentSegment.path.last).distance <
+            threshold) {
+          print('condition 2');
+          firstOffset = currentSegment.path.last;
+        }
 
-      if ((segment.path.last - currentSegment.path.first).distance <
-          threshold) {
-        lastOffset = currentSegment.path.first;
+        if ((segment.path.last - currentSegment.path.first).distance <
+            threshold) {
+          lastOffset = currentSegment.path.first;
+        }
+        if ((segment.path.last - currentSegment.path.last).distance <
+            threshold) {
+          print('condition 3');
+          lastOffset = currentSegment.path.last;
+        }
       }
-      if ((segment.path.last - currentSegment.path.last).distance < threshold) {
-        print('condition 3');
-        lastOffset = currentSegment.path.last;
-      }
-
-      this.segment = new Segment([firstOffset, lastOffset], selectedColor, selectedWidth);
     });
+    segment.path
+      ..first = firstOffset
+      ..last = lastOffset;
+    return segment;
+  }
+
+  Offset linkPoints(Offset offset, double threshold) {
+    print('linkPoints');
+    Offset result = offset;
+    this.segments.forEach((currentSegment) {
+      if (currentSegment != this.selectedSegment) {
+        if ((currentSegment.path.first - offset).distance < threshold) {
+          result = currentSegment.path.first;
+        } else if ((currentSegment.path.last - offset).distance < threshold) {
+          result = currentSegment.path.last;
+        }
+      }
+    });
+    notifyListeners();
+    return result;
   }
 }

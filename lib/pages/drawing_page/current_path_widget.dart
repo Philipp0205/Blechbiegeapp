@@ -89,7 +89,8 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
       Segment newSegment = createNewSegmentDependingOnSelectedPoint(
           controller.selectedSegment.selectedEdge, newOffset);
 
-      controller.updateSelectedSegment(newSegment, newOffset);
+      newSegment.selectedEdge = newOffset;
+      controller.updateSelectedSegmentPointMode(newSegment, newOffset);
     }
   }
 
@@ -141,17 +142,14 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   void onPanUpdateWithPointMode(Offset newOffset) {
     print('PanUpdate with edgeMode');
 
+    print('Offset before $newOffset');
+    newOffset = controller.linkPoints(newOffset, 30);
+    print('Offset before $newOffset');
     Segment segment = createNewSegmentDependingOnSelectedPoint(
         controller.selectedSegment.selectedEdge, newOffset);
-
     segment.selectedEdge = newOffset;
-    segment.highlightPoints = true;
-    segment.isSelected = true;
 
-    print('Selected segment: ${controller.selectedSegment.path}');
-    print('New selected segment: ${controller.selectedSegment.path}');
-
-    controller.updateSelectedSegment(segment, newOffset);
+    controller.updateSelectedSegmentPointMode(segment, newOffset);
   }
 
   /// Logic when user stops drawing in the canvas.
@@ -170,15 +168,10 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void onPanEndWithPointMode() {
     print('onPanEnd with pointMode');
-    // controller.straightenSegments();
-    //  model.segment.isSelected = true;
-    // model.selectedSegment.selectedEdge = new Offset(0, 0);
-    //
-    // model.addSegment(model.segment);
   }
 
   void onPanEndWithDefaultMode() {
-    controller.linkSegments(controller.segment, 100);
+    controller.segment = controller.linkSegments(controller.segment, 50);
 
     controller.addSegment(controller.segment);
 

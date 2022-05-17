@@ -36,12 +36,17 @@ class _DrawingPageState extends State<DrawingPage> {
         ),
       ),
       backgroundColor: Colors.yellow[50],
-      body: Container(
-        child: Stack(children: [
-          BuildAllPaths(),
-          // buildCurrentPath(context),
-          CurrentPathWidget()
-        ]),
+      body: GridPaper(
+        divisions: 2,
+        subdivisions: 2,
+        color: Colors.black54,
+        child: Container(
+          child: Stack(children: [
+            BuildAllPaths(),
+            // buildCurrentPath(context),
+            CurrentPathWidget()
+          ]),
+        ),
       ),
       floatingActionButton: SpeedDial(
         icon: Icons.add,
