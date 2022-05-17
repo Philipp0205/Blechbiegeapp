@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
-import 'package:open_bsp/services/service_locator.dart';
+import 'package:open_bsp/services/controller_locator.dart';
 
 void main() {
   setup();

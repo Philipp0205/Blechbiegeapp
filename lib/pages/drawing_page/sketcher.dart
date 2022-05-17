@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'model/segment.dart';
+import '../../model/segment.dart';
 
 class Sketcher extends CustomPainter {
   final List<Segment> lines;
@@ -34,18 +34,15 @@ class Sketcher extends CustomPainter {
       for (int j = 0; j < lines[i].path.length - 1; ++j) {
         if (lines[i].path[j] != null && lines[i].path[j + 1] != null) {
           paint.color = lines[i].color;
-          print('Drawing line: ${lines[i].color}');
           paint.strokeWidth = lines[i].width;
           canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
 
           if (lines[i].isSelected) {
-            print('line is Selected');
             toggleSegmentSelection(lines[i], canvas);
           }
 
           if (lines[i].selectedEdge != null) {
             if (lines[i].highlightPoints) {
-              print('Sketcher segment: ${lines[i].path}');
               Offset offset = new Offset(lines[i].selectedEdge!.dx - 50,
                   lines[i].selectedEdge!.dy + 20);
               if (lastDrawnText != '') {

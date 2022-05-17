@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
-import '../../services/service_locator.dart';
-import '../../sketcher.dart';
+import '../../services/controller_locator.dart';
+import 'sketcher.dart';
 
 class CurrentPathWidget extends StatefulWidget {
   // final Modes selectedMode;
@@ -28,8 +28,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print('build selectedMode: ${controller.selectedMode}');
-    print('build selectedMode: ${controller.segments.length}');
     return ChangeNotifierProvider<SketcherController>(
       create: (context) => controller,
       child: GestureDetector(
@@ -101,11 +99,16 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
     Segment segment;
 
-    controller.selectedSegment.selectedEdge == controller.selectedSegment.path.first
-        ? segment = new Segment([controller.selectedSegment.path.last, newOffset],
-            controller.selectedColor, controller.selectedWidth)
-        : segment = new Segment([newOffset, controller.selectedSegment.path.first],
-            controller.selectedColor, controller.selectedWidth);
+    controller.selectedSegment.selectedEdge ==
+            controller.selectedSegment.path.first
+        ? segment = new Segment(
+            [controller.selectedSegment.path.last, newOffset],
+            controller.selectedColor,
+            controller.selectedWidth)
+        : segment = new Segment(
+            [newOffset, controller.selectedSegment.path.first],
+            controller.selectedColor,
+            controller.selectedWidth);
 
     return segment;
   }
@@ -138,8 +141,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   void onPanUpdateWithPointMode(Offset newOffset) {
     print('PanUpdate with edgeMode');
 
-    // selectEdge2(new Point(offset.dx, offset.dy));
-
     Segment segment = createNewSegmentDependingOnSelectedPoint(
         controller.selectedSegment.selectedEdge, newOffset);
 
@@ -168,7 +169,8 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanEndWithPointMode() {
-    print('onPanEnd with edgeMode');
+    print('onPanEnd with pointMode');
+    // controller.straightenSegments();
     //  model.segment.isSelected = true;
     // model.selectedSegment.selectedEdge = new Offset(0, 0);
     //
@@ -176,13 +178,13 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanEndWithDefaultMode() {
-    controller.segments = List.from(controller.segments)..add(controller.segment);
+    controller.linkSegments(controller.segment, 100);
 
-    this.controller.segments = controller.segments;
-    controller.segment = new Segment(
-        [new Offset(0, 0)], controller.selectedColor, controller.selectedWidth);
+    controller.addSegment(controller.segment);
 
-    controller.linesStreamController.add(controller.segments);
+
+    controller.straightenSegments();
+    controller.updateLinesStreamController();
   }
 
   void onPanDown(DragDownDetails details) {
@@ -194,7 +196,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     if (controller.selectedMode == Modes.pointMode) {
       print('onPanDownwithPointMode');
       // selectEdge(details);
-      controller.selectEdge(
+      controller.selectPoint(
           new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
     }
   }
@@ -281,8 +283,8 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     double y = pointB.y + (pointB.y - pointA.y) / lengthAB * length;
 
     Offset pointC = new Offset(x, y);
-    Segment newLine = new Segment(
-        [line.path.first, pointC], controller.selectedColor, controller.selectedWidth);
+    Segment newLine = new Segment([line.path.first, pointC],
+        controller.selectedColor, controller.selectedWidth);
 
     controller.segment = newLine;
   }

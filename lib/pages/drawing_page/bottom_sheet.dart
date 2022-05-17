@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../controller/sketcher_controller.dart';
 import '../../model/appmodes.dart';
-import '../../services/service_locator.dart';
+import '../../services/controller_locator.dart';
 
 class AppBottomSheet extends StatefulWidget {
 

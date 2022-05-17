@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../controller/sketcher_controller.dart';
 import '../../model/segment.dart';
-import '../../services/service_locator.dart';
-import '../../sketcher.dart';
+import '../../services/controller_locator.dart';
+import 'sketcher.dart';
 
 class BuildAllPaths extends StatefulWidget {
   @override

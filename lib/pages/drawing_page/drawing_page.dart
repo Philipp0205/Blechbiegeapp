@@ -4,10 +4,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:open_bsp/model/sketcher_data.dart';
 import 'package:open_bsp/pages/drawing_page/build_all_paths.dart';
 import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
-import 'package:open_bsp/services/service_locator.dart';
+import 'package:open_bsp/services/controller_locator.dart';
 
 import '../../controller/sketcher_controller.dart';
 import '../../model/appmodes.dart';
@@ -21,7 +20,6 @@ class DrawingPage extends StatefulWidget {
 class _DrawingPageState extends State<DrawingPage> {
 
   GlobalKey key = new GlobalKey();
-  SketcherData data = new SketcherData();
 
   SketcherController controller =  getIt<SketcherController>();
 
@@ -51,7 +49,7 @@ class _DrawingPageState extends State<DrawingPage> {
         children: [
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
-              child: Icon(Icons.arrow_forward), onTap: straightenSegments),
+              child: Icon(Icons.arrow_forward), onTap: controller.straightenSegments),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
           SpeedDialChild(child: Icon(Icons.circle), onTap: controller.toggleDefaultMode),
@@ -72,22 +70,7 @@ class _DrawingPageState extends State<DrawingPage> {
     });
   }
 
-  straightenSegments() {
-    setState(() {
-      print('straightenSegments: ${controller.segments.length} segments');
-      List<Segment> straightSegments = [];
-
-      controller.segments.forEach((line) {
-        straightSegments.add(new Segment([line.path.first, line.path.last],
-            data.selectedColor, data.selectedWidth));
-      });
-
-      this.controller.segments = straightSegments;
-    });
-  }
-
   void debugFunction() {
-    print('segments: ${controller.segments.length}');
   }
 
   void extendSegment(Segment line, double length) {
@@ -102,7 +85,7 @@ class _DrawingPageState extends State<DrawingPage> {
 
     Offset pointC = new Offset(x, y);
     Segment newLine = new Segment(
-        [line.path.first, pointC], data.selectedColor, data.selectedWidth);
+        [line.path.first, pointC], controller.selectedColor, controller.selectedWidth);
 
     controller.segment = newLine;
   }
