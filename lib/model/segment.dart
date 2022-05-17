@@ -6,6 +6,7 @@ class Segment {
   Color color;
   bool isSelected = false;
   bool highlightPoints = false;
+  bool isLinked = true;
   final double width;
 
   Segment(this.path, this.color, this.width);

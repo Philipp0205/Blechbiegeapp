@@ -326,4 +326,9 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
     return result;
   }
+
+  void sortSegmentsDependingOnLink(Segment segment) {
+
+
+  }
 }
