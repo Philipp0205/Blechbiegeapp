@@ -60,7 +60,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   /// Logic when user starts drawing in the canvas.
   void onPanStart(DragStartDetails details) {
-    print('onPanStart');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset offset = new Offset(point.dx, point.dy);
@@ -96,8 +95,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   Segment createNewSegmentDependingOnSelectedPoint(
       Offset? selectedEdge, Offset newOffset) {
-    print('createNewSEgmentDependingOnSelectedPoint');
-
     Segment segment;
 
     controller.selectedSegment.selectedEdge ==
@@ -116,7 +113,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   /// Logic when user continuous drawing in the canvas while holding down finger.
   void onPanUpdate(DragUpdateDetails details) {
-    print('onPanUpdate');
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
@@ -135,21 +131,27 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanUpdateWithSelectionMode(Offset offset) {
-    print('PanUpdate with selectionMode or defaultMode');
     controller.addToPathOfSegment(offset);
   }
 
   void onPanUpdateWithPointMode(Offset newOffset) {
-    print('PanUpdate with edgeMode');
 
-    print('Offset before $newOffset');
-    newOffset = controller.linkPoints(newOffset, 30);
-    print('Offset before $newOffset');
+    // newOffset = controller.linkPoints(newOffset, 30);
     Segment segment = createNewSegmentDependingOnSelectedPoint(
         controller.selectedSegment.selectedEdge, newOffset);
     segment.selectedEdge = newOffset;
 
-    controller.updateSelectedSegmentPointMode(segment, newOffset);
+    Segment? mergedSegment =  controller.mergeSegmentsIfNear(controller.selectedSegment, 30);
+    if (mergedSegment != null) {
+      print('mergedSegment ${mergedSegment.path}');
+      segment = mergedSegment;
+      controller.updateSelectedSegmentPointModeAfterMerge(segment, newOffset);
+    } else {
+      controller.updateSelectedSegmentPointMode(segment, newOffset);
+    }
+
+    print('allSegments: ${controller.segments.length}');
+
   }
 
   /// Logic when user stops drawing in the canvas.
@@ -167,27 +169,24 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanEndWithPointMode() {
-    print('onPanEnd with pointMode');
   }
 
   void onPanEndWithDefaultMode() {
-    controller.segment = controller.linkSegments(controller.segment, 50);
+    // controller.segment = controller.linkSegments(controller.segment, 50);
+
+    controller.segment = controller.straigthenSegment(controller.segment);
 
     controller.addSegment(controller.segment);
 
 
-    controller.straightenSegments();
     controller.updateLinesStreamController();
   }
 
   void onPanDown(DragDownDetails details) {
-    print('onPanDown');
-    print('mode: ${controller.selectedMode}');
     if (controller.selectedMode == Modes.selectionMode) {
       selectSegment(details);
     }
     if (controller.selectedMode == Modes.pointMode) {
-      print('onPanDownwithPointMode');
       // selectEdge(details);
       controller.selectPoint(
           new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
@@ -195,7 +194,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void changeSelectedSegment(Segment segment) {
-    print('changeSelectedSegment');
     setState(() {
       if (controller.selectedSegment != segment) {
         controller.selectedSegment.isSelected = false;
@@ -223,7 +221,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   Offset getNearestPoint(DragDownDetails details) {
-    print('getNearestEdge');
     Segment nearestSegment = getNearestSegment(details);
     Offset nearestEdge;
 

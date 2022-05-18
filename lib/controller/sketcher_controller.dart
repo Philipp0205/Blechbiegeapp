@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -61,9 +60,10 @@ class SketcherController extends ChangeNotifier {
   }
 
   void updateSelectedSegmentPointMode(Segment segment, Offset offset) {
-    segment.highlightPoints = true;
-    segment.isSelected = true;
-    segment.color = Colors.red;
+    segment
+      ..highlightPoints = true
+      ..isSelected = true
+      ..color = Colors.red;
 
     deleteSegment(selectedSegment);
     this.segment = segment;
@@ -73,6 +73,23 @@ class SketcherController extends ChangeNotifier {
     updateLinesStreamController();
     this.selectedSegment = segment;
     notifyListeners();
+  }
+
+  void updateSelectedSegmentPointModeAfterMerge(Segment segment, Offset offset) {
+    deleteSegment(this.selectedSegment);
+    segment
+      ..highlightPoints = true
+      ..isSelected = true
+      ..color = Colors.red;
+
+    this.segment = segment;
+    segments.add(segment);
+    currentLineStreamController.add(segment);
+    linesStreamController.add(segments);
+    updateLinesStreamController();
+    this.selectedSegment = segment;
+    notifyListeners();
+
   }
 
   void clear() {
@@ -91,7 +108,6 @@ class SketcherController extends ChangeNotifier {
   }
 
   void updateLinesStreamController() {
-    print('updateLinesStreamController');
     linesStreamController.add(segments);
     notifyListeners();
   }
@@ -104,7 +120,6 @@ class SketcherController extends ChangeNotifier {
   }
 
   void clearSegmentSelection(Segment segment) {
-    print('clearSegmentSelectoin');
     segment.isSelected = false;
     segment.color = Colors.black;
     segment.highlightPoints = false;
@@ -131,9 +146,6 @@ class SketcherController extends ChangeNotifier {
   }
 
   void deleteSegment(Segment segment) {
-    print('deleteSegment');
-    print('selectedSegment ${selectedSegment.path}');
-    print('segmentToDelete ${segment.path}');
     Segment segmentToDelete = segments
         .firstWhere((currentSegment) => currentSegment.path == segment.path);
     segments.remove(segmentToDelete);
@@ -152,14 +164,12 @@ class SketcherController extends ChangeNotifier {
   }
 
   void selectSegment(DragDownDetails details) {
-    print('selectSegment');
     Segment lowestDistanceLine = getNearestSegment(details);
     lowestDistanceLine.color = Colors.red;
     changeSelectedSegment(lowestDistanceLine);
   }
 
   void changeSelectedSegment(Segment segment) {
-    print('changeSelectedSegment');
     if (selectedSegment != segment) {
       selectedSegment.color = Colors.red;
       selectedSegment.isSelected = false;
@@ -226,14 +236,12 @@ class SketcherController extends ChangeNotifier {
       selectedSegment.selectedEdge =
           new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
     } else {
-      print('onPanSelected outside threshold');
       toggleSelectionMode();
     }
     notifyListeners();
   }
 
   void toggleSelectionMode() {
-    print('toggleSelectionMode');
     selectedMode = Modes.selectionMode;
     clearSegmentSelection(selectedSegment);
     notifyListeners();
@@ -252,18 +260,10 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void straightenSegments() {
-    List<Segment> straightSegments = [];
-
-    segments.forEach((line) {
-      straightSegments.add(new Segment(
-          [line.path.first, line.path.last], selectedColor, selectedWidth));
-    });
-
+  Segment straigthenSegment(Segment segment) {
     clearCurrentLine();
-    this.segments = straightSegments;
+    return new Segment([segment.path.first, segment.path.last], selectedColor, selectedWidth);
 
-    notifyListeners();
   }
 
   void clearCurrentLine() {
@@ -273,11 +273,10 @@ class SketcherController extends ChangeNotifier {
 
   void addSegment(Segment segment) {
     this.segments.add(segment);
+    notifyListeners();
   }
 
   Segment linkSegments(Segment segment, double threshold) {
-    print('linkSegments');
-
     Offset firstOffset = segment.path.first;
     Offset lastOffset = segment.path.last;
 
@@ -285,12 +284,10 @@ class SketcherController extends ChangeNotifier {
       if (currentSegment.path != segment.path) {
         if ((segment.path.first - currentSegment.path.first).distance <
             threshold) {
-          print('condition 1');
           firstOffset = currentSegment.path.first;
         }
         if ((segment.path.first - currentSegment.path.last).distance <
             threshold) {
-          print('condition 2');
           firstOffset = currentSegment.path.last;
         }
 
@@ -300,7 +297,6 @@ class SketcherController extends ChangeNotifier {
         }
         if ((segment.path.last - currentSegment.path.last).distance <
             threshold) {
-          print('condition 3');
           lastOffset = currentSegment.path.last;
         }
       }
@@ -312,7 +308,6 @@ class SketcherController extends ChangeNotifier {
   }
 
   Offset linkPoints(Offset offset, double threshold) {
-    print('linkPoints');
     Offset result = offset;
     this.segments.forEach((currentSegment) {
       if (currentSegment != this.selectedSegment) {
@@ -327,8 +322,57 @@ class SketcherController extends ChangeNotifier {
     return result;
   }
 
-  void sortSegmentsDependingOnLink(Segment segment) {
+  Segment? mergeSegmentsIfNear(Segment segment, double threshold) {
+    Segment? result;
+    this.segments.forEach((currentSegment) {
+      if (currentSegment.path != segment.path) {
+        [currentSegment.path.first, currentSegment.path.last]
+            .forEach((offsetOfCurrentSegment) {
+          [segment.path.first, segment.path.last].forEach((offsetOfSegment) {
+            if ((offsetOfCurrentSegment - offsetOfSegment).distance <
+                threshold) {
+              result = mergeSegments(currentSegment, segment,
+                  offsetOfCurrentSegment, offsetOfSegment);
+            }
+          });
+        });
+      }
+    });
+    return result;
+  }
 
+  /// Merges segmentB into segmentA
+  Segment mergeSegments(Segment segmentA, Segment segmentB,
+      Offset offsetToMergeSegmentA, Offset offsetToMergeSegmentB) {
+    print('merge Segments');
 
+    print('segmentA ${segmentA.path}');
+    print('segmentB ${segmentB.path}');
+
+    if (offsetToMergeSegmentA == segmentA.path.first &&
+        offsetToMergeSegmentB == segmentB.path.first) {
+      segmentA.path.insert(0, segmentB.path.first);
+      updateSegment(segmentA);
+      return segmentA;
+    }
+    if (offsetToMergeSegmentA == segmentA.path.first &&
+        offsetToMergeSegmentB == segmentB.path.last) {
+      segmentA.path.insert(0, segmentA.path.first);
+      updateSegment(segmentA);
+      return segmentA;
+    }
+    if (offsetToMergeSegmentA == segmentA.path.last &&
+        offsetToMergeSegmentB == segmentB.path.last) {
+      segmentA.path.add(segmentB.path.first);
+      updateSegment(segmentA);
+      return segmentA;
+    }
+    if (offsetToMergeSegmentA == segmentA.path.last &&
+        offsetToMergeSegmentB == segmentB.path.first) {
+      segmentA.path.add(segmentA.path.last);
+      updateSegment(segmentA);
+      return segmentA;
+    }
+    return segmentA;
   }
 }

@@ -49,8 +49,6 @@ class _DrawingPageState extends State<DrawingPage> {
         children: [
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
-              child: Icon(Icons.arrow_forward), onTap: controller.straightenSegments),
-          SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
           SpeedDialChild(child: Icon(Icons.circle), onTap: controller.toggleDefaultMode),
         ],

@@ -60,7 +60,6 @@ class Sketcher extends CustomPainter {
   }
 
   void toggleSegmentSelection(Segment line, Canvas canvas) {
-    print('toggleSegmentSelection');
     Paint paint = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round
@@ -85,7 +84,6 @@ class Sketcher extends CustomPainter {
   }
 
   void drawText(Canvas canvas, String text, Offset offset, Color color) {
-    print('drawText $text');
 
     TextStyle style = TextStyle(
         color: Colors.black,
@@ -110,7 +108,6 @@ class Sketcher extends CustomPainter {
   }
 
   void makeSegmentSelected(Segment line, Canvas canvas) {
-    print('makeSegementSelected');
   }
 
   void unselectSegment(Segment line, Canvas canvas) {}
