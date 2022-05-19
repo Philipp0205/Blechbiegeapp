@@ -110,8 +110,6 @@ class Sketcher extends CustomPainter {
   void makeSegmentSelected(Segment line, Canvas canvas) {
   }
 
-  void unselectSegment(Segment line, Canvas canvas) {}
-
   @override
   bool shouldRepaint(Sketcher oldDelegate) {
     return true;

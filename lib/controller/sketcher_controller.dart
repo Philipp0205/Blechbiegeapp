@@ -9,7 +9,7 @@ import '../model/segment.dart';
 class SketcherController extends ChangeNotifier {
   List<Segment> segments = [];
 
-  Segment segment =
+  Segment currentlyDrawnSegment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
   Segment selectedSegment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
@@ -25,15 +25,16 @@ class SketcherController extends ChangeNotifier {
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
 
-  void setSegment(Segment segment) {
-    this.segment = segment;
+  void setCurrentlyDrawnSegment(Offset offset) {
+    this.currentlyDrawnSegment =
+        new Segment([offset], selectedColor, selectedWidth);
     notifyListeners();
   }
 
-  void addToPathOfSegment(Offset offset) {
-    List<Offset> path = List.from(this.segment.path)..add(offset);
-    segment = Segment(path, selectedColor, selectedWidth);
-    currentLineStreamController.add(segment);
+  void addToPathOfCurrentlyDrawnSegment(Offset offset) {
+    List<Offset> path = List.from(this.currentlyDrawnSegment.path)..add(offset);
+    currentlyDrawnSegment = Segment(path, selectedColor, selectedWidth);
+    currentLineStreamController.add(currentlyDrawnSegment);
     notifyListeners();
   }
 
@@ -47,7 +48,7 @@ class SketcherController extends ChangeNotifier {
 
   void updateSegment(Segment segment) {
     deleteSegment(selectedSegment);
-    this.segment = segment;
+    this.currentlyDrawnSegment = segment;
     segments.add(segment);
     currentLineStreamController.add(segment);
     linesStreamController.add(segments);
@@ -59,15 +60,15 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSelectedSegmentPointMode(Segment segment, Offset offset) {
+  void updateSegmentPointMode(Segment segment, Offset offset) {
     segment
       ..highlightPoints = true
       ..isSelected = true
       ..color = Colors.red;
 
     deleteSegment(selectedSegment);
-    this.segment = segment;
-    segments.add(segment);
+    this.currentlyDrawnSegment = segment;
+    this.segments.add(segment);
     currentLineStreamController.add(segment);
     linesStreamController.add(segments);
     updateLinesStreamController();
@@ -75,26 +76,27 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSelectedSegmentPointModeAfterMerge(Segment segment, Offset offset) {
+  void updateSelectedSegmentPointModeAfterMerge(
+      Segment segment, Offset offset) {
     deleteSegment(this.selectedSegment);
     segment
       ..highlightPoints = true
       ..isSelected = true
       ..color = Colors.red;
 
-    this.segment = segment;
+    this.currentlyDrawnSegment = segment;
     segments.add(segment);
     currentLineStreamController.add(segment);
     linesStreamController.add(segments);
     updateLinesStreamController();
     this.selectedSegment = segment;
     notifyListeners();
-
   }
 
   void clear() {
     segments = [];
-    segment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+    currentlyDrawnSegment =
+        new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     selectedSegment =
         new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     selectedMode = Modes.defaultMode;
@@ -127,6 +129,11 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearSegment() {
+    this.currentlyDrawnSegment = new Segment(
+        [new Offset(0, 0), new Offset(0, 0)], selectedColor, selectedWidth);
+  }
+
   void extendSegment(Segment line, double length) {
     // deleteLine(line);
     Point pointA = new Point(line.path.first.dx, line.path.first.dy);
@@ -141,15 +148,16 @@ class SketcherController extends ChangeNotifier {
     Segment newLine =
         new Segment([line.path.first, pointC], selectedColor, selectedWidth);
 
-    segment = newLine;
+    currentlyDrawnSegment = newLine;
     notifyListeners();
   }
 
   void deleteSegment(Segment segment) {
-    Segment segmentToDelete = segments
-        .firstWhere((currentSegment) => currentSegment.path == segment.path);
-    segments.remove(segmentToDelete);
-    linesStreamController.add(segments);
+    // Segment segmentToDelete = segments
+    //     .firstWhere((currentSegment) => currentSegment.path == segment.path);
+
+    segments.remove(segment);
+    updateLinesStreamController();
     notifyListeners();
   }
 
@@ -170,15 +178,16 @@ class SketcherController extends ChangeNotifier {
   }
 
   void changeSelectedSegment(Segment segment) {
-    if (selectedSegment != segment) {
-      selectedSegment.color = Colors.red;
-      selectedSegment.isSelected = false;
-      selectedSegment.color = Colors.black;
+    if (this.selectedSegment != segment) {
+      selectedSegment
+        ..isSelected = false
+        ..color = Colors.black;
 
-      segment.isSelected = true;
-      segment.color = Colors.red;
-      selectedSegment = segment;
-      linesStreamController.add(segments);
+      segment
+        ..isSelected = true
+        ..color = Colors.red;
+
+      this.selectedSegment = segment;
       updateLinesStreamController();
       notifyListeners();
     }
@@ -262,17 +271,19 @@ class SketcherController extends ChangeNotifier {
 
   Segment straigthenSegment(Segment segment) {
     clearCurrentLine();
-    return new Segment([segment.path.first, segment.path.last], selectedColor, selectedWidth);
-
+    return new Segment(
+        [segment.path.first, segment.path.last], selectedColor, selectedWidth);
   }
 
   void clearCurrentLine() {
-    segment = Segment([new Offset(0, 0)], selectedColor, selectedWidth);
-    currentLineStreamController.add(segment);
+    currentlyDrawnSegment =
+        Segment([new Offset(0, 0)], selectedColor, selectedWidth);
+    currentLineStreamController.add(currentlyDrawnSegment);
   }
 
   void addSegment(Segment segment) {
     this.segments.add(segment);
+    clearSegment();
     notifyListeners();
   }
 
@@ -322,27 +333,36 @@ class SketcherController extends ChangeNotifier {
     return result;
   }
 
-  Segment? mergeSegmentsIfNear(Segment segment, double threshold) {
-    Segment? result;
-    this.segments.forEach((currentSegment) {
+  /// Merges end points of segments when distance is below threshold.
+  void mergeSegmentsIfNearToEachOther(Segment segment, double threshold) {
+    for (Segment currentSegment in segments) {
+      List<Offset> offsetsCurrentSegment = [
+        currentSegment.path.first,
+        currentSegment.path.last
+      ];
       if (currentSegment.path != segment.path) {
-        [currentSegment.path.first, currentSegment.path.last]
-            .forEach((offsetOfCurrentSegment) {
-          [segment.path.first, segment.path.last].forEach((offsetOfSegment) {
+        for (Offset offsetOfCurrentSegment in offsetsCurrentSegment) {
+          for (Offset offsetOfSegment in [
+            segment.path.first,
+            segment.path.last
+          ]) {
             if ((offsetOfCurrentSegment - offsetOfSegment).distance <
                 threshold) {
-              result = mergeSegments(currentSegment, segment,
+              Segment? mergedSegment = mergeSegments(currentSegment, segment,
                   offsetOfCurrentSegment, offsetOfSegment);
+              if (mergedSegment != null) {
+                changeSelectedSegment(currentSegment);
+              }
             }
-          });
-        });
+            break;
+          }
+        }
       }
-    });
-    return result;
+    }
   }
 
   /// Merges segmentB into segmentA
-  Segment mergeSegments(Segment segmentA, Segment segmentB,
+  Segment? mergeSegments(Segment segmentA, Segment segmentB,
       Offset offsetToMergeSegmentA, Offset offsetToMergeSegmentB) {
     print('merge Segments');
 
@@ -351,28 +371,50 @@ class SketcherController extends ChangeNotifier {
 
     if (offsetToMergeSegmentA == segmentA.path.first &&
         offsetToMergeSegmentB == segmentB.path.first) {
-      segmentA.path.insert(0, segmentB.path.first);
+      print('case first first');
+      segmentA.path.insert(0, segmentB.path.last);
       updateSegment(segmentA);
       return segmentA;
     }
     if (offsetToMergeSegmentA == segmentA.path.first &&
         offsetToMergeSegmentB == segmentB.path.last) {
-      segmentA.path.insert(0, segmentA.path.first);
+      print('case first last');
+      segmentA.path.insert(0, segmentB.path.first);
       updateSegment(segmentA);
       return segmentA;
     }
     if (offsetToMergeSegmentA == segmentA.path.last &&
         offsetToMergeSegmentB == segmentB.path.last) {
+      print('case last last');
       segmentA.path.add(segmentB.path.first);
       updateSegment(segmentA);
       return segmentA;
     }
     if (offsetToMergeSegmentA == segmentA.path.last &&
         offsetToMergeSegmentB == segmentB.path.first) {
-      segmentA.path.add(segmentA.path.last);
+      print('case last first');
+      segmentA.path.add(segmentB.path.last);
       updateSegment(segmentA);
       return segmentA;
     }
-    return segmentA;
+    return null;
+  }
+
+  changeSelectedSegmentDependingNewOffset(
+      Offset? selectedEdge, Offset newOffset) {
+    Segment segment;
+    if (this.selectedSegment.selectedEdge != null) {
+      selectedSegment.selectedEdge == selectedSegment.path.first
+          ? segment = new Segment([selectedSegment.path.last, newOffset],
+              selectedColor, selectedWidth)
+          : segment = new Segment([newOffset, selectedSegment.path.first],
+              selectedColor, selectedWidth);
+
+      segment.selectedEdge = newOffset;
+      updateSegmentPointMode(segment, newOffset);
+      return segment;
+    } else {
+      return selectedSegment;
+    }
   }
 }

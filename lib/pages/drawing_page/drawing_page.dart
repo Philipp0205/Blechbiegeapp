@@ -85,7 +85,7 @@ class _DrawingPageState extends State<DrawingPage> {
     Segment newLine = new Segment(
         [line.path.first, pointC], controller.selectedColor, controller.selectedWidth);
 
-    controller.segment = newLine;
+    controller.currentlyDrawnSegment = newLine;
   }
 
 

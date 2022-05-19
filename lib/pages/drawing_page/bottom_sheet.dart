@@ -1,5 +1,3 @@
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../controller/sketcher_controller.dart';
@@ -16,12 +14,12 @@ class AppBottomSheet extends StatefulWidget {
 }
 
 class _AppBottomSheetState extends State<AppBottomSheet> {
-  SketcherController model = getIt<SketcherController>();
+  SketcherController controller = getIt<SketcherController>();
 
 
   @override
   Widget build(BuildContext context) {
-    double _currentSliderValue = model.selectedSegment.width;
+    double _currentSliderValue = controller.selectedSegment.width;
     return Container(
       height: 150,
       child: StatefulBuilder(
@@ -31,14 +29,14 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
               Padding(padding: EdgeInsets.all(10), child: Text('Länge')),
               Slider(
                 value: _currentSliderValue,
-                max: model.selectedSegment.width + 100,
+                max: controller.selectedSegment.width + 100,
                 divisions: 5,
-                min: model.selectedSegment.width - 100,
+                min: controller.selectedSegment.width - 100,
                 label: _currentSliderValue.round().toString(),
                 onChanged: (double value) {
                   state(() {
                     _currentSliderValue = value;
-                    model.extendSegment(model.selectedSegment, _currentSliderValue);
+                    controller.extendSegment(controller.selectedSegment, _currentSliderValue);
                   });
                   setState(() {});
                 },
@@ -51,13 +49,13 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                     ElevatedButton(
                         onPressed: () {
                           setState(() {
-                            model.deleteSegment(model.selectedSegment);
+                            controller.deleteSegment(controller.selectedSegment);
                           });
                         },
                         child: const Text('Löschen')),
                     ElevatedButton(
                         onPressed: () {
-                          model.setSelectedMode(Modes.pointMode);
+                          controller.setSelectedMode(Modes.pointMode);
                           // context
                           //     .read<AppModes>()
                           //     .setSelectedMode(Modes.pointMode);
@@ -66,7 +64,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                         child: const Text('Edge M.')),
                     ElevatedButton(
                         onPressed: () {
-                          model.saveLine(model.selectedSegment);
+                          controller.saveLine(controller.selectedSegment);
                           Navigator.of(context).pop();
                         },
                         child: const Text('Speichern')),

@@ -47,7 +47,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
                 builder: (context, snapshot) {
                   return CustomPaint(
                     painter: Sketcher(
-                      lines: [controller.segment],
+                      lines: [controller.currentlyDrawnSegment],
                       // lines: lines,
                     ),
                   );
@@ -77,38 +77,12 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanStartWithDefaultMode(Offset offset) {
-    controller.setSegment(
-        Segment([offset], controller.selectedColor, controller.selectedWidth));
+    controller.setCurrentlyDrawnSegment(offset);
   }
 
   void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
-    if (controller.selectedSegment.selectedEdge != null) {
-      Offset newOffset = new Offset(offset.dx, offset.dy);
-
-      Segment newSegment = createNewSegmentDependingOnSelectedPoint(
-          controller.selectedSegment.selectedEdge, newOffset);
-
-      newSegment.selectedEdge = newOffset;
-      controller.updateSelectedSegmentPointMode(newSegment, newOffset);
-    }
-  }
-
-  Segment createNewSegmentDependingOnSelectedPoint(
-      Offset? selectedEdge, Offset newOffset) {
-    Segment segment;
-
-    controller.selectedSegment.selectedEdge ==
-            controller.selectedSegment.path.first
-        ? segment = new Segment(
-            [controller.selectedSegment.path.last, newOffset],
-            controller.selectedColor,
-            controller.selectedWidth)
-        : segment = new Segment(
-            [newOffset, controller.selectedSegment.path.first],
-            controller.selectedColor,
-            controller.selectedWidth);
-
-    return segment;
+    controller.changeSelectedSegmentDependingNewOffset(
+        controller.selectedSegment.selectedEdge, offset);
   }
 
   /// Logic when user continuous drawing in the canvas while holding down finger.
@@ -131,26 +105,14 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanUpdateWithSelectionMode(Offset offset) {
-    controller.addToPathOfSegment(offset);
+    controller.addToPathOfCurrentlyDrawnSegment(offset);
   }
 
   void onPanUpdateWithPointMode(Offset newOffset) {
-
-    // newOffset = controller.linkPoints(newOffset, 30);
-    Segment segment = createNewSegmentDependingOnSelectedPoint(
+    controller.changeSelectedSegmentDependingNewOffset(
         controller.selectedSegment.selectedEdge, newOffset);
-    segment.selectedEdge = newOffset;
 
-    Segment? mergedSegment =  controller.mergeSegmentsIfNear(controller.selectedSegment, 30);
-    if (mergedSegment != null) {
-      print('mergedSegment ${mergedSegment.path}');
-      segment = mergedSegment;
-      controller.updateSelectedSegmentPointModeAfterMerge(segment, newOffset);
-    } else {
-      controller.updateSelectedSegmentPointMode(segment, newOffset);
-    }
-
-    print('allSegments: ${controller.segments.length}');
+    controller.mergeSegmentsIfNearToEachOther(controller.selectedSegment, 30);
 
   }
 
@@ -168,16 +130,12 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     }
   }
 
-  void onPanEndWithPointMode() {
-  }
+  void onPanEndWithPointMode() {}
 
   void onPanEndWithDefaultMode() {
-    // controller.segment = controller.linkSegments(controller.segment, 50);
-
-    controller.segment = controller.straigthenSegment(controller.segment);
-
-    controller.addSegment(controller.segment);
-
+    controller.currentlyDrawnSegment =
+        controller.straigthenSegment(controller.currentlyDrawnSegment);
+    controller.addSegment(controller.currentlyDrawnSegment);
 
     controller.updateLinesStreamController();
   }
@@ -276,12 +234,14 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Segment newLine = new Segment([line.path.first, pointC],
         controller.selectedColor, controller.selectedWidth);
 
-    controller.segment = newLine;
+    controller.currentlyDrawnSegment = newLine;
   }
 
   void selectSegment(DragDownDetails details) {
     Segment nearestSegment = controller.getNearestSegment(details);
-    controller.changeSelectedSegment(nearestSegment);
+    if (nearestSegment != controller.selectedSegment) {
+      controller.changeSelectedSegment(nearestSegment);
+    }
 
     showModalBottomSheet(
       enableDrag: true,
