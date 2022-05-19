@@ -15,9 +15,6 @@ class Sketcher extends CustomPainter {
 
   String lastDrawnText = '';
 
-  Segment selectedSegment =
-      new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-
   @override
   void paint(Canvas canvas, Size size) {
     canvas = canvas;

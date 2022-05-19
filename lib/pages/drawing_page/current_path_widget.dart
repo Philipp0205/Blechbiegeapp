@@ -37,8 +37,14 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
         onPanDown: onPanDown,
         child: RepaintBoundary(
           child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height,
               padding: EdgeInsets.all(4.0),
               color: Colors.transparent,
               alignment: Alignment.topLeft,
@@ -113,7 +119,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
         controller.selectedSegment.selectedEdge, newOffset);
 
     controller.mergeSegmentsIfNearToEachOther(controller.selectedSegment, 30);
-
   }
 
   /// Logic when user stops drawing in the canvas.
@@ -145,7 +150,6 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
       selectSegment(details);
     }
     if (controller.selectedMode == Modes.pointMode) {
-      // selectEdge(details);
       controller.selectPoint(
           new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
     }
@@ -175,7 +179,9 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
       ..clear()
       ..addEntries(mapEntries);
 
-    return distances.keys.toList().first;
+    return distances.keys
+        .toList()
+        .first;
   }
 
   Offset getNearestPoint(DragDownDetails details) {
@@ -183,11 +189,11 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Offset nearestEdge;
 
     Point currentPoint =
-            new Point(details.globalPosition.dx, details.globalPosition.dy),
+    new Point(details.globalPosition.dx, details.globalPosition.dy),
         edgeA = new Point(
             nearestSegment.path.first.dx, nearestSegment.path.first.dy),
         edgeB =
-            new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
+        new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
 
     currentPoint.distanceTo(edgeA) > currentPoint.distanceTo(edgeB)
         ? nearestEdge = nearestSegment.path.last
@@ -205,7 +211,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
    */
   double getDistanceToLine(DragDownDetails details, Segment line) {
     Point currentPoint =
-        new Point(details.globalPosition.dx, details.globalPosition.dy);
+    new Point(details.globalPosition.dx, details.globalPosition.dy);
     Point startPoint = new Point(line.path.first.dx, line.path.first.dy);
     Point endPoint = new Point(line.path.last.dx, line.path.last.dy);
 

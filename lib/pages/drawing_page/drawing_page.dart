@@ -39,7 +39,6 @@ class _DrawingPageState extends State<DrawingPage> {
       body: Container(
         child: Stack(children: [
           BuildAllPaths(),
-          // buildCurrentPath(context),
           CurrentPathWidget()
         ]),
       ),

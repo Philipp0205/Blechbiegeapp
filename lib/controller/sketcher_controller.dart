@@ -48,7 +48,7 @@ class SketcherController extends ChangeNotifier {
 
   void updateSegment(Segment segment) {
     deleteSegment(selectedSegment);
-    this.currentlyDrawnSegment = segment;
+    // this.currentlyDrawnSegment = segment;
     segments.add(segment);
     currentLineStreamController.add(segment);
     linesStreamController.add(segments);
@@ -66,30 +66,13 @@ class SketcherController extends ChangeNotifier {
       ..isSelected = true
       ..color = Colors.red;
 
-    deleteSegment(selectedSegment);
-    this.currentlyDrawnSegment = segment;
+    deleteSegment(this.selectedSegment);
     this.segments.add(segment);
     currentLineStreamController.add(segment);
-    linesStreamController.add(segments);
-    updateLinesStreamController();
-    this.selectedSegment = segment;
-    notifyListeners();
-  }
-
-  void updateSelectedSegmentPointModeAfterMerge(
-      Segment segment, Offset offset) {
-    deleteSegment(this.selectedSegment);
-    segment
-      ..highlightPoints = true
-      ..isSelected = true
-      ..color = Colors.red;
-
     this.currentlyDrawnSegment = segment;
-    segments.add(segment);
-    currentLineStreamController.add(segment);
-    linesStreamController.add(segments);
-    updateLinesStreamController();
     this.selectedSegment = segment;
+    this.linesStreamController.add(segments);
+    updateLinesStreamController();
     notifyListeners();
   }
 
@@ -113,8 +96,6 @@ class SketcherController extends ChangeNotifier {
     linesStreamController.add(segments);
     notifyListeners();
   }
-
-  void updateCurrenLineStreamController() {}
 
   void addToLinesStreamController(List<Segment> segments) {
     linesStreamController.add(segments);
@@ -153,9 +134,6 @@ class SketcherController extends ChangeNotifier {
   }
 
   void deleteSegment(Segment segment) {
-    // Segment segmentToDelete = segments
-    //     .firstWhere((currentSegment) => currentSegment.path == segment.path);
-
     segments.remove(segment);
     updateLinesStreamController();
     notifyListeners();
@@ -402,19 +380,18 @@ class SketcherController extends ChangeNotifier {
 
   changeSelectedSegmentDependingNewOffset(
       Offset? selectedEdge, Offset newOffset) {
-    Segment segment;
+    List<Offset> offsets = this.selectedSegment.path;
     if (this.selectedSegment.selectedEdge != null) {
-      selectedSegment.selectedEdge == selectedSegment.path.first
-          ? segment = new Segment([selectedSegment.path.last, newOffset],
-              selectedColor, selectedWidth)
-          : segment = new Segment([newOffset, selectedSegment.path.first],
-              selectedColor, selectedWidth);
-
+      if (selectedSegment.selectedEdge == selectedSegment.path.first) {
+        offsets.removeAt(0);
+        offsets.insert(0, newOffset);
+      } else {
+        offsets.removeLast();
+        offsets.add(newOffset);
+      }
+      Segment segment = new Segment(offsets, selectedColor, selectedWidth);
       segment.selectedEdge = newOffset;
       updateSegmentPointMode(segment, newOffset);
-      return segment;
-    } else {
-      return selectedSegment;
     }
   }
 }
