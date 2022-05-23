@@ -4,11 +4,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:open_bsp/controller/all_paths_controller.dart';
+import 'package:open_bsp/controller/current_path_controller.dart';
 import 'package:open_bsp/pages/drawing_page/build_all_paths.dart';
 import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
 import 'package:open_bsp/services/controller_locator.dart';
 
-import '../../controller/sketcher_controller.dart';
+import '../../controller/modes_controller.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 
@@ -21,7 +23,10 @@ class _DrawingPageState extends State<DrawingPage> {
 
   GlobalKey key = new GlobalKey();
 
-  SketcherController controller =  getIt<SketcherController>();
+  // SketcherController controller =  getIt<SketcherController>();
+  AllPathsController _allPathsController =  getIt<AllPathsController>();
+  ModesController _modesController =  getIt<ModesController>();
+  CurrentPathController _currentPathController =  getIt<CurrentPathController>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +36,7 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Biegeapp'),
-            Text(AppModes().getModeName(controller.selectedMode))
+            Text(AppModes().getModeName(_modesController.selectedMode))
           ],
         ),
       ),
@@ -49,7 +54,7 @@ class _DrawingPageState extends State<DrawingPage> {
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-          SpeedDialChild(child: Icon(Icons.circle), onTap: controller.toggleDefaultMode),
+          SpeedDialChild(child: Icon(Icons.circle), onTap: _modesController.toggleDefaultMode),
         ],
       ),
     );
@@ -57,13 +62,15 @@ class _DrawingPageState extends State<DrawingPage> {
 
   Future<void> clear() async {
     setState(() {
-      controller.clear();
+      _allPathsController.clear();
+      _currentPathController.clear();
+      _modesController.clear();
     });
   }
 
   void toggleSelectionMode() {
     setState(() {
-      controller.toggleSelectionMode();
+      _modesController.toggleSelectionMode();
     });
   }
 
@@ -82,9 +89,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
     Offset pointC = new Offset(x, y);
     Segment newLine = new Segment(
-        [line.path.first, pointC], controller.selectedColor, controller.selectedWidth);
+        [line.path.first, pointC], _currentPathController.selectedColor, _currentPathController.selectedWidth);
 
-    controller.currentlyDrawnSegment = newLine;
+    _currentPathController.currentlyDrawnSegment = newLine;
   }
 
 

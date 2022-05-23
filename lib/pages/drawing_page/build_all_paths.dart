@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:open_bsp/controller/all_paths_controller.dart';
 import 'package:provider/provider.dart';
 
 import '../../controller/sketcher_controller.dart';
@@ -15,7 +16,8 @@ class BuildAllPaths extends StatefulWidget {
 class _BuildAllPathsState extends State<BuildAllPaths> {
   GlobalKey _globalKey = new GlobalKey();
 
-  SketcherController controller = getIt<SketcherController>();
+  SketcherController controller2 = getIt<SketcherController>();
+  AllPathsController _allPathsController = getIt<AllPathsController>();
 
   @override
   Widget build(
@@ -30,13 +32,13 @@ class _BuildAllPathsState extends State<BuildAllPaths> {
         padding: EdgeInsets.all(4.0),
         alignment: Alignment.topLeft,
         child: StreamBuilder<List<Segment>>(
-          stream: controller.linesStreamController.stream,
+          stream: _allPathsController.linesStreamController.stream,
           builder: (context, snapshot) {
-            return ChangeNotifierProvider<SketcherController>(
-              create: (context) => controller,
+            return ChangeNotifierProvider<AllPathsController>(
+              create: (context) => _allPathsController,
               child: CustomPaint(
                 painter: Sketcher(
-                  lines: controller.segments,
+                  lines: _allPathsController.segments,
                 ),
               ),
             );

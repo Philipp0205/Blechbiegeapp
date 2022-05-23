@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:open_bsp/controller/all_paths_controller.dart';
+import 'package:open_bsp/controller/current_path_controller.dart';
+import 'package:open_bsp/controller/modes_controller.dart';
 import 'package:open_bsp/pages/drawing_page/bottom_sheet.dart';
 import 'package:open_bsp/controller/sketcher_controller.dart';
 import 'package:provider/provider.dart';
@@ -24,11 +27,14 @@ class CurrentPathWidget extends StatefulWidget {
 class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   GlobalKey key = new GlobalKey();
 
-  SketcherController controller = getIt<SketcherController>();
+  SketcherController controller2 = getIt<SketcherController>();
+  CurrentPathController controller = getIt<CurrentPathController>();
+  AllPathsController _allPathsController = getIt<AllPathsController>();
+  ModesController _modesController = getIt<ModesController>();
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SketcherController>(
+    return ChangeNotifierProvider<CurrentPathController>(
       create: (context) => controller,
       child: GestureDetector(
         onPanStart: onPanStart,
@@ -37,14 +43,8 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
         onPanDown: onPanDown,
         child: RepaintBoundary(
           child: Container(
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width,
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
               padding: EdgeInsets.all(4.0),
               color: Colors.transparent,
               alignment: Alignment.topLeft,
@@ -70,7 +70,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Offset point = box.globalToLocal(details.globalPosition);
     Offset offset = new Offset(point.dx, point.dy);
 
-    switch (controller.selectedMode) {
+    switch (_modesController.selectedMode) {
       case Modes.defaultMode:
         onPanStartWithDefaultMode(offset);
         break;
@@ -88,7 +88,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
     controller.changeSelectedSegmentDependingNewOffset(
-        controller.selectedSegment.selectedEdge, offset);
+        controller.currentlyDrawnSegment.selectedEdge, offset);
   }
 
   /// Logic when user continuous drawing in the canvas while holding down finger.
@@ -97,7 +97,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
 
-    switch (controller.selectedMode) {
+    switch (_modesController.selectedMode) {
       case Modes.defaultMode:
         onPanUpdateWithSelectionMode(point2);
         break;
@@ -116,14 +116,15 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void onPanUpdateWithPointMode(Offset newOffset) {
     controller.changeSelectedSegmentDependingNewOffset(
-        controller.selectedSegment.selectedEdge, newOffset);
+        controller.currentlyDrawnSegment.selectedEdge, newOffset);
 
-    controller.mergeSegmentsIfNearToEachOther(controller.selectedSegment, 30);
+    controller.mergeSegmentsIfNearToEachOther(
+        controller.currentlyDrawnSegment, 30);
   }
 
   /// Logic when user stops drawing in the canvas.
   void onPanEnd(DragEndDetails details) {
-    switch (controller.selectedMode) {
+    switch (_modesController.selectedMode) {
       case Modes.defaultMode:
         onPanEndWithDefaultMode();
         break;
@@ -140,16 +141,15 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   void onPanEndWithDefaultMode() {
     controller.currentlyDrawnSegment =
         controller.straigthenSegment(controller.currentlyDrawnSegment);
-    controller.addSegment(controller.currentlyDrawnSegment);
-
-    controller.updateLinesStreamController();
+    _allPathsController.addSegment(controller.currentlyDrawnSegment);
+    // controller.addSegment(controller.currentlyDrawnSegment);
   }
 
   void onPanDown(DragDownDetails details) {
-    if (controller.selectedMode == Modes.selectionMode) {
+    if (_modesController.selectedMode == Modes.selectionMode) {
       selectSegment(details);
     }
-    if (controller.selectedMode == Modes.pointMode) {
+    if (_modesController.selectedMode == Modes.pointMode) {
       controller.selectPoint(
           new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
     }
@@ -157,11 +157,11 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void changeSelectedSegment(Segment segment) {
     setState(() {
-      if (controller.selectedSegment != segment) {
-        controller.selectedSegment.isSelected = false;
+      if (controller.currentlyDrawnSegment != segment) {
+        controller.currentlyDrawnSegment.isSelected = false;
         segment.isSelected = true;
-        controller.selectedSegment.color = Colors.black;
-        controller.selectedSegment = segment;
+        controller.currentlyDrawnSegment.color = Colors.black;
+        controller.currentlyDrawnSegment = segment;
       }
     });
   }
@@ -179,9 +179,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
       ..clear()
       ..addEntries(mapEntries);
 
-    return distances.keys
-        .toList()
-        .first;
+    return distances.keys.toList().first;
   }
 
   Offset getNearestPoint(DragDownDetails details) {
@@ -189,11 +187,11 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Offset nearestEdge;
 
     Point currentPoint =
-    new Point(details.globalPosition.dx, details.globalPosition.dy),
+            new Point(details.globalPosition.dx, details.globalPosition.dy),
         edgeA = new Point(
             nearestSegment.path.first.dx, nearestSegment.path.first.dy),
         edgeB =
-        new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
+            new Point(nearestSegment.path.last.dx, nearestSegment.path.last.dy);
 
     currentPoint.distanceTo(edgeA) > currentPoint.distanceTo(edgeB)
         ? nearestEdge = nearestSegment.path.last
@@ -211,7 +209,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
    */
   double getDistanceToLine(DragDownDetails details, Segment line) {
     Point currentPoint =
-    new Point(details.globalPosition.dx, details.globalPosition.dy);
+        new Point(details.globalPosition.dx, details.globalPosition.dy);
     Point startPoint = new Point(line.path.first.dx, line.path.first.dy);
     Point endPoint = new Point(line.path.last.dx, line.path.last.dy);
 
@@ -245,7 +243,7 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
 
   void selectSegment(DragDownDetails details) {
     Segment nearestSegment = controller.getNearestSegment(details);
-    if (nearestSegment != controller.selectedSegment) {
+    if (nearestSegment != controller.currentlyDrawnSegment) {
       controller.changeSelectedSegment(nearestSegment);
     }
 

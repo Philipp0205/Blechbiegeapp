@@ -97,11 +97,6 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addToLinesStreamController(List<Segment> segments) {
-    linesStreamController.add(segments);
-    notifyListeners();
-  }
-
   void clearSegmentSelection(Segment segment) {
     segment.isSelected = false;
     segment.color = Colors.black;
@@ -166,6 +161,9 @@ class SketcherController extends ChangeNotifier {
         ..color = Colors.red;
 
       this.selectedSegment = segment;
+
+      addToCurrentLineStreamController(segment);
+
       updateLinesStreamController();
       notifyListeners();
     }
@@ -279,7 +277,6 @@ class SketcherController extends ChangeNotifier {
             threshold) {
           firstOffset = currentSegment.path.last;
         }
-
         if ((segment.path.last - currentSegment.path.first).distance <
             threshold) {
           lastOffset = currentSegment.path.first;
@@ -394,4 +391,6 @@ class SketcherController extends ChangeNotifier {
       updateSegmentPointMode(segment, newOffset);
     }
   }
+
+
 }
