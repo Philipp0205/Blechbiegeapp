@@ -1,13 +1,17 @@
 import 'package:flutter/cupertino.dart';
 
 import '../model/appmodes.dart';
+import '../model/segment.dart';
 
-class ModesController extends ChangeNotifier {
+class ModesViewModel extends ChangeNotifier {
+
+  // CurrentPathViewModel _currentPathViewModel = getIt<CurrentPathViewModel>();
+
   Modes selectedMode = Modes.defaultMode;
 
   void toggleSelectionMode() {
+    print('toggleselectionmode');
     selectedMode = Modes.selectionMode;
-    // clearSegmentSelection(selectedSegment);
     notifyListeners();
   }
 
@@ -17,14 +21,18 @@ class ModesController extends ChangeNotifier {
   }
 
   void toggleDefaultMode() {
-    Offset offset = new Offset(0, 0);
-    // selectedSegment.selectedEdge = offset;
-    // selectedSegment.isSelected = false;
+    print('toggle default mode');
     selectedMode = Modes.defaultMode;
+    // _currentPathViewModel.unselectCurrentLine();
     notifyListeners();
   }
 
   void clear() {
     selectedMode = Modes.defaultMode;
+  }
+
+  void setSelectedMode(Modes mode) {
+    this.selectedMode = mode;
+    notifyListeners();
   }
 }

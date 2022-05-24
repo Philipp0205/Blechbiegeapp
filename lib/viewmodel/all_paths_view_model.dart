@@ -5,9 +5,8 @@ import 'package:flutter/cupertino.dart';
 
 import '../model/segment.dart';
 
-class AllPathsController extends ChangeNotifier {
+class AllPathsViewModel extends ChangeNotifier {
   List<Segment> _segments = [];
-
   List<Segment> get segments => _segments;
 
   StreamController<List<Segment>> linesStreamController =
@@ -16,7 +15,6 @@ class AllPathsController extends ChangeNotifier {
   void deleteSegment(Segment segment) {
     segments.remove(segment);
     updateLinesStreamController();
-    notifyListeners();
   }
 
   void updateLinesStreamController() {
@@ -25,15 +23,15 @@ class AllPathsController extends ChangeNotifier {
   }
 
   void addSegment(Segment segment) {
-    print('segments length: ${segments.length}');
     this.segments.add(segment);
     this.linesStreamController.add(segments);
-    updateLinesStreamController();
+    print('segments.length in add segments ${segments.length}');
     notifyListeners();
   }
 
   Segment getNearestSegment(DragDownDetails details) {
     Map<Segment, double> distances = {};
+    print('segments length distance ${segments.length}');
 
     segments.forEach((line) {
       distances.addEntries([MapEntry(line, getDistanceToLine(details, line))]);

@@ -1,23 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/controller/all_paths_controller.dart';
+import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:provider/provider.dart';
 
-import '../../controller/sketcher_controller.dart';
 import '../../model/segment.dart';
-import '../../services/controller_locator.dart';
+import '../../services/viewmodel_locator.dart';
+import '../../viewmodel/all_paths_view_model.dart';
 import 'sketcher.dart';
 
-class BuildAllPaths extends StatefulWidget {
+class AllPathsWidget extends StatefulWidget {
   @override
-  State<BuildAllPaths> createState() => _BuildAllPathsState();
+  State<AllPathsWidget> createState() => _AllPathsWidgetState();
 }
 
-class _BuildAllPathsState extends State<BuildAllPaths> {
+class _AllPathsWidgetState extends State<AllPathsWidget> {
   GlobalKey _globalKey = new GlobalKey();
 
-  SketcherController controller2 = getIt<SketcherController>();
-  AllPathsController _allPathsController = getIt<AllPathsController>();
+  AllPathsViewModel _allPathsVM = getIt<AllPathsViewModel>();
+  SegmentDataService _segmentDataService = getIt<SegmentDataService>();
 
   @override
   Widget build(
@@ -32,13 +32,13 @@ class _BuildAllPathsState extends State<BuildAllPaths> {
         padding: EdgeInsets.all(4.0),
         alignment: Alignment.topLeft,
         child: StreamBuilder<List<Segment>>(
-          stream: _allPathsController.linesStreamController.stream,
+          stream: _segmentDataService.segmentsStreamController.stream,
           builder: (context, snapshot) {
-            return ChangeNotifierProvider<AllPathsController>(
-              create: (context) => _allPathsController,
+            return ChangeNotifierProvider<SegmentDataService>(
+              create: (context) => _segmentDataService,
               child: CustomPaint(
                 painter: Sketcher(
-                  lines: _allPathsController.segments,
+                  lines: _segmentDataService.segments,
                 ),
               ),
             );

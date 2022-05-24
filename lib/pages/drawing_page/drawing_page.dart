@@ -4,15 +4,16 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:open_bsp/controller/all_paths_controller.dart';
-import 'package:open_bsp/controller/current_path_controller.dart';
-import 'package:open_bsp/pages/drawing_page/build_all_paths.dart';
+import 'package:open_bsp/pages/drawing_page/all_paths_widget.dart';
 import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
-import 'package:open_bsp/services/controller_locator.dart';
+import 'package:open_bsp/services/segment_data_service.dart';
+import 'package:open_bsp/services/viewmodel_locator.dart';
 
-import '../../controller/modes_controller.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
+import '../../viewmodel/all_paths_view_model.dart';
+import '../../viewmodel/current_path_view_model.dart';
+import '../../viewmodel/modes_controller_view_model.dart';
 
 class DrawingPage extends StatefulWidget {
   @override
@@ -23,10 +24,11 @@ class _DrawingPageState extends State<DrawingPage> {
 
   GlobalKey key = new GlobalKey();
 
-  // SketcherController controller =  getIt<SketcherController>();
-  AllPathsController _allPathsController =  getIt<AllPathsController>();
-  ModesController _modesController =  getIt<ModesController>();
-  CurrentPathController _currentPathController =  getIt<CurrentPathController>();
+  // SketcherController viewmodel =  getIt<SketcherController>();
+  AllPathsViewModel _allPathsVM =  getIt<AllPathsViewModel>();
+  SegmentDataService _segmentDataService =  getIt<SegmentDataService>();
+  ModesViewModel _modesVM =  getIt<ModesViewModel>();
+  CurrentPathViewModel _currentPathVM =  getIt<CurrentPathViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +38,14 @@ class _DrawingPageState extends State<DrawingPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Biegeapp'),
-            Text(AppModes().getModeName(_modesController.selectedMode))
+            Text(AppModes().getModeName(_modesVM.selectedMode))
           ],
         ),
       ),
       backgroundColor: Colors.yellow[50],
       body: Container(
         child: Stack(children: [
-          BuildAllPaths(),
+          AllPathsWidget(),
           CurrentPathWidget()
         ]),
       ),
@@ -54,7 +56,7 @@ class _DrawingPageState extends State<DrawingPage> {
           SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
           SpeedDialChild(
               child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-          SpeedDialChild(child: Icon(Icons.circle), onTap: _modesController.toggleDefaultMode),
+          SpeedDialChild(child: Icon(Icons.circle), onTap: _modesVM.toggleDefaultMode),
         ],
       ),
     );
@@ -62,15 +64,17 @@ class _DrawingPageState extends State<DrawingPage> {
 
   Future<void> clear() async {
     setState(() {
-      _allPathsController.clear();
-      _currentPathController.clear();
-      _modesController.clear();
+      _segmentDataService.currentlyDrawnSegment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+      _segmentDataService.segments = [];
+      _allPathsVM.clear();
+      _currentPathVM.clear();
+      _modesVM.clear();
     });
   }
 
   void toggleSelectionMode() {
     setState(() {
-      _modesController.toggleSelectionMode();
+      _modesVM.toggleSelectionMode();
     });
   }
 
@@ -89,9 +93,9 @@ class _DrawingPageState extends State<DrawingPage> {
 
     Offset pointC = new Offset(x, y);
     Segment newLine = new Segment(
-        [line.path.first, pointC], _currentPathController.selectedColor, _currentPathController.selectedWidth);
+        [line.path.first, pointC], _currentPathVM.selectedColor, _currentPathVM.selectedWidth);
 
-    _currentPathController.currentlyDrawnSegment = newLine;
+    // _currentPathVM.currentlyDrawnSegment = newLine;
   }
 
 
