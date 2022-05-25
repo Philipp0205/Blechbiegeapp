@@ -1,33 +1,12 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:open_bsp/services/segment_data_service.dart';
 
 import '../model/segment.dart';
 
-class AllPathsViewModel extends ChangeNotifier {
-  List<Segment> _segments = [];
-  List<Segment> get segments => _segments;
+class AllPathsViewModel extends SegmentDataService {
 
-  StreamController<List<Segment>> linesStreamController =
-      StreamController<List<Segment>>.broadcast();
-
-  void deleteSegment(Segment segment) {
-    segments.remove(segment);
-    updateLinesStreamController();
-  }
-
-  void updateLinesStreamController() {
-    linesStreamController.add(segments);
-    notifyListeners();
-  }
-
-  void addSegment(Segment segment) {
-    this.segments.add(segment);
-    this.linesStreamController.add(segments);
-    print('segments.length in add segments ${segments.length}');
-    notifyListeners();
-  }
 
   Segment getNearestSegment(DragDownDetails details) {
     Map<Segment, double> distances = {};
@@ -65,7 +44,7 @@ class AllPathsViewModel extends ChangeNotifier {
   }
 
   void clear() {
-    _segments = [];
+    segments = [];
 
     notifyListeners();
   }

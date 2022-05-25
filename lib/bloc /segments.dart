@@ -1,0 +1,4 @@
+class Segments {
+  const Segments();
+
+}

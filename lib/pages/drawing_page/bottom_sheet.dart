@@ -51,11 +51,11 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          setState(() {
-                            _allPathsVM.deleteSegment(
-                                _currentPathVM.currentlyDrawnSegment);
-                            _currentPathVM.clearCurrentLine();
-                          });
+                          // setState(() {
+                          //   _allPathsVM.deleteSegment(
+                          //       _currentPathVM.currentlyDrawnSegment);
+                          //   _currentPathVM.clearCurrentLine();
+                          // });
                         },
                         child: const Text('Löschen')),
                     ElevatedButton(

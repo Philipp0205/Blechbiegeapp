@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -9,26 +8,15 @@ import '../model/segment.dart';
 import '../services/segment_data_service.dart';
 import 'modes_controller_view_model.dart';
 
-class CurrentPathViewModel extends ChangeNotifier {
-  Color selectedColor = Colors.black;
-  double selectedWidth = 5.0;
-
+class CurrentPathViewModel extends SegmentDataService {
   ModesViewModel _modesViewModel = getIt<ModesViewModel>();
+  // SegmentDataService segmentDataService;
 
-  SegmentDataService _segmentDataService = getIt<SegmentDataService>();
-
-  Segment get currentlyDrawnSegment =>
-      _segmentDataService.currentlyDrawnSegment;
-
-  List<Segment> get segments => _segmentDataService.segments;
-
-  void setCurrentlyDrawnSegment(Offset offset) {
-    _segmentDataService.setCurrentlyDrawnSegment(offset);
-  }
+  CurrentPathViewModel();
 
   void changeSelectedSegmentDependingNewOffset(Offset newOffset) {
-    List<Offset> offsets = this.currentlyDrawnSegment.path;
-    if (this.currentlyDrawnSegment.selectedEdge != null) {
+    List<Offset> offsets = currentlyDrawnSegment.path;
+    if (currentlyDrawnSegment.selectedEdge != null) {
       if (currentlyDrawnSegment.selectedEdge ==
           currentlyDrawnSegment.path.first) {
         offsets.removeAt(0);
@@ -49,15 +37,13 @@ class CurrentPathViewModel extends ChangeNotifier {
       ..isSelected = true
       ..color = Colors.red;
 
-    _segmentDataService.changeSegment(_segmentDataService.currentlyDrawnSegment, segment);
+    changeSegment(currentlyDrawnSegment, segment);
   }
 
   void addToPathOfCurrentlyDrawnSegment(Offset offset) {
-    List<Offset> path =
-        List.from(_segmentDataService.currentlyDrawnSegment.path)..add(offset);
-    _segmentDataService.currentlyDrawnSegment =
-        Segment(path, selectedColor, selectedWidth);
-    _segmentDataService.updateCurrentSegmentLineStreamController();
+    List<Offset> path = List.from(currentlyDrawnSegment.path)..add(offset);
+    currentlyDrawnSegment = Segment(path, selectedColor, selectedWidth);
+    updateCurrentSegmentLineStreamController();
     // currentLineStreamController.add(currentlyDrawnSegment);
     notifyListeners();
   }
@@ -72,7 +58,7 @@ class CurrentPathViewModel extends ChangeNotifier {
       ..isSelected = true
       ..color = Colors.red;
 
-    _segmentDataService.currentlyDrawnSegment = segment;
+    currentlyDrawnSegment = segment;
 
     addToCurrentLineStreamController(segment);
     notifyListeners();
@@ -80,7 +66,7 @@ class CurrentPathViewModel extends ChangeNotifier {
   }
 
   void addToCurrentLineStreamController(Segment segment) {
-    _segmentDataService.currentSegmentStreamController.add(segment);
+    currentSegmentStreamController.add(segment);
     notifyListeners();
   }
 
@@ -179,9 +165,9 @@ class CurrentPathViewModel extends ChangeNotifier {
   }
 
   void clearCurrentLine() {
-    _segmentDataService.currentlyDrawnSegment =
+    currentlyDrawnSegment =
         Segment([new Offset(0, 0)], selectedColor, selectedWidth);
-    _segmentDataService.currentSegmentStreamController.add(currentlyDrawnSegment);
+    currentSegmentStreamController.add(currentlyDrawnSegment);
     notifyListeners();
   }
 
@@ -189,7 +175,7 @@ class CurrentPathViewModel extends ChangeNotifier {
     currentlyDrawnSegment.isSelected = false;
     currentlyDrawnSegment.selectedEdge = new Offset(0, 0);
     currentlyDrawnSegment.color = Colors.black;
-    _segmentDataService.currentSegmentStreamController.add(currentlyDrawnSegment);
+    currentSegmentStreamController.add(currentlyDrawnSegment);
     notifyListeners();
   }
 
@@ -201,12 +187,12 @@ class CurrentPathViewModel extends ChangeNotifier {
 
   void updateSegment(Segment segment) {
     segments.add(segment);
-    _segmentDataService.currentSegmentStreamController.add(segment);
+    currentSegmentStreamController.add(segment);
     // _allPathsController
     //   ..deleteSegment(currentlyDrawnSegment)
     //   ..addSegment(segment);
 
-    _segmentDataService.currentlyDrawnSegment = segment;
+    currentlyDrawnSegment = segment;
 
     segment
       ..setIsSelected(null)
@@ -241,14 +227,14 @@ class CurrentPathViewModel extends ChangeNotifier {
   }
 
   void clear() {
-    _segmentDataService.currentlyDrawnSegment =
+    currentlyDrawnSegment =
         new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
   }
 
   Segment getNearestSegment(DragDownDetails details) {
     Map<Segment, double> distances = {};
 
-    _segmentDataService.segments.forEach((line) {
+    segments.forEach((line) {
       distances.addEntries([MapEntry(line, getDistanceToLine(details, line))]);
     });
 

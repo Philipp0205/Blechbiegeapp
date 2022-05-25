@@ -17,6 +17,8 @@ class Sketcher extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    print('paint ${lines.length} segments');
+    print('path ${lines[0].path} ');
     canvas = canvas;
     recordingCanvas = new Canvas(pictureRecorder);
 

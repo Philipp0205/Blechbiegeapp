@@ -3,17 +3,18 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:open_bsp/pages/drawing_page/all_paths_widget.dart';
-import 'package:open_bsp/pages/drawing_page/current_path_widget.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
+import '../../bloc /current_path/current_path_bloc.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';
+import 'current_path_widget2.dart';
 
 class DrawingPage extends StatefulWidget {
   @override
@@ -21,8 +22,6 @@ class DrawingPage extends StatefulWidget {
 }
 
 class _DrawingPageState extends State<DrawingPage> {
-
-  GlobalKey key = new GlobalKey();
 
   // SketcherController viewmodel =  getIt<SketcherController>();
   AllPathsViewModel _allPathsVM =  getIt<AllPathsViewModel>();
@@ -45,8 +44,9 @@ class _DrawingPageState extends State<DrawingPage> {
       backgroundColor: Colors.yellow[50],
       body: Container(
         child: Stack(children: [
-          AllPathsWidget(),
-          CurrentPathWidget()
+          CurrentPathWidget2(),
+          // AllPathsWidget(),
+          // CurrentPathWidget()
         ]),
       ),
       floatingActionButton: SpeedDial(
@@ -63,22 +63,20 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    setState(() {
-      _segmentDataService.currentlyDrawnSegment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-      _segmentDataService.segments = [];
-      _allPathsVM.clear();
-      _currentPathVM.clear();
-      _modesVM.clear();
-    });
+    BlocProvider.of<CurrentPathBloc>(context).add(OnSegmentDeleted());
+    // setState(() {
+    //   _segmentDataService.currentlyDrawnSegment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
+    //   _segmentDataService.segments = [];
+    //   _allPathsVM.clear();
+    //   _currentPathVM.clear();
+    //   _modesVM.clear();
+    // });
   }
 
   void toggleSelectionMode() {
     setState(() {
       _modesVM.toggleSelectionMode();
     });
-  }
-
-  void debugFunction() {
   }
 
   void extendSegment(Segment line, double length) {

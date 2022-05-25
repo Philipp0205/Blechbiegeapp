@@ -1,46 +1,35 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:open_bsp/bloc%20/current_path/current_path_bloc.dart';
 import 'package:open_bsp/pages/drawing_page/bottom_sheet.dart';
-import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 import '../../services/viewmodel_locator.dart';
-import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';
 import 'sketcher.dart';
 
 class CurrentPathWidget extends StatefulWidget {
-  // final Modes selectedMode;
-  // final Segment segment;
-  // final List<Segment> model.segments;
-
-  const CurrentPathWidget();
-
   @override
   _CurrentPathWidgetState createState() => _CurrentPathWidgetState();
 }
 
 class _CurrentPathWidgetState extends State<CurrentPathWidget> {
-  GlobalKey key = new GlobalKey();
-
-  CurrentPathViewModel currentPathVM = getIt<CurrentPathViewModel>();
-  SegmentDataService _segmentDataService = getIt<SegmentDataService>();
-  AllPathsViewModel _allPathsVM = getIt<AllPathsViewModel>();
   ModesViewModel _modesVM = getIt<ModesViewModel>();
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SegmentDataService>(
-      create: (context) => _segmentDataService,
-      child: GestureDetector(
-        onPanStart: onPanStart,
-        onPanUpdate: onPanUpdate,
-        onPanEnd: onPanEnd,
-        onPanDown: onPanDown,
+    // return ChangeNotifierProvider<CurrentPathViewModel>(
+    //   create: (context) => _model,
+    return Consumer<CurrentPathViewModel>(
+      builder: (context, model, child) => GestureDetector(
+        onPanStart: (details) => onPanStart(details, model),
+        onPanUpdate: (details) => onPanUpdate(details, model),
+        onPanEnd: (details) => onPanEnd(details, model),
+        onPanDown: (details) => onPanDown(details, model),
         child: RepaintBoundary(
           child: Container(
               width: MediaQuery.of(context).size.width,
@@ -49,12 +38,14 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
               color: Colors.transparent,
               alignment: Alignment.topLeft,
               child: StreamBuilder<Segment>(
-                stream: _segmentDataService.currentSegmentStreamController.stream,
+                stream: model.currentSegmentStreamController.stream,
                 builder: (context, snapshot) {
+                  // model.addListener(() {
+                  //  print('currentSegemntmodel triggered ') ;
+                  // });
                   return CustomPaint(
                     painter: Sketcher(
-                      lines: [_segmentDataService.currentlyDrawnSegment],
-                      // lines: lines,
+                      lines: [model.currentlyDrawnSegment],
                     ),
                   );
                 },
@@ -62,95 +53,96 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
         ),
       ),
     );
+    // );
   }
 
   /// Logic when user starts drawing in the canvas.
-  void onPanStart(DragStartDetails details) {
+  void onPanStart(DragStartDetails details, CurrentPathViewModel model) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset offset = new Offset(point.dx, point.dy);
 
     switch (_modesVM.selectedMode) {
       case Modes.defaultMode:
-        onPanStartWithDefaultMode(offset);
+        onPanStartWithDefaultMode(offset, model);
         break;
       case Modes.pointMode:
-        onPanStartWithPointMode(details, offset);
+        onPanStartWithPointMode(details, offset, model);
         break;
       case Modes.selectionMode:
         break;
     }
   }
 
-  void onPanStartWithDefaultMode(Offset offset) {
-    currentPathVM.setCurrentlyDrawnSegment(offset);
+  void onPanStartWithDefaultMode(Offset offset, CurrentPathViewModel model) {
+    model.setCurrentlyDrawnSegment(offset);
   }
 
-  void onPanStartWithPointMode(DragStartDetails details, Offset offset) {
-    currentPathVM.changeSelectedSegmentDependingNewOffset(offset);
+  void onPanStartWithPointMode(DragStartDetails details, Offset offset, CurrentPathViewModel model) {
+    model.changeSelectedSegmentDependingNewOffset(offset);
   }
 
   /// Logic when user continuous drawing in the canvas while holding down finger.
-  void onPanUpdate(DragUpdateDetails details) {
+  void onPanUpdate(DragUpdateDetails details, CurrentPathViewModel model) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
 
     switch (_modesVM.selectedMode) {
       case Modes.defaultMode:
-        onPanUpdateWithSelectionMode(point2);
+        onPanUpdateWithSelectionMode(point2, model);
         break;
       case Modes.pointMode:
-        onPanUpdateWithPointMode(point2);
+        onPanUpdateWithPointMode(point2, model);
         break;
       case Modes.selectionMode:
-        onPanUpdateWithSelectionMode(point2);
+        onPanUpdateWithSelectionMode(point2, model);
         break;
     }
   }
 
-  void onPanUpdateWithSelectionMode(Offset offset) {
-    currentPathVM.addToPathOfCurrentlyDrawnSegment(offset);
+  void onPanUpdateWithSelectionMode(Offset offset, CurrentPathViewModel model) {
+    model.addToPathOfCurrentlyDrawnSegment(offset);
   }
 
-  void onPanUpdateWithPointMode(Offset newOffset) {
-    currentPathVM.changeSelectedSegmentDependingNewOffset(newOffset);
+  void onPanUpdateWithPointMode(Offset newOffset, CurrentPathViewModel model) {
+    model.changeSelectedSegmentDependingNewOffset(newOffset);
   }
 
   /// Logic when user stops drawing in the canvas.
-  void onPanEnd(DragEndDetails details) {
+  void onPanEnd(DragEndDetails details, CurrentPathViewModel model) {
     switch (_modesVM.selectedMode) {
       case Modes.defaultMode:
-        onPanEndWithDefaultMode();
+        onPanEndWithDefaultMode(model);
         break;
       case Modes.pointMode:
-        onPanEndWithPointMode();
+        onPanEndWithPointMode(model);
         break;
       case Modes.selectionMode:
         break;
     }
   }
 
-  void onPanEndWithPointMode() {
-    currentPathVM.mergeSegmentsIfNearToEachOther(
-        currentPathVM.currentlyDrawnSegment, 30);
+  void onPanEndWithPointMode(CurrentPathViewModel model) {
+    model.mergeSegmentsIfNearToEachOther(model.currentlyDrawnSegment, 30);
   }
 
-  void onPanEndWithDefaultMode() {
-    _segmentDataService
-      ..currentlyDrawnSegment = currentPathVM
-          .straigthenSegment(_segmentDataService.currentlyDrawnSegment)
-      ..segments.add(_segmentDataService.currentlyDrawnSegment)
+  void onPanEndWithDefaultMode(CurrentPathViewModel model) {
+    model
+      ..currentlyDrawnSegment =
+          model.straigthenSegment(model.currentlyDrawnSegment)
+      ..segments.add(model.currentlyDrawnSegment)
       ..updateCurrentSegmentLineStreamController()
       ..updateSegmentsStreamController();
+    print('segments: ${model.segments.length}');
   }
 
-  void onPanDown(DragDownDetails details) {
+  void onPanDown(DragDownDetails details, CurrentPathViewModel model) {
     if (_modesVM.selectedMode == Modes.selectionMode) {
-      selectSegment(details);
+      selectSegment(details, model);
     }
     if (_modesVM.selectedMode == Modes.pointMode) {
-      currentPathVM.selectPoint(
+      model.selectPoint(
           new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
     }
   }
@@ -173,10 +165,10 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   //   return nearestEdge;
   // }
 
-  void selectSegment(DragDownDetails details) {
-    Segment nearestSegment = currentPathVM.getNearestSegment(details);
+  void selectSegment(DragDownDetails details, CurrentPathViewModel model) {
+    Segment nearestSegment = model.getNearestSegment(details);
     // if (nearestSegment != currentPathVM.currentlyDrawnSegment) {
-    currentPathVM.changeSelectedSegment(nearestSegment);
+    model.changeSelectedSegment(nearestSegment);
     // }
 
     showModalBottomSheet(

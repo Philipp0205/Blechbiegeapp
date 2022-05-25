@@ -1,11 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../model/segment.dart';
 
-class SegmentDataService extends ChangeNotifier {
+class SegmentDataService with ChangeNotifier {
   Color selectedColor = Colors.black;
   double selectedWidth = 5.0;
 
@@ -54,7 +53,7 @@ class SegmentDataService extends ChangeNotifier {
   }
 
   void setCurrentlyDrawnSegment(offset) {
-    currentlyDrawnSegment = new Segment(offset, selectedColor, selectedWidth);
+    currentlyDrawnSegment = new Segment([offset], selectedColor, selectedWidth);
     updateCurrentSegmentLineStreamController();
 
   }
