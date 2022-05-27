@@ -16,10 +16,10 @@ class CurrentSegmentInitial extends CurrentPathState {
       : super(currentSegment: currentSegment);
 }
 
-class CurrentSegmentUpdated extends CurrentPathState {
+class CurrentSegmentUpdate extends CurrentPathState {
   final List<Segment> segment;
 
-  const CurrentSegmentUpdated({required this.segment})
+  const CurrentSegmentUpdate({required this.segment})
       : super(currentSegment: segment);
 
   @override

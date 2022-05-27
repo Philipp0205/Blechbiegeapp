@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_path_bloc.dart';
 
+import '../../bloc /all_paths/all_paths_bloc.dart';
 import '../../services/viewmodel_locator.dart';
 import '../../viewmodel/modes_controller_view_model.dart';
 import 'sketcher.dart';
@@ -23,42 +24,49 @@ class _CurrentPathWidget2State extends State<CurrentPathWidget2> {
           return GestureDetector(
             onPanStart: (details) => onPanStart(context, details, state),
             onPanUpdate: (details) => onPanUpdate(context, details, state),
+            onPanEnd: (details) => onPanEnd(context, details, state),
             child: RepaintBoundary(
               child: Container(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width,
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height,
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
                 padding: EdgeInsets.all(4.0),
                 color: Colors.transparent,
                 alignment: Alignment.topLeft,
                 child: CustomPaint(
                   painter: Sketcher(
-                    lines: [state.currentSegment.first],
+                    lines: state.currentSegment,
                   ),
                 ),
               ),
             ),
           );
-        }
-    );
+        });
   }
 
-  onPanStart(BuildContext context, DragStartDetails details, CurrentPathState state) {
-    print('on pan start');
-    // context.read<CurrentPathBloc>().add(OnPanStarted(currentSegment: state.currentSegment));
-  }
-
-  void onPanUpdate(BuildContext context, DragUpdateDetails details, CurrentPathState state) {
+  void onPanStart(
+      BuildContext context, DragStartDetails details, CurrentPathState state) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
-    context.read<CurrentPathBloc>().add(OnPanUpdated(currentSegment: state.currentSegment, offset: point2));
+    context.read<CurrentPathBloc>().add(PanStarted(firstDrawnOffset: point2));
+  }
 
+  void onPanUpdate(
+      BuildContext context, DragUpdateDetails details, CurrentPathState state) {
+    RenderBox box = context.findRenderObject() as RenderBox;
+    Offset point = box.globalToLocal(details.globalPosition);
+    Offset point2 = new Offset(point.dx, point.dy);
+    context
+        .read<CurrentPathBloc>()
+        .add(PanUpdated(currentSegment: state.currentSegment, offset: point2));
+  }
+
+  void onPanEnd(
+      BuildContext context, DragEndDetails details, CurrentPathState state) {
+    context.read<CurrentPathBloc>().add(PanEnded(currentSegment: state.currentSegment));
+    context
+        .read<AllPathsBloc>()
+        .add(SegmentAdded(segment: state.currentSegment.first));
+    context.read<CurrentPathBloc>().add(CurrentSegmentDeleted());
   }
 }
-

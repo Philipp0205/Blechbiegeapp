@@ -7,18 +7,23 @@ abstract class CurrentPathEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class OnPanStarted extends CurrentPathEvent{
-  final List<Segment> currentSegment;
-  const OnPanStarted({required this.currentSegment});
+class PanStarted extends CurrentPathEvent{
+  final Offset firstDrawnOffset;
+  const PanStarted({required this.firstDrawnOffset});
 }
 
-class OnPanUpdated extends CurrentPathEvent {
+class PanUpdated extends CurrentPathEvent {
   final List<Segment> currentSegment;
   final Offset offset;
 
-  const OnPanUpdated({required this.currentSegment, required this.offset});
+  const PanUpdated({required this.currentSegment, required this.offset});
 }
 
-class OnSegmentDeleted extends CurrentPathEvent {
-  OnSegmentDeleted();
+class PanEnded extends CurrentPathEvent {
+  final List<Segment> currentSegment;
+  PanEnded({required this.currentSegment});
+}
+
+class CurrentSegmentDeleted extends CurrentPathEvent {
+  CurrentSegmentDeleted();
 }

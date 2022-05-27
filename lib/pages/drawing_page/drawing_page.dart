@@ -5,6 +5,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:open_bsp/bloc%20/all_paths/all_paths_bloc.dart';
+import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
@@ -44,6 +46,7 @@ class _DrawingPageState extends State<DrawingPage> {
       backgroundColor: Colors.yellow[50],
       body: Container(
         child: Stack(children: [
+          AllPathsWidget2(),
           CurrentPathWidget2(),
           // AllPathsWidget(),
           // CurrentPathWidget()
@@ -63,14 +66,9 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    BlocProvider.of<CurrentPathBloc>(context).add(OnSegmentDeleted());
-    // setState(() {
-    //   _segmentDataService.currentlyDrawnSegment = new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-    //   _segmentDataService.segments = [];
-    //   _allPathsVM.clear();
-    //   _currentPathVM.clear();
-    //   _modesVM.clear();
-    // });
+    BlocProvider.of<CurrentPathBloc>(context).add(CurrentSegmentDeleted());
+    BlocProvider.of<AllPathsBloc>(context).add(AllPathsDeleted());
+
   }
 
   void toggleSelectionMode() {

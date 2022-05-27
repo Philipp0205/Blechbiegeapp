@@ -17,40 +17,40 @@ class Sketcher extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    print('paint ${lines.length} segments');
-    print('path ${lines[0].path} ');
-    canvas = canvas;
-    recordingCanvas = new Canvas(pictureRecorder);
+    if (lines.length > 0) {
+      canvas = canvas;
+      recordingCanvas = new Canvas(pictureRecorder);
 
-    Paint paint = Paint()
-      ..color = Colors.red
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0;
+      Paint paint = Paint()
+        ..color = Colors.red
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 5.0;
 
-    for (int i = 0; i < lines.length; ++i) {
-      if (lines[i] == null) continue;
-      for (int j = 0; j < lines[i].path.length - 1; ++j) {
-        if (lines[i].path[j] != null && lines[i].path[j + 1] != null) {
-          paint.color = lines[i].color;
-          paint.strokeWidth = lines[i].width;
-          canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
+      for (int i = 0; i < lines.length; ++i) {
+        if (lines[i] == null) continue;
+        for (int j = 0; j < lines[i].path.length - 1; ++j) {
+          if (lines[i].path[j] != null && lines[i].path[j + 1] != null) {
+            paint.color = lines[i].color;
+            paint.strokeWidth = lines[i].width;
+            canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
 
-          if (lines[i].isSelected) {
-            toggleSegmentSelection(lines[i], canvas);
-          }
+            if (lines[i].isSelected) {
+              toggleSegmentSelection(lines[i], canvas);
+            }
 
-          if (lines[i].selectedEdge != null) {
-            if (lines[i].highlightPoints) {
-              Offset offset = new Offset(lines[i].selectedEdge!.dx - 50,
-                  lines[i].selectedEdge!.dy + 20);
-              if (lastDrawnText != '') {
-                drawText(
-                    canvas, lastDrawnText, offset, Colors.yellow[50] as Color);
+            if (lines[i].selectedEdge != null) {
+              if (lines[i].highlightPoints) {
+                Offset offset = new Offset(lines[i].selectedEdge!.dx - 50,
+                    lines[i].selectedEdge!.dy + 20);
+                if (lastDrawnText != '') {
+                  drawText(canvas, lastDrawnText, offset,
+                      Colors.yellow[50] as Color);
+                }
+
+                String text =
+                    '${lines[i].selectedEdge!.dx.toStringAsFixed(2)} / ${lines[i].selectedEdge!.dy.toStringAsFixed(2)}';
+                drawText(canvas, text, offset, Colors.yellow[50] as Color);
               }
-
-              String text =
-                  '${lines[i].selectedEdge!.dx.toStringAsFixed(2)} / ${lines[i].selectedEdge!.dy.toStringAsFixed(2)}';
-              drawText(canvas, text, offset, Colors.yellow[50] as Color);
             }
           }
         }
@@ -83,7 +83,6 @@ class Sketcher extends CustomPainter {
   }
 
   void drawText(Canvas canvas, String text, Offset offset, Color color) {
-
     TextStyle style = TextStyle(
         color: Colors.black,
         backgroundColor: Colors.green[100],
@@ -106,8 +105,7 @@ class Sketcher extends CustomPainter {
     textPainter.paint(canvas, offset);
   }
 
-  void makeSegmentSelected(Segment line, Canvas canvas) {
-  }
+  void makeSegmentSelected(Segment line, Canvas canvas) {}
 
   @override
   bool shouldRepaint(Sketcher oldDelegate) {

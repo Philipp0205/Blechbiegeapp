@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:open_bsp/repository/segments_repository.dart';
 
 import '../../model/segment.dart';
 
@@ -12,42 +11,44 @@ part 'current_path_event.dart';
 part 'current_path_state.dart';
 
 class CurrentPathBloc extends Bloc<CurrentPathEvent, CurrentPathState> {
-  CurrentPathBloc()
-      : super(CurrentSegmentInitial(currentSegment: [
-          new Segment([new Offset(0, 0)], Colors.black, 5)
-        ])) {
-    on<OnPanStarted>(_onCurrentPathStarted);
-    on<OnPanUpdated>(_onCurrentPathUpdated);
-    on<OnSegmentDeleted>(_onSegmentDeleted);
+  CurrentPathBloc({required SegmentsResposiory segmentsRepository})
+      : this._segmentsResposiory = segmentsRepository,
+        super(CurrentSegmentInitial(currentSegment: [])) {
+    on<PanStarted>(_onCurrentPathStarted);
+    on<PanUpdated>(_onCurrentPathUpdated);
+    on<PanEnded>(_onPanEnded);
+    on<CurrentSegmentDeleted>(_deleteCurrentSegment);
+  }
+  final SegmentsResposiory _segmentsResposiory;
+
+  /// Creates currently drawn segment
+  void _onCurrentPathStarted(PanStarted event, Emitter<CurrentPathState> emit) {
+
+    print('currentpath started all segments from repo: ${_segmentsResposiory.getAllSegments().first.path}');
+
+
+    Segment segment = new Segment([event.firstDrawnOffset], Colors.black, 5);
+    emit(CurrentSegmentUpdate(segment: [segment]));
   }
 
-  void _onCurrentPathStarted(
-      OnPanStarted event, Emitter<CurrentPathState> emit) {
-    print('_onCurrentPathStarted');
-    // emit(CurrentSegment(event.currentSegment));
-  }
-
-  void _onCurrentPathUpdated(
-      OnPanUpdated event, Emitter<CurrentPathState> emit) {
-
+  void _onCurrentPathUpdated(PanUpdated event, Emitter<CurrentPathState> emit) {
     List<Offset> path = List.from(event.currentSegment.first.path);
     path.add(event.offset);
 
     List<Segment> segment = [new Segment(path, Colors.black, 5)];
 
-    if (event.currentSegment.first.path.first == new Offset(0, 0)) {
-      print('path remofe initial offset $path');
-      segment.first.path.removeAt(0);
-    }
-
-    emit(CurrentSegmentUpdated(segment: segment));
+    emit(CurrentSegmentUpdate(segment: segment));
   }
 
+  void _onPanEnded(PanEnded event, Emitter<CurrentPathState> emit) {
+    List<Offset> currentPath = event.currentSegment.first.path;
+    Segment straigtSegment =
+        new Segment([currentPath.first, currentPath.last], Colors.black, 5);
+    emit(CurrentSegmentUpdate(segment: [straigtSegment]));
+  }
 
-  void _onSegmentDeleted(
-      OnSegmentDeleted event, Emitter<CurrentPathState> emit) {
-
-    Segment segment = new Segment([new Offset(0, 0)], Colors.black, 5);
-    emit(CurrentSegmentUpdated(segment: [segment]));
+  void _deleteCurrentSegment(
+      CurrentSegmentDeleted event, Emitter<CurrentPathState> emit) {
+    emit(CurrentSegmentUpdate(segment: []));
   }
 }
