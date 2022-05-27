@@ -14,7 +14,7 @@ class SketcherController extends ChangeNotifier {
   Segment selectedSegment =
       new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
 
-  Modes selectedMode = Modes.defaultMode;
+  Mode selectedMode = Mode.defaultMode;
 
   StreamController<List<Segment>> linesStreamController =
       StreamController<List<Segment>>.broadcast();
@@ -82,7 +82,7 @@ class SketcherController extends ChangeNotifier {
         new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
     selectedSegment =
         new Segment([Offset(0, 0), Offset(0, 0)], Colors.black, 5.0);
-    selectedMode = Modes.defaultMode;
+    selectedMode = Mode.defaultMode;
     notifyListeners();
   }
 
@@ -134,7 +134,7 @@ class SketcherController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedMode(Modes mode) {
+  void setSelectedMode(Mode mode) {
     this.selectedMode = mode;
     notifyListeners();
   }
@@ -227,13 +227,13 @@ class SketcherController extends ChangeNotifier {
   }
 
   void toggleSelectionMode() {
-    selectedMode = Modes.selectionMode;
+    selectedMode = Mode.selectionMode;
     clearSegmentSelection(selectedSegment);
     notifyListeners();
   }
 
   void toggleEdgeMode() {
-    selectedMode = Modes.pointMode;
+    selectedMode = Mode.pointMode;
     notifyListeners();
   }
 
@@ -241,7 +241,7 @@ class SketcherController extends ChangeNotifier {
     Offset offset = new Offset(0, 0);
     selectedSegment.selectedEdge = offset;
     selectedSegment.isSelected = false;
-    selectedMode = Modes.defaultMode;
+    selectedMode = Mode.defaultMode;
     notifyListeners();
   }
 

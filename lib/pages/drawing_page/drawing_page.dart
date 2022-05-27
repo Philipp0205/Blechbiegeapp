@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/all_paths/all_paths_bloc.dart';
+import 'package:open_bsp/data/segments_repository.dart';
 import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
 import '../../bloc /current_path/current_path_bloc.dart';
+import '../../bloc /modes/mode_cubit.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 import '../../viewmodel/all_paths_view_model.dart';
@@ -33,6 +35,7 @@ class _DrawingPageState extends State<DrawingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final SegmentsRepository segmentsRepository = new SegmentsRepository();
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -45,12 +48,25 @@ class _DrawingPageState extends State<DrawingPage> {
       ),
       backgroundColor: Colors.yellow[50],
       body: Container(
-        child: Stack(children: [
-          AllPathsWidget2(),
-          CurrentPathWidget2(),
-          // AllPathsWidget(),
-          // CurrentPathWidget()
-        ]),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => CurrentPathBloc(segmentsRepository),
+            ),
+            BlocProvider(
+              create: (_) => AllPathsBloc(),
+            ),
+            BlocProvider(
+              create: (_) => ModeCubit(),
+            ),
+          ],
+          child: Stack(children: [
+            AllPathsWidget2(),
+            CurrentPathWidget2(),
+            // AllPathsWidget(),
+            // CurrentPathWidget()
+          ]),
+        ),
       ),
       floatingActionButton: SpeedDial(
         icon: Icons.add,

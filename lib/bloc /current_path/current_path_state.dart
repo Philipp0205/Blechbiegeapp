@@ -26,4 +26,10 @@ class CurrentSegmentUpdate extends CurrentPathState {
   List<Object> get props => [currentSegment];
 }
 
+class CurrentSegmentSelect extends CurrentPathState {
+
+  CurrentSegmentSelect({required List<Segment> currentSegment}) : super(currentSegment: currentSegment);
+
+}
+
 

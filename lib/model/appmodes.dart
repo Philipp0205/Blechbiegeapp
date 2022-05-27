@@ -1,35 +1,35 @@
 import 'package:flutter/cupertino.dart';
 
-enum Modes { defaultMode, pointMode, selectionMode }
+enum Mode { defaultMode, pointMode, selectionMode }
 
 class AppModes with ChangeNotifier {
-  Modes selectedMode = Modes.selectionMode;
+  Mode selectedMode = Mode.selectionMode;
 
   String getModeName(var selectedMode) {
     switch (selectedMode) {
-      case Modes.pointMode:
+      case Mode.pointMode:
         return 'Edge Mode';
-      case Modes.selectionMode:
+      case Mode.selectionMode:
         return 'Selection Mode';
-      case Modes.defaultMode:
+      case Mode.defaultMode:
         return 'Default Mode';
       default:
         return '';
     }
   }
 
-  void setSelectedMode(Modes mode) {
+  void setSelectedMode(Mode mode) {
     switch (mode) {
-      case Modes.defaultMode:
-        this.selectedMode = Modes.defaultMode;
+      case Mode.defaultMode:
+        this.selectedMode = Mode.defaultMode;
         notifyListeners();
         break;
-      case Modes.pointMode:
-        this.selectedMode = Modes.pointMode;
+      case Mode.pointMode:
+        this.selectedMode = Mode.pointMode;
         notifyListeners();
         break;
-      case Modes.selectionMode:
-        this.selectedMode = Modes.selectionMode;
+      case Mode.selectionMode:
+        this.selectedMode = Mode.selectionMode;
         notifyListeners();
         break;
     }

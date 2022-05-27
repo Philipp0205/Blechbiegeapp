@@ -7,31 +7,31 @@ class ModesViewModel extends ChangeNotifier {
 
   // CurrentPathViewModel _currentPathViewModel = getIt<CurrentPathViewModel>();
 
-  Modes selectedMode = Modes.defaultMode;
+  Mode selectedMode = Mode.defaultMode;
 
   void toggleSelectionMode() {
     print('toggleselectionmode');
-    selectedMode = Modes.selectionMode;
+    selectedMode = Mode.selectionMode;
     notifyListeners();
   }
 
   void toggleEdgeMode() {
-    selectedMode = Modes.pointMode;
+    selectedMode = Mode.pointMode;
     notifyListeners();
   }
 
   void toggleDefaultMode() {
     print('toggle default mode');
-    selectedMode = Modes.defaultMode;
+    selectedMode = Mode.defaultMode;
     // _currentPathViewModel.unselectCurrentLine();
     notifyListeners();
   }
 
   void clear() {
-    selectedMode = Modes.defaultMode;
+    selectedMode = Mode.defaultMode;
   }
 
-  void setSelectedMode(Modes mode) {
+  void setSelectedMode(Mode mode) {
     this.selectedMode = mode;
     notifyListeners();
   }

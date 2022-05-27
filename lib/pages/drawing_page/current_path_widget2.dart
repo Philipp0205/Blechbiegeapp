@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_path_bloc.dart';
+import 'package:open_bsp/bloc%20/modes/mode_cubit.dart';
 
 import '../../bloc /all_paths/all_paths_bloc.dart';
 import '../../services/viewmodel_locator.dart';
@@ -25,6 +26,7 @@ class _CurrentPathWidget2State extends State<CurrentPathWidget2> {
             onPanStart: (details) => onPanStart(context, details, state),
             onPanUpdate: (details) => onPanUpdate(context, details, state),
             onPanEnd: (details) => onPanEnd(context, details, state),
+            onPanDown: (details) => onPanDown(context, details, state),
             child: RepaintBoundary(
               child: Container(
                 width: MediaQuery.of(context).size.width,
@@ -64,9 +66,17 @@ class _CurrentPathWidget2State extends State<CurrentPathWidget2> {
   void onPanEnd(
       BuildContext context, DragEndDetails details, CurrentPathState state) {
     context.read<CurrentPathBloc>().add(PanEnded(currentSegment: state.currentSegment));
-    context
-        .read<AllPathsBloc>()
-        .add(SegmentAdded(segment: state.currentSegment.first));
+    // context
+    //     .read<AllPathsBloc>()
+    //     .add(SegmentAdded(segment: state.currentSegment.first));
     context.read<CurrentPathBloc>().add(CurrentSegmentDeleted());
+  }
+
+  void onPanDown(
+      BuildContext context, DragDownDetails details, CurrentPathState state) {
+
+    context.read<ModeCubit>().state.mode;
+
+
   }
 }

@@ -24,6 +24,12 @@ class PanEnded extends CurrentPathEvent {
   PanEnded({required this.currentSegment});
 }
 
+class PanDowned extends CurrentPathEvent {
+  final Mode mode;
+  PanDowned({required this.mode});
+}
+
 class CurrentSegmentDeleted extends CurrentPathEvent {
   CurrentSegmentDeleted();
 }
+

@@ -160,7 +160,7 @@ class CurrentPathViewModel extends SegmentDataService {
       return segmentA;
     }
 
-    _modesViewModel.setSelectedMode(Modes.defaultMode);
+    _modesViewModel.setSelectedMode(Mode.defaultMode);
     return null;
   }
 

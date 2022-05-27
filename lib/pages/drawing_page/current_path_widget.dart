@@ -63,13 +63,13 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Offset offset = new Offset(point.dx, point.dy);
 
     switch (_modesVM.selectedMode) {
-      case Modes.defaultMode:
+      case Mode.defaultMode:
         onPanStartWithDefaultMode(offset, model);
         break;
-      case Modes.pointMode:
+      case Mode.pointMode:
         onPanStartWithPointMode(details, offset, model);
         break;
-      case Modes.selectionMode:
+      case Mode.selectionMode:
         break;
     }
   }
@@ -89,13 +89,13 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
     Offset point2 = new Offset(point.dx, point.dy);
 
     switch (_modesVM.selectedMode) {
-      case Modes.defaultMode:
+      case Mode.defaultMode:
         onPanUpdateWithSelectionMode(point2, model);
         break;
-      case Modes.pointMode:
+      case Mode.pointMode:
         onPanUpdateWithPointMode(point2, model);
         break;
-      case Modes.selectionMode:
+      case Mode.selectionMode:
         onPanUpdateWithSelectionMode(point2, model);
         break;
     }
@@ -112,13 +112,13 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   /// Logic when user stops drawing in the canvas.
   void onPanEnd(DragEndDetails details, CurrentPathViewModel model) {
     switch (_modesVM.selectedMode) {
-      case Modes.defaultMode:
+      case Mode.defaultMode:
         onPanEndWithDefaultMode(model);
         break;
-      case Modes.pointMode:
+      case Mode.pointMode:
         onPanEndWithPointMode(model);
         break;
-      case Modes.selectionMode:
+      case Mode.selectionMode:
         break;
     }
   }
@@ -138,10 +138,10 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
   }
 
   void onPanDown(DragDownDetails details, CurrentPathViewModel model) {
-    if (_modesVM.selectedMode == Modes.selectionMode) {
+    if (_modesVM.selectedMode == Mode.selectionMode) {
       selectSegment(details, model);
     }
-    if (_modesVM.selectedMode == Modes.pointMode) {
+    if (_modesVM.selectedMode == Mode.pointMode) {
       model.selectPoint(
           new Point(details.globalPosition.dx, details.globalPosition.dy - 80));
     }

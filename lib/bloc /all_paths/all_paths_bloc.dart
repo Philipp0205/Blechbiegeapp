@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,7 +17,7 @@ class AllPathsBloc extends Bloc<AllPathsEvent, AllPathsState> {
   }
   
   void _onSegmentAdded(SegmentAdded event, Emitter<AllPathsState> emit) {
-    print('_onSegmentAdded');
+    print('added segment ${event.segment.path}');
     List<Segment> segments = state.segments;
     segments.add(event.segment);
 

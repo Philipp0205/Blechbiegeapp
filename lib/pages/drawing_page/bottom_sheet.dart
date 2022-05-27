@@ -60,7 +60,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                         child: const Text('Löschen')),
                     ElevatedButton(
                         onPressed: () {
-                          _modesVM.setSelectedMode(Modes.pointMode);
+                          _modesVM.setSelectedMode(Mode.pointMode);
                           // context
                           //     .read<AppModes>()
                           //     .setSelectedMode(Modes.pointMode);
