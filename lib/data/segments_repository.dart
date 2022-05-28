@@ -12,4 +12,8 @@ class SegmentsRepository {
   void addSegment(Segment segment) {
     _segmentsProvider.addSegment(segment);
   }
+
+  void deleteAllSegments() {
+    _segmentsProvider.deleteAllSegments();
+  }
 }

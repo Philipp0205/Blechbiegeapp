@@ -2,7 +2,6 @@ import '../model/segment.dart';
 
 class SegmentsProvider {
   List<Segment> _segments = [];
-
   List<Segment> get segments => _segments;
 
   void addSegment(Segment segment) {
@@ -12,5 +11,9 @@ class SegmentsProvider {
 
   void removeSegment(Segment segment) {
     _segments.remove(segment);
+  }
+
+  void deleteAllSegments() {
+    _segments = [];
   }
 }

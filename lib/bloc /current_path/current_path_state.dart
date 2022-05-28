@@ -1,4 +1,4 @@
-part of 'current_path_bloc.dart';
+part of 'current_path_bloc/current_path_bloc.dart';
 
 abstract class CurrentPathState extends Equatable {
   final List<Segment> currentSegment;
@@ -6,7 +6,7 @@ abstract class CurrentPathState extends Equatable {
   const CurrentPathState({required this.currentSegment});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [currentSegment];
 }
 
 class CurrentSegmentInitial extends CurrentPathState {
@@ -21,14 +21,17 @@ class CurrentSegmentUpdate extends CurrentPathState {
 
   const CurrentSegmentUpdate({required this.segment})
       : super(currentSegment: segment);
-
-  @override
-  List<Object> get props => [currentSegment];
 }
 
 class CurrentSegmentSelect extends CurrentPathState {
 
   CurrentSegmentSelect({required List<Segment> currentSegment}) : super(currentSegment: currentSegment);
+}
+
+class CurrentSegmentDelete extends CurrentPathState {
+
+  CurrentSegmentDelete() : super(currentSegment: []);
+
 
 }
 

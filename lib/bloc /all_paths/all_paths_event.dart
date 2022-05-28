@@ -16,3 +16,7 @@ class SegmentAdded extends AllPathsEvent {
 class AllPathsDeleted extends AllPathsEvent {
   const AllPathsDeleted();
 }
+
+class AllPathsUpdated extends AllPathsEvent {
+  const AllPathsUpdated();
+}

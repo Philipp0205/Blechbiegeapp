@@ -14,9 +14,9 @@ class AllPathsInitial extends AllPathsState {
 }
 
 
-class SegmentsUpdate extends AllPathsState {
+class AllPathsSegmentsUpdated extends AllPathsState {
   final List<Segment> segments;
-  const SegmentsUpdate({required this.segments}) : super(segments: segments);
+  const AllPathsSegmentsUpdated({required this.segments}) : super(segments: segments);
 }
 
 
