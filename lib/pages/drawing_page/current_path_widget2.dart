@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/current_path_bloc/current_path_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/current_path_bloc/current_path_base_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 
 import '../../bloc /all_paths/all_paths_bloc.dart';
 import '../../model/appmodes.dart';
+import 'bottom_sheet.dart';
 import 'sketcher.dart';
 
 class CurrentPathWidget2 extends StatefulWidget {
@@ -80,5 +81,13 @@ class _CurrentPathWidget2State extends State<CurrentPathWidget2> {
       context
           .read<CurrentPathBloc>()
           .add(CurrentPathPanDowned(details: details, mode: mode));
+
+      showModalBottomSheet(
+        enableDrag: true,
+        context: context,
+        builder: (BuildContext context) {
+          return AppBottomSheet();
+        },
+      );
   }
 }

@@ -37,6 +37,7 @@ class AllPathsBloc extends Bloc<AllPathsEvent, AllPathsState> {
 
 
   void _onSegmentsUpdated(AllPathsUpdated event, Emitter<AllPathsState> emit) {
+    print('_onSegmentsUpdated');
     emit(AllPathsSegmentsUpdated(segments: segmentsRepository.getAllSegments()));
 
   }

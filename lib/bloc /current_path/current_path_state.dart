@@ -1,4 +1,4 @@
-part of 'current_path_bloc/current_path_bloc.dart';
+part of 'current_path_bloc/current_path_base_bloc.dart';
 
 abstract class CurrentPathState extends Equatable {
   final List<Segment> currentSegment;

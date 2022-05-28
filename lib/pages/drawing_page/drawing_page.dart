@@ -11,7 +11,7 @@ import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
-import '../../bloc /current_path/current_path_bloc/current_path_bloc.dart';
+import '../../bloc /current_path/current_path_bloc/current_path_base_bloc.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 import '../../viewmodel/all_paths_view_model.dart';
