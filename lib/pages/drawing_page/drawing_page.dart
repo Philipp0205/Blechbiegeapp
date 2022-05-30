@@ -5,19 +5,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:open_bsp/bloc%20/all_paths/all_paths_bloc.dart';
+import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
-import '../../bloc /current_path/current_path_bloc/current_path_base_bloc.dart';
+import '../../bloc /current_path/current_segment_bloc.dart';
+import '../../bloc /current_path/current_segment_event.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';
-import 'current_path_widget2.dart';
+import 'current_segment_widget.dart';
 
 class DrawingPage extends StatefulWidget {
   @override
@@ -46,7 +47,7 @@ class _DrawingPageState extends State<DrawingPage> {
         body: Container(
           child: Stack(children: [
             AllPathsWidget2(),
-            CurrentPathWidget2(),
+            CurrentSegmentWidget2(),
             // AllPathsWidget(),
             // CurrentPathWidget()
           ]),
@@ -66,22 +67,21 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    BlocProvider.of<CurrentPathBloc>(context).add(CurrentSegmentDeleted());
-    BlocProvider.of<AllPathsBloc>(context).add(AllPathsDeleted());
+    BlocProvider.of<CurrentSegmentBloc>(context).add(CurrentSegmentDeleted());
+    BlocProvider.of<AllSegmentsBloc>(context).add(AllSegmentsDeleted());
   }
 
   void toggleSelectionMode() {
     context
         .read<DrawingPageBloc>()
-        .add(DrawingPageModeSelectionPressed(mode: Mode.selectionMode));
-
-    // context.read<CurrentPathBloc>().add(CurrentPathSelectionModePressed(mode: Mode.selectionMode));
+        .add(DrawingPageModeChanged(mode: Mode.selectionMode));
   }
 
   void toggleDefaultMode() {
     context
         .read<DrawingPageBloc>()
-        .add(DrawingPageModeSelectionPressed(mode: Mode.defaultMode));
+        .add(DrawingPageModeChanged(mode: Mode.defaultMode));
+    context.read<CurrentSegmentBloc>().add(CurrentSegmentUnselected());
   }
 
   void extendSegment(Segment line, double length) {

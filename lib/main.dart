@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/all_paths/all_paths_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/current_path_bloc/current_path_base_bloc.dart';
+import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/bloc%20/modes/mode_cubit.dart';
 import 'package:open_bsp/data/segments_repository.dart';
@@ -27,10 +27,10 @@ class MyApp extends StatelessWidget {
         child: MultiBlocProvider(
           providers: [
             BlocProvider(
-              create: (_) => CurrentPathBloc(segmentsRepository),
+              create: (_) => CurrentSegmentBloc(segmentsRepository),
             ),
             BlocProvider(
-              create: (_) => AllPathsBloc(segmentsRepository),
+              create: (_) => AllSegmentsBloc(segmentsRepository),
             ),
             BlocProvider(
               create: (_) => ModeCubit(),

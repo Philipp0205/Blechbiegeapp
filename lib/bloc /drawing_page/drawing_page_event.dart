@@ -7,8 +7,8 @@ abstract class DrawingPageEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class DrawingPageModeSelectionPressed extends DrawingPageEvent {
+class DrawingPageModeChanged extends DrawingPageEvent {
   final Mode mode;
-  DrawingPageModeSelectionPressed({required this.mode});
+  DrawingPageModeChanged({required this.mode});
 
 }

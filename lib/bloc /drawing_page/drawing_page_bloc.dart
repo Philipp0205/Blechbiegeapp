@@ -7,17 +7,15 @@ import 'package:meta/meta.dart';
 import '../../model/appmodes.dart';
 
 part 'drawing_page_event.dart';
-
 part 'drawing_page_state.dart';
 
 class DrawingPageBloc extends Bloc<DrawingPageEvent, DrawingPageState> {
   DrawingPageBloc() : super(DrawingPageInitial(mode: Mode.defaultMode)) {
-    on<DrawingPageModeSelectionPressed>(_onSelectionModePressed);
+    on<DrawingPageModeChanged>(_onSelectionModePressed);
   }
 
   void _onSelectionModePressed(
-      DrawingPageModeSelectionPressed event, Emitter<DrawingPageState> emit) {
-    print('onSelectionModePressed');
+      DrawingPageModeChanged event, Emitter<DrawingPageState> emit) {
     emit(ModeSelectionSuccess(mode: event.mode));
   }
 }

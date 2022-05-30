@@ -16,4 +16,13 @@ class SegmentsRepository {
   void deleteAllSegments() {
     _segmentsProvider.deleteAllSegments();
   }
+  void removeSegment(Segment segment) {
+    _segmentsProvider.removeSegment(segment);
+  }
+
+
+  void setAllSegments(List<Segment> segments) {
+    _segmentsProvider.segments = segments;
+
+  }
 }

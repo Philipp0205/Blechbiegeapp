@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-enum Mode { defaultMode, pointMode, selectionMode }
+enum Mode { defaultMode, pointMode, selectionMode, editSegmentMode}
 
 class AppModes with ChangeNotifier {
   Mode selectedMode = Mode.selectionMode;
@@ -13,6 +13,8 @@ class AppModes with ChangeNotifier {
         return 'Selection Mode';
       case Mode.defaultMode:
         return 'Default Mode';
+      case Mode.editSegmentMode:
+        return 'Edit Segment Mode';
       default:
         return '';
     }
@@ -31,6 +33,9 @@ class AppModes with ChangeNotifier {
       case Mode.selectionMode:
         this.selectedMode = Mode.selectionMode;
         notifyListeners();
+        break;
+      case Mode.editSegmentMode:
+        this.selectedMode = Mode.selectionMode;
         break;
     }
 

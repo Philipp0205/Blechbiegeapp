@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/all_paths/all_paths_bloc.dart';
+import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
 
 import 'sketcher.dart';
 
@@ -13,7 +13,7 @@ class AllPathsWidget2 extends StatefulWidget {
 class _AllPathsWidget2State extends State<AllPathsWidget2> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AllPathsBloc, AllPathsState>(
+    return BlocBuilder<AllSegmentsBloc, AllPathsState>(
       builder: (context, state) {
         return RepaintBoundary(
           child: Container(

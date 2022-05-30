@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
+import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 
 import '../../model/appmodes.dart';
 import '../../services/viewmodel_locator.dart';
@@ -25,7 +31,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
     double _currentSliderValue = _currentPathVM.currentlyDrawnSegment.width;
     return Container(
       height: 150,
-      child: StatefulBuilder(
+      child: BlocBuilder<CurrentSegmentBloc, CurrentSegmentState>(
         builder: (context, state) {
           return Column(
             children: [
@@ -51,20 +57,13 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          // setState(() {
-                          //   _allPathsVM.deleteSegment(
-                          //       _currentPathVM.currentlyDrawnSegment);
-                          //   _currentPathVM.clearCurrentLine();
-                          // });
+                          context.read<CurrentSegmentBloc>().add(new CurrentSegmentDeleted());
+                          context.read<AllSegmentsBloc>().add(new AllSegmentsUpdated());
                         },
                         child: const Text('Löschen')),
                     ElevatedButton(
                         onPressed: () {
-                          _modesVM.setSelectedMode(Mode.pointMode);
-                          // context
-                          //     .read<AppModes>()
-                          //     .setSelectedMode(Modes.pointMode);
-                          Navigator.of(context).pop();
+                          context.read<DrawingPageBloc>().add(DrawingPageModeChanged(mode: Mode.pointMode));
                         },
                         child: const Text('Edge M.')),
                     ElevatedButton(
