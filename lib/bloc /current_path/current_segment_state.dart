@@ -22,11 +22,11 @@ class CurrentSegmentInitial extends CurrentSegmentState {
       : super(currentSegment: currentSegment, mode: mode);
 }
 
-class CurrentPathSegmentUpdate extends CurrentSegmentState {
+class CurrentSegmentUpdate extends CurrentSegmentState {
   final List<Segment> segment;
   final Mode mode;
 
-  const CurrentPathSegmentUpdate({required this.segment, required this.mode})
+  const CurrentSegmentUpdate({required this.segment, required this.mode})
       : super(currentSegment: segment, mode: mode);
 }
 

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/pages/drawing_page/bottom_sheet.dart';
 import 'package:provider/provider.dart';
 

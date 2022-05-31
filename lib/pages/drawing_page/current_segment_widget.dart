@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/gestures/long_press.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 
 import '../../bloc /all_paths/all_segments_bloc.dart';
@@ -11,12 +10,12 @@ import '../../model/appmodes.dart';
 import 'bottom_sheet.dart';
 import 'sketcher.dart';
 
-class CurrentSegmentWidget2 extends StatefulWidget {
+class SegmentWidget extends StatefulWidget {
   @override
-  _CurrentSegmentWidget2State createState() => _CurrentSegmentWidget2State();
+  _SegmentWidgetState createState() => _SegmentWidgetState();
 }
 
-class _CurrentSegmentWidget2State extends State<CurrentSegmentWidget2> {
+class _SegmentWidgetState extends State<SegmentWidget> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -26,11 +25,11 @@ class _CurrentSegmentWidget2State extends State<CurrentSegmentWidget2> {
             listenWhen: (previous, current) => previous.mode != current.mode,
             listener: (context, state) {
               context
-                  .read<CurrentSegmentBloc>()
+                  .read<SegmentWidgetBloc>()
                   .add(CurrentSegmentModeChanged(mode: state.mode));
             }),
       ],
-      child: BlocBuilder<CurrentSegmentBloc, CurrentSegmentState>(
+      child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
           builder: (context, state) {
         return GestureDetector(
           onPanStart: (details) => onPanStart(context, details, state),
@@ -64,7 +63,7 @@ class _CurrentSegmentWidget2State extends State<CurrentSegmentWidget2> {
     Offset point2 = new Offset(point.dx, point.dy);
     Mode mode = context.read<DrawingPageBloc>().state.mode;
     context
-        .read<CurrentSegmentBloc>()
+        .read<SegmentWidgetBloc>()
         .add(CurrentSegmentPanStarted(firstDrawnOffset: point2, mode: mode));
   }
 
@@ -74,25 +73,27 @@ class _CurrentSegmentWidget2State extends State<CurrentSegmentWidget2> {
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
     Mode mode = context.read<DrawingPageBloc>().state.mode;
-    context.read<CurrentSegmentBloc>().add(CurrentSegmentPanUpdated(
+    context.read<SegmentWidgetBloc>().add(CurrentSegmentPanUpdated(
         currentSegment: state.currentSegment, offset: point2, mode: mode));
+    context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
   }
 
   void onPanEnd(
       BuildContext context, DragEndDetails details, CurrentSegmentState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
-    context.read<CurrentSegmentBloc>().add(CurrentSegmentPanEnded(
+    context.read<SegmentWidgetBloc>().add(CurrentSegmentPanEnded(
         currentSegment: state.currentSegment, mode: mode));
-    context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
-    // context.read<CurrentPathBloc>().add(CurrentSegmentDeleted());
+    // context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
   }
 
   void onPanDown(BuildContext context, DragDownDetails details,
       CurrentSegmentState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
-    context.read<CurrentSegmentBloc>()
+    context.read<SegmentWidgetBloc>()
       ..add(CurrentSegmentUnselected())
       ..add(CurrentSegmentPanDowned(details: details, mode: mode));
+
+    context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
   }
 
   void onDoubleTab(BuildContext context, CurrentSegmentState state) {

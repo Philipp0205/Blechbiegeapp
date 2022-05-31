@@ -13,8 +13,6 @@ class AppModes with ChangeNotifier {
         return 'Selection Mode';
       case Mode.defaultMode:
         return 'Default Mode';
-      case Mode.editSegmentMode:
-        return 'Edit Segment Mode';
       default:
         return '';
     }

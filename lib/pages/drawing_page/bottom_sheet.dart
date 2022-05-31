@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
@@ -31,7 +31,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
     double _currentSliderValue = _currentPathVM.currentlyDrawnSegment.width;
     return Container(
       height: 150,
-      child: BlocBuilder<CurrentSegmentBloc, CurrentSegmentState>(
+      child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
         builder: (context, state) {
           return Column(
             children: [
@@ -57,7 +57,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          context.read<CurrentSegmentBloc>().add(new CurrentSegmentDeleted());
+                          context.read<SegmentWidgetBloc>().add(new CurrentSegmentDeleted());
                           context.read<AllSegmentsBloc>().add(new AllSegmentsUpdated());
                         },
                         child: const Text('Löschen')),

@@ -11,7 +11,7 @@ import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
-import '../../bloc /current_path/current_segment_bloc.dart';
+import '../../bloc /current_path/segment_widget_bloc.dart';
 import '../../bloc /current_path/current_segment_event.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
@@ -27,9 +27,6 @@ class DrawingPage extends StatefulWidget {
 
 class _DrawingPageState extends State<DrawingPage> {
   // SketcherController viewmodel =  getIt<SketcherController>();
-  AllPathsViewModel _allPathsVM = getIt<AllPathsViewModel>();
-  SegmentDataService _segmentDataService = getIt<SegmentDataService>();
-  ModesViewModel _modesVM = getIt<ModesViewModel>();
   CurrentPathViewModel _currentPathVM = getIt<CurrentPathViewModel>();
 
   @override
@@ -47,7 +44,7 @@ class _DrawingPageState extends State<DrawingPage> {
         body: Container(
           child: Stack(children: [
             AllPathsWidget2(),
-            CurrentSegmentWidget2(),
+            SegmentWidget(),
             // AllPathsWidget(),
             // CurrentPathWidget()
           ]),
@@ -67,7 +64,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    BlocProvider.of<CurrentSegmentBloc>(context).add(CurrentSegmentDeleted());
+    BlocProvider.of<SegmentWidgetBloc>(context).add(CurrentSegmentDeleted());
     BlocProvider.of<AllSegmentsBloc>(context).add(AllSegmentsDeleted());
   }
 
@@ -81,7 +78,7 @@ class _DrawingPageState extends State<DrawingPage> {
     context
         .read<DrawingPageBloc>()
         .add(DrawingPageModeChanged(mode: Mode.defaultMode));
-    context.read<CurrentSegmentBloc>().add(CurrentSegmentUnselected());
+    context.read<SegmentWidgetBloc>().add(CurrentSegmentUnselected());
   }
 
   void extendSegment(Segment line, double length) {
