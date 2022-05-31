@@ -3,12 +3,11 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-
-import '../../data/segments_repository.dart';
-import '../../model/appmodes.dart';
-import '../../model/segment.dart';
-import 'current_segment_event.dart';
-import 'current_segment_state.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
+import 'package:open_bsp/data/segments_repository.dart';
+import 'package:open_bsp/model/appmodes.dart';
+import 'package:open_bsp/model/segment.dart';
 
 class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
   final SegmentsRepository repository;
@@ -62,6 +61,7 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     } else {
       Segment segment = new Segment(
           [event.firstDrawnOffset, event.firstDrawnOffset], Colors.black, 5);
+      segment.selectedEdge = event.firstDrawnOffset;
       emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
     }
   }
@@ -92,12 +92,17 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
 
   void _onPanUpdateDefaultMode(
       CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> path = state.currentSegment.first.path;
-    path
-      ..removeLast()
-      ..add(event.offset);
-    Segment segment = new Segment(path, Colors.black, 5);
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
+    if (state.currentSegment.first.selectedEdge != null) {
+      List<Offset> path = state.currentSegment.first.path;
+      int indexCurrentOffset =
+          path.indexOf(state.currentSegment.first.selectedEdge!);
+      path
+      ..removeAt(indexCurrentOffset)
+        ..insert(indexCurrentOffset, event.offset);
+      Segment segment = new Segment(path, Colors.black, 5);
+      segment.selectedEdge = event.offset;
+      emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
+    }
   }
 
   void _onPanUpdatePointMode(
