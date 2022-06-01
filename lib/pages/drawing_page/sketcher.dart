@@ -38,8 +38,8 @@ class Sketcher extends CustomPainter {
               toggleSegmentSelection(lines[i], canvas);
             }
 
-            if (lines[i].highlightedPointsInPath.isNotEmpty) {
-              highlightPoints(lines[i].highlightedPointsInPath, canvas);
+            if (lines[i].selectedPoints.isNotEmpty) {
+              highlightPoints(lines[i].selectedPoints, canvas);
             }
 
             if (lines[i].selectedEdge != null) {

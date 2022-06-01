@@ -64,8 +64,8 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> clear() async {
-    BlocProvider.of<SegmentWidgetBloc>(context).add(SegmentPartDeleted());
-    BlocProvider.of<AllSegmentsBloc>(context).add(AllSegmentsDeleted());
+    BlocProvider.of<SegmentWidgetBloc>(context).add((SegmentDeleted()));
+    // BlocProvider.of<AllSegmentsBloc>(context).add(AllSegmentsDeleted());
   }
 
   void toggleSelectionMode() {

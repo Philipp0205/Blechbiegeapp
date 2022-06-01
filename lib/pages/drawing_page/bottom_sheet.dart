@@ -36,20 +36,6 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
           return Column(
             children: [
               Padding(padding: EdgeInsets.all(10), child: Text('Länge')),
-              // Slider(
-              //   value: _currentSliderValue,
-              //   max: _currentPathController.currentlyDrawnSegment.width + 100,
-              //   divisions: 5,
-              //   min: _currentPathController.currentlyDrawnSegment.width - 100,
-              //   label: _currentSliderValue.round().toString(),
-              //   onChanged: (double value) {
-              //     state(() {
-              //       _currentSliderValue = value;
-              //       _currentPathController.extendSegment(_allPathsController.selectedSegment, _currentSliderValue);
-              //     });
-              //     setState(() {});
-              //   },
-              // ),
               Padding(
                 padding: EdgeInsets.all(5),
                 child: Row(

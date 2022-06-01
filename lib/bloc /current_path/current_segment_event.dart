@@ -42,6 +42,10 @@ class CurrentSegmentPanDowned extends CurrentSegmentEvent {
   CurrentSegmentPanDowned({required this.details, required this.mode});
 }
 
+class SegmentDeleted extends CurrentSegmentEvent {
+  SegmentDeleted();
+}
+
 class SegmentPartDeleted extends CurrentSegmentEvent {
   SegmentPartDeleted();
 }
