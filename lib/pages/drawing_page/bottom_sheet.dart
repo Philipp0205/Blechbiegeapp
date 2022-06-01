@@ -57,8 +57,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          context.read<SegmentWidgetBloc>().add(new CurrentSegmentDeleted());
-                          context.read<AllSegmentsBloc>().add(new AllSegmentsUpdated());
+                          context.read<SegmentWidgetBloc>().add(new SegmentPartDeleted());
                         },
                         child: const Text('Löschen')),
                     ElevatedButton(

@@ -29,7 +29,7 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
 
     /// Events regarding mode and current selected segment
     on<CurrentSegmentModeChanged>(_changeMode);
-    on<CurrentSegmentDeleted>(_deleteSegment);
+    on<SegmentPartDeleted>(_deleteSegmentPart);
     on<CurrentSegmentUnselected>(_unselectSegment);
   }
 
@@ -91,13 +91,9 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
   /// Extends segment starting from the nearest offset from pointer.
   void _onPanStartDefault(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> offsets = state.currentSegment.first.path;
-
-    List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
-        event.firstDrawnOffset, offsets, 1);
-
-    offsets.insert(
-        offsets.indexOf(nearestOffsets.first), event.firstDrawnOffset);
+    List<Offset> path = state.currentSegment.first.path;
+    path.add(event.firstDrawnOffset);
+    Segment segment = new Segment(path, Colors.black, 5);
   }
 
   void _onPanStartPointMode(
@@ -113,8 +109,8 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     int indexOfSelectedPoint = state.currentSegment.first.indexOfSelectedPoint;
 
     path
-      ..removeAt(indexOfSelectedPoint)
-      ..insert(indexOfSelectedPoint, event.offset);
+      ..removeLast()
+      ..add(event.offset);
     Segment segment = new Segment(path, Colors.black, 5);
     segment.indexOfSelectedPoint = indexOfSelectedPoint;
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
@@ -152,9 +148,8 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     // print('${repository.getAllSegments().length} segments in repo');
   }
 
-  void _deleteSegment(
-      CurrentSegmentDeleted event, Emitter<CurrentSegmentState> emit) {
-    repository.removeSegment(state.currentSegment.first);
+  void _deleteSegmentPart(
+      SegmentPartDeleted event, Emitter<CurrentSegmentState> emit) {
     emit(CurrentSegmentDelete());
   }
 
@@ -179,16 +174,26 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
   void _onPanDownSelectionMode(
       CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
     Offset offset = new Offset(
-        event.details.globalPosition.dx, event.details.globalPosition.dy);
+        event.details.globalPosition.dx, event.details.globalPosition.dy - 80);
+    Offset nearestOffset = _calculationService
+        .getNNearestOffsets(offset, state.currentSegment.first.path, 1)
+        .first;
 
-    List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
-        offset, state.currentSegment.first.path, 2);
-    Segment segment = state.currentSegment.first;
-    segment.highlightedPointsInPath = nearestOffsets;
+    List<Offset> path = state.currentSegment.first.path;
+    List<Offset> highlightedPoints =
+        state.currentSegment.first.highlightedPointsInPath;
 
-    print('onpandown');
+    if (nearestOffset != path.last) {
+      highlightedPoints = [
+        nearestOffset,
+        path[path.indexOf(nearestOffset) + 1]
+      ];
+    }
+
+    Segment segment = new Segment(path, Colors.black, 5);
+    segment.highlightedPointsInPath = highlightedPoints;
+
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
-
   }
 
   void _onPanDownPointMode(
