@@ -34,6 +34,7 @@ class _DrawingPageState extends State<DrawingPage> {
     return BlocBuilder<DrawingPageBloc, DrawingPageState>(
         builder: (context, state) {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

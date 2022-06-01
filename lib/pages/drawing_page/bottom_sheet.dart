@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
@@ -28,40 +29,55 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    double _currentSliderValue = _currentPathVM.currentlyDrawnSegment.width;
     return Container(
-      height: 150,
+      height: 400,
       child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
         builder: (context, state) {
-          return Column(
-            children: [
-              Padding(padding: EdgeInsets.all(10), child: Text('Länge')),
-              Padding(
-                padding: EdgeInsets.all(5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton(
-                        onPressed: () {
-                          context.read<SegmentWidgetBloc>().add(new SegmentPartDeleted());
-                        },
-                        child: const Text('Löschen')),
-                    ElevatedButton(
-                        onPressed: () {
-                          context.read<DrawingPageBloc>().add(DrawingPageModeChanged(mode: Mode.pointMode));
-                        },
-                        child: const Text('Edge M.')),
-                    ElevatedButton(
-                        onPressed: () {
-                          _currentPathVM.updateSegment(
-                              _currentPathVM.currentlyDrawnSegment);
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Speichern')),
-                  ],
+          return Padding(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Container(
+                  width: 100,
+                  height: 40,
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    onSubmitted: (text) => context
+                        .read<SegmentWidgetBloc>()
+                        .add(SegmentPartLengthChanged(
+                            length: double.parse(text))),
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            context
+                                .read<SegmentWidgetBloc>()
+                                .add(SegmentPartDeleted());
+                          },
+                          child: const Text('Löschen')),
+                      ElevatedButton(
+                          onPressed: () {
+                            context.read<DrawingPageBloc>().add(
+                                DrawingPageModeChanged(mode: Mode.pointMode));
+                          },
+                          child: const Text('Edge M.')),
+                      ElevatedButton(
+                          onPressed: () {
+                            _currentPathVM.updateSegment(
+                                _currentPathVM.currentlyDrawnSegment);
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Speichern')),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),

@@ -38,8 +38,8 @@ class Sketcher extends CustomPainter {
               toggleSegmentSelection(lines[i], canvas);
             }
 
-            if (lines[i].selectedPoints.isNotEmpty) {
-              highlightPoints(lines[i].selectedPoints, canvas);
+            if (lines[i].selectedOffsets.isNotEmpty) {
+              highlightPoints(lines[i].selectedOffsets, canvas);
             }
 
             if (lines[i].selectedEdge != null) {
@@ -87,7 +87,6 @@ class Sketcher extends CustomPainter {
   }
 
   void highlightPoints(List<Offset> offsets, Canvas canvas) {
-    print('highlight points');
     Paint paint = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round

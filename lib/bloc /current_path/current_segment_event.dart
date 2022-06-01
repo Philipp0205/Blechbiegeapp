@@ -5,20 +5,20 @@ import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment.dart';
 
-abstract class CurrentSegmentEvent extends Equatable {
-  const CurrentSegmentEvent();
+abstract class SegmentWidgetEvent extends Equatable {
+  const SegmentWidgetEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class CurrentSegmentPanStarted extends CurrentSegmentEvent {
+class CurrentSegmentPanStarted extends SegmentWidgetEvent {
   final Mode mode;
   final Offset firstDrawnOffset;
   const CurrentSegmentPanStarted({required this.firstDrawnOffset, required this.mode});
 }
 
-class CurrentSegmentPanUpdated extends CurrentSegmentEvent {
+class CurrentSegmentPanUpdated extends SegmentWidgetEvent {
   final List<Segment> currentSegment;
   final Offset offset;
   final Mode mode;
@@ -27,7 +27,7 @@ class CurrentSegmentPanUpdated extends CurrentSegmentEvent {
       {required this.currentSegment, required this.offset, required this.mode});
 }
 
-class CurrentSegmentPanEnded extends CurrentSegmentEvent {
+class CurrentSegmentPanEnded extends SegmentWidgetEvent {
   final List<Segment> currentSegment;
   final Mode mode;
 
@@ -35,29 +35,36 @@ class CurrentSegmentPanEnded extends CurrentSegmentEvent {
 
 }
 
-class CurrentSegmentPanDowned extends CurrentSegmentEvent {
+class CurrentSegmentPanDowned extends SegmentWidgetEvent {
   final DragDownDetails details;
   final Mode mode;
 
   CurrentSegmentPanDowned({required this.details, required this.mode});
 }
 
-class SegmentDeleted extends CurrentSegmentEvent {
+class SegmentDeleted extends SegmentWidgetEvent {
   SegmentDeleted();
 }
 
-class SegmentPartDeleted extends CurrentSegmentEvent {
+class SegmentPartDeleted extends SegmentWidgetEvent {
   SegmentPartDeleted();
 }
 
-class CurrentSegmentModeChanged extends CurrentSegmentEvent {
+class CurrentSegmentModeChanged extends SegmentWidgetEvent {
   final Mode mode;
 
   const CurrentSegmentModeChanged({required this.mode});
 }
 
-class CurrentSegmentUnselected extends CurrentSegmentEvent {
+class CurrentSegmentUnselected extends SegmentWidgetEvent {
   const CurrentSegmentUnselected();
+} 
+
+class SegmentPartLengthChanged extends SegmentWidgetEvent {
+  final double length; 
+  const SegmentPartLengthChanged({required this.length});
+  
+  
 }
 
 

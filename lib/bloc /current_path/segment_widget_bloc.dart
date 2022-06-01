@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
@@ -13,7 +14,7 @@ import 'package:open_bsp/model/segment.dart';
 
 import 'geomettric_calculations_service.dart';
 
-class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
+class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   final SegmentsRepository repository;
   GeometricCalculationsService _calculationService =
       new GeometricCalculationsService();
@@ -31,6 +32,7 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     on<CurrentSegmentModeChanged>(_changeMode);
     on<SegmentDeleted>(_deleteSegment);
     on<SegmentPartDeleted>(_deleteSegmentPart);
+    on<SegmentPartLengthChanged>(_changeSegmentPartLength);
     on<CurrentSegmentUnselected>(_unselectSegment);
   }
 
@@ -156,7 +158,7 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
   void _deleteSegmentPart(
       SegmentPartDeleted event, Emitter<CurrentSegmentState> emit) {
     List<Offset> path = state.currentSegment.first.path;
-    List<Offset> selectedPoints = state.currentSegment.first.selectedPoints;
+    List<Offset> selectedPoints = state.currentSegment.first.selectedOffsets;
 
     path.remove(selectedPoints.last);
 
@@ -191,7 +193,7 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
         .first;
 
     List<Offset> path = state.currentSegment.first.path;
-    List<Offset> highlightedPoints = state.currentSegment.first.selectedPoints;
+    List<Offset> highlightedPoints = state.currentSegment.first.selectedOffsets;
 
     if (nearestOffset != path.last) {
       highlightedPoints = [
@@ -201,7 +203,7 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     }
 
     Segment segment = new Segment(path, Colors.black, 5);
-    segment.selectedPoints = highlightedPoints;
+    segment.selectedOffsets = highlightedPoints;
 
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
   }
@@ -299,5 +301,34 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
       segment.selectedEdge = new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
       emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.pointMode));
     } else {}
+  }
+
+  void _changeSegmentPartLength(
+      SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
+    List<Offset> selectedOffsets = state.currentSegment.first.selectedOffsets;
+    List<Offset> path = state.currentSegment.first.path;
+
+    Offset offsetA = selectedOffsets.first;
+    Offset offsetB = selectedOffsets.last;
+
+    double lengthAB = (offsetA - offsetB).distance;
+
+    double x = offsetB.dx + (offsetB.dx - offsetA.dx) / lengthAB * event.length;
+    double y = offsetB.dy + (offsetB.dy - offsetA.dy) / lengthAB * event.length;
+
+    Offset offsetC = new Offset(x, y);
+
+    int indexOfLastPart = path.indexOf(selectedOffsets.last);
+    path
+      ..remove(selectedOffsets.last)
+      ..insert(indexOfLastPart, offsetC);
+
+    print('offerC $offsetC');
+    print('path before ${state.currentSegment.first.path}');
+    print('path after $path');
+
+    Segment segment = new Segment(path, Colors.black, 5);
+    segment.selectedOffsets = [selectedOffsets.first, offsetC];
+    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
   }
 }
