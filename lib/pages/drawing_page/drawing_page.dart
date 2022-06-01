@@ -18,7 +18,7 @@ import '../../model/segment.dart';
 import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';
-import 'current_segment_widget.dart';
+import 'segment_widget.dart';
 
 class DrawingPage extends StatefulWidget {
   @override

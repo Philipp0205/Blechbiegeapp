@@ -3,14 +3,20 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
+import 'package:open_bsp/bloc%20/current_path/geomettric_calculations_service.dart';
 import 'package:open_bsp/data/segments_repository.dart';
 import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/model/segment.dart';
 
+import 'geomettric_calculations_service.dart';
+
 class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
   final SegmentsRepository repository;
+  GeometricCalculationsService _calculationService =
+      new GeometricCalculationsService();
 
   SegmentWidgetBloc(this.repository)
       : super(
@@ -27,12 +33,17 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     on<CurrentSegmentUnselected>(_unselectSegment);
   }
 
-  /// Creates currently drawn segment
+  /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
+  /// screen with a primary button and has begun to move.'
+  ///
+  /// Depending on the App's [Mode] the behavior is different.
   void _onPanStart(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
     switch (event.mode) {
       case Mode.defaultMode:
-        _onPanStartDefaultMode(event, emit);
+        state.currentSegment.isEmpty
+            ? _onPanStartDefaultInitial(event, emit)
+            : _onPanStartDefault(event, emit);
         break;
       case Mode.pointMode:
         _onPanStartPointMode(event, emit);
@@ -46,32 +57,10 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     }
   }
 
-  void _onPanStartDefaultMode(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
-    if (state.currentSegment.length > 0) {
-      List<Offset> offsets = state.currentSegment.first.path;
-      Offset nearestOffset = getNearestOffset(event.firstDrawnOffset, offsets);
-
-      int indexNearestOffset = offsets.indexOf(nearestOffset);
-      offsets.insert(indexNearestOffset + 1, nearestOffset);
-      Segment segment = new Segment(offsets, Colors.black, 5);
-      segment.selectedEdge = nearestOffset;
-
-      emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
-    } else {
-      Segment segment = new Segment(
-          [event.firstDrawnOffset, event.firstDrawnOffset], Colors.black, 5);
-      segment.selectedEdge = event.firstDrawnOffset;
-      emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
-    }
-  }
-
-  void _onPanStartPointMode(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
-    print('onpanstart pointmode');
-    _changeSelectedSegmentDependingOnNewOffset(event.firstDrawnOffset, emit);
-  }
-
+  /// Similar to [GestureDetector]: 'A pointer that is in contact with the
+  /// screen with a primary button and moving has moved again.'
+  ///
+  /// Depending on the App's [Mode] the behavior is different.
   void _onPanUpdate(
       CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
     switch (event.mode) {
@@ -90,19 +79,45 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     }
   }
 
+  /// Creates initial segment if now segment was drawn on the screen before.
+  void _onPanStartDefaultInitial(
+      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+    Segment segment = new Segment(
+        [event.firstDrawnOffset, event.firstDrawnOffset], Colors.black, 5);
+    segment.selectedEdge = event.firstDrawnOffset;
+    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
+  }
+
+  /// Extends segment starting from the nearest offset from pointer.
+  void _onPanStartDefault(
+      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+    List<Offset> offsets = state.currentSegment.first.path;
+
+    List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
+        event.firstDrawnOffset, offsets, 1);
+
+    offsets.insert(
+        offsets.indexOf(nearestOffsets.first), event.firstDrawnOffset);
+  }
+
+  void _onPanStartPointMode(
+      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+    print('onpanstart pointmode');
+    _changeSelectedSegmentDependingOnNewOffset(event.firstDrawnOffset, emit);
+  }
+
   void _onPanUpdateDefaultMode(
       CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
-    if (state.currentSegment.first.selectedEdge != null) {
-      List<Offset> path = state.currentSegment.first.path;
-      int indexCurrentOffset =
-          path.indexOf(state.currentSegment.first.selectedEdge!);
-      path
-      ..removeAt(indexCurrentOffset)
-        ..insert(indexCurrentOffset, event.offset);
-      Segment segment = new Segment(path, Colors.black, 5);
-      segment.selectedEdge = event.offset;
-      emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
-    }
+    List<Offset> path = state.currentSegment.first.path;
+
+    int indexOfSelectedPoint = state.currentSegment.first.indexOfSelectedPoint;
+
+    path
+      ..removeAt(indexOfSelectedPoint)
+      ..insert(indexOfSelectedPoint, event.offset);
+    Segment segment = new Segment(path, Colors.black, 5);
+    segment.indexOfSelectedPoint = indexOfSelectedPoint;
+    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
   }
 
   void _onPanUpdatePointMode(
@@ -163,18 +178,17 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
 
   void _onPanDownSelectionMode(
       CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
-    if (state.currentSegment.length > 0) {
-      state.currentSegment.first
-        ..color = Colors.black
-        ..isSelected = false;
-    }
-    Segment lowestDistanceLine = getNearestSegment(event.details);
-    lowestDistanceLine
-      ..color = Colors.red
-      ..isSelected = true;
+    Offset offset = new Offset(
+        event.details.globalPosition.dx, event.details.globalPosition.dy);
 
-    emit(CurrentSegmentUpdate(
-        segment: [lowestDistanceLine], mode: Mode.selectionMode));
+    List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
+        offset, state.currentSegment.first.path, 2);
+    Segment segment = state.currentSegment.first;
+    segment.highlightedPointsInPath = nearestOffsets;
+
+    print('onpandown');
+    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+
   }
 
   void _onPanDownPointMode(
@@ -182,38 +196,6 @@ class SegmentWidgetBloc extends Bloc<CurrentSegmentEvent, CurrentSegmentState> {
     Point point = new Point(
         event.details.globalPosition.dx, event.details.globalPosition.dy - 80);
     _selectPoint(point, emit);
-  }
-
-  Offset getNearestOffset(Offset offset, List<Offset> offsets) {
-    Map<Offset, double> distances = {};
-    offsets.forEach((currentOffset) {
-      distances.addEntries(
-          [MapEntry(currentOffset, (currentOffset - offset).distance)]);
-    });
-
-    var mapEntries = distances.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-    distances
-      ..clear()
-      ..addEntries(mapEntries);
-
-    return distances.keys.toList().first;
-  }
-
-  Segment getNearestSegment(DragDownDetails details) {
-    Map<Segment, double> distances = {};
-
-    repository.getAllSegments().forEach((line) {
-      distances.addEntries([MapEntry(line, getDistanceToLine(details, line))]);
-    });
-
-    var mapEntries = distances.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-    distances
-      ..clear()
-      ..addEntries(mapEntries);
-
-    return distances.keys.toList().first;
   }
 
 /*

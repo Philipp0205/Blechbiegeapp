@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 class Segment {
   final List<Offset> path;
+  List<Offset> highlightedPointsInPath = [];
   Offset? selectedEdge;
+  int indexOfSelectedPoint = 0;
   Color color;
   bool isSelected = false;
   bool highlightPoints = false;

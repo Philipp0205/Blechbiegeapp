@@ -38,6 +38,10 @@ class Sketcher extends CustomPainter {
               toggleSegmentSelection(lines[i], canvas);
             }
 
+            if (lines[i].highlightedPointsInPath.isNotEmpty) {
+              highlightPoints(lines[i].highlightedPointsInPath, canvas);
+            }
+
             if (lines[i].selectedEdge != null) {
               if (lines[i].highlightPoints) {
                 Offset offset = new Offset(lines[i].selectedEdge!.dx - 50,
@@ -80,6 +84,19 @@ class Sketcher extends CustomPainter {
       canvas.drawCircle(line.path.first, 10, paint);
       canvas.drawCircle(line.path.last, 10, paint);
     }
+  }
+
+  void highlightPoints(List<Offset> offsets, Canvas canvas) {
+    print('highlight points');
+    Paint paint = Paint()
+      ..color = Colors.blueAccent
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+
+    offsets.forEach((offset) {
+      canvas.drawCircle(offset, 10, paint);
+    });
   }
 
   void drawText(Canvas canvas, String text, Offset offset, Color color) {

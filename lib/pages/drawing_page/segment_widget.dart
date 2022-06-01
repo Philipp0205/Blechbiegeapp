@@ -75,7 +75,6 @@ class _SegmentWidgetState extends State<SegmentWidget> {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
     context.read<SegmentWidgetBloc>().add(CurrentSegmentPanUpdated(
         currentSegment: state.currentSegment, offset: point2, mode: mode));
-    context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
   }
 
   void onPanEnd(
@@ -89,11 +88,9 @@ class _SegmentWidgetState extends State<SegmentWidget> {
   void onPanDown(BuildContext context, DragDownDetails details,
       CurrentSegmentState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
-    context.read<SegmentWidgetBloc>()
-      ..add(CurrentSegmentUnselected())
-      ..add(CurrentSegmentPanDowned(details: details, mode: mode));
-
-    context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
+    context
+        .read<SegmentWidgetBloc>()
+        .add(CurrentSegmentPanDowned(details: details, mode: mode));
   }
 
   void onDoubleTab(BuildContext context, CurrentSegmentState state) {
