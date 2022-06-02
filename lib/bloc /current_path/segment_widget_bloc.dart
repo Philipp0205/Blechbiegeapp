@@ -102,7 +102,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   void _onPanStartPointMode(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
     print('onpanstart pointmode');
-    _changeSelectedSegmentDependingOnNewOffset(event.firstDrawnOffset, emit);
+    // _changeSelectedSegmentDependingOnNewOffset(event.firstDrawnOffset, emit);
   }
 
   void _onPanUpdateDefaultMode(
@@ -121,7 +121,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   void _onPanUpdatePointMode(
       CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
-    _changeSelectedSegmentDependingOnNewOffset(event.offset, emit);
+    // _changeSelectedSegmentDependingOnNewOffset(event.offset, emit);
   }
 
   void _onPanEnd(
@@ -161,8 +161,10 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     List<Offset> selectedPoints = state.currentSegment.first.selectedOffsets;
 
     path.remove(selectedPoints.last);
+    selectedPoints.removeLast();
 
     Segment segment = new Segment(path, Colors.black, 5);
+    segment.selectedOffsets = selectedPoints;
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
   }
 
@@ -317,13 +319,23 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   void _changeSegmentPartLength(
       SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
+    List<Offset> path = state.currentSegment.first.path;
     List<Offset> offsets = state.currentSegment.first.selectedOffsets;
-    double currentLength = (offsets.first - offsets.last).distance;
+    int index = offsets.indexOf(offsets.last);
+    double currentLength = (offsets[index - 1] - offsets.last).distance;
 
     Offset offset = _calculationService.extendSegment(
-        offsets, (event.length - currentLength));
-    Segment segment = new Segment([offsets.first, offset], Colors.black, 5);
-    segment.selectedOffsets = [offsets.first, offset];
+        [offsets[index - 1], offsets.last], (event.length - currentLength));
+
+    path
+      ..removeLast()
+      ..add(offset);
+
+    Segment segment = new Segment(path, Colors.black, 5);
+    offsets
+      ..removeLast()
+      ..add(offset);
+    segment.selectedOffsets = offsets;
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
   }
 }

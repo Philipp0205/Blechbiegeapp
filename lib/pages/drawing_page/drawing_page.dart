@@ -18,6 +18,7 @@ import '../../model/segment.dart';
 import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';
+import 'bottom_sheet.dart';
 import 'segment_widget.dart';
 
 class DrawingPage extends StatefulWidget {
@@ -58,6 +59,9 @@ class _DrawingPageState extends State<DrawingPage> {
             SpeedDialChild(
                 child: Icon(Icons.select_all), onTap: toggleSelectionMode),
             SpeedDialChild(child: Icon(Icons.circle), onTap: toggleDefaultMode),
+            SpeedDialChild(
+                child: Icon(Icons.circle_notifications),
+                onTap: _bottomSheet),
           ],
         ),
       );
@@ -82,20 +86,13 @@ class _DrawingPageState extends State<DrawingPage> {
     context.read<SegmentWidgetBloc>().add(CurrentSegmentUnselected());
   }
 
-  void extendSegment(Segment line, double length) {
-    // deleteLine(line);
-    Point pointA = new Point(line.path.first.dx, line.path.first.dy);
-    Point pointB = new Point(line.path.last.dx, line.path.last.dy);
-
-    double lengthAB = pointA.distanceTo(pointB);
-
-    double x = pointB.x + (pointB.x - pointA.x) / lengthAB * length;
-    double y = pointB.y + (pointB.y - pointA.y) / lengthAB * length;
-
-    Offset pointC = new Offset(x, y);
-    Segment newLine = new Segment([line.path.first, pointC],
-        _currentPathVM.selectedColor, _currentPathVM.selectedWidth);
-
-    // _currentPathVM.currentlyDrawnSegment = newLine;
+  void _bottomSheet() {
+    showModalBottomSheet(
+      enableDrag: true,
+      context: context,
+      builder: (BuildContext context) {
+        return AppBottomSheet();
+      },
+    );
   }
 }

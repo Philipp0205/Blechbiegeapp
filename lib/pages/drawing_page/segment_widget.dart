@@ -94,12 +94,6 @@ class _SegmentWidgetState extends State<SegmentWidget> {
   }
 
   void onDoubleTab(BuildContext context, CurrentSegmentState state) {
-    showModalBottomSheet(
-      enableDrag: true,
-      context: context,
-      builder: (BuildContext context) {
-        return AppBottomSheet();
-      },
-    );
+
   }
 }

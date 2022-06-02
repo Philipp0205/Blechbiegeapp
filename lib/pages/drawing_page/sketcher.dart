@@ -87,14 +87,32 @@ class Sketcher extends CustomPainter {
   }
 
   void highlightPoints(List<Offset> offsets, Canvas canvas) {
-    Paint paint = Paint()
+    Paint paintBlue = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
 
+    Paint paintRed = Paint()
+      ..color = Colors.red
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+
+    Paint paintPurple = Paint()
+      ..color = Colors.purple
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+
     offsets.forEach((offset) {
-      canvas.drawCircle(offset, 10, paint);
+      if (offsets.indexOf(offset) == 0) {
+        canvas.drawCircle(offset, 10, paintBlue);
+      } else if (offsets.indexOf(offset) == 1) {
+        canvas.drawCircle(offset, 10, paintRed);
+      } else if (offsets.indexOf(offset) == 2) {
+        canvas.drawCircle(offset, 10, paintPurple);
+      }
     });
   }
 

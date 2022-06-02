@@ -28,7 +28,6 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   CurrentPathViewModel _currentPathVM = getIt<CurrentPathViewModel>();
   AllPathsViewModel _allPathsViewModel = getIt<AllPathsViewModel>();
 
-
   final _controller = TextEditingController();
 
   @override
@@ -42,9 +41,18 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   @override
   void initState() {
     super.initState();
-    List<Offset> offsets = context.read<SegmentWidgetBloc>().state.currentSegment.first.selectedOffsets;
-    String distance = (offsets.first - offsets.last).distance.toStringAsFixed(2);
-    _controller.text = distance;
+    List<Offset> offsets = context
+        .read<SegmentWidgetBloc>()
+        .state
+        .currentSegment
+        .first
+        .selectedOffsets;
+    int index = offsets.indexOf(offsets.last);
+    double distance = (offsets[index - 1] - offsets.last).distance;
+
+    if (distance > 1) {
+      _controller.text = distance.toStringAsFixed(2);
+    }
 
     // Start listening to changes.
     // myController.addListener(_printLatestValue);
@@ -52,7 +60,6 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       height: 400,
       child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
@@ -65,13 +72,16 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   width: 100,
                   height: 40,
                   child: TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
-                    onChanged: (text) => context
-                        .read<SegmentWidgetBloc>()
-                        .add(SegmentPartLengthChanged(
-                            length: double.parse(text))),
-                  ),
+                      controller: _controller,
+                      keyboardType: TextInputType.number,
+                      onChanged: (text) {
+                        double length = double.parse(text);
+                        if (length != double.nan) {
+                          context
+                              .read<SegmentWidgetBloc>()
+                              .add(SegmentPartLengthChanged(length: length));
+                        }
+                      }),
                 ),
                 Padding(
                   padding: EdgeInsets.all(5),
