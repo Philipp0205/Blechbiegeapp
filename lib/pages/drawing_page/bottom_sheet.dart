@@ -6,6 +6,7 @@ import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
+import 'package:open_bsp/model/segment.dart';
 
 import '../../model/appmodes.dart';
 import '../../services/viewmodel_locator.dart';
@@ -27,8 +28,31 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   CurrentPathViewModel _currentPathVM = getIt<CurrentPathViewModel>();
   AllPathsViewModel _allPathsViewModel = getIt<AllPathsViewModel>();
 
+
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    List<Offset> offsets = context.read<SegmentWidgetBloc>().state.currentSegment.first.selectedOffsets;
+    String distance = (offsets.first - offsets.last).distance.toStringAsFixed(2);
+    _controller.text = distance;
+
+    // Start listening to changes.
+    // myController.addListener(_printLatestValue);
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Container(
       height: 400,
       child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
@@ -41,8 +65,9 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   width: 100,
                   height: 40,
                   child: TextField(
+                    controller: _controller,
                     keyboardType: TextInputType.number,
-                    onSubmitted: (text) => context
+                    onChanged: (text) => context
                         .read<SegmentWidgetBloc>()
                         .add(SegmentPartLengthChanged(
                             length: double.parse(text))),

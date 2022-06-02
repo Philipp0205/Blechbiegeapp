@@ -305,30 +305,16 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   void _changeSegmentPartLength(
       SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> selectedOffsets = state.currentSegment.first.selectedOffsets;
-    List<Offset> path = state.currentSegment.first.path;
 
-    Offset offsetA = selectedOffsets.first;
-    Offset offsetB = selectedOffsets.last;
+    List<Offset> offsets = state.currentSegment.first.selectedOffsets;
+    double currentLength = (offsets.first - offsets.last).distance;
 
-    double lengthAB = (offsetA - offsetB).distance;
-
-    double x = offsetB.dx + (offsetB.dx - offsetA.dx) / lengthAB * event.length;
-    double y = offsetB.dy + (offsetB.dy - offsetA.dy) / lengthAB * event.length;
-
-    Offset offsetC = new Offset(x, y);
-
-    int indexOfLastPart = path.indexOf(selectedOffsets.last);
-    path
-      ..remove(selectedOffsets.last)
-      ..insert(indexOfLastPart, offsetC);
-
-    print('offerC $offsetC');
-    print('path before ${state.currentSegment.first.path}');
-    print('path after $path');
-
-    Segment segment = new Segment(path, Colors.black, 5);
-    segment.selectedOffsets = [selectedOffsets.first, offsetC];
+    Offset offset = _calculationService.extendSegment(offsets, (event.length - currentLength));
+    Segment segment = new Segment([offsets.first, offset], Colors.black, 5);
+    segment.selectedOffsets = [offsets.first, offset];
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+
+
+
   }
 }

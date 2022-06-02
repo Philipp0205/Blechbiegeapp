@@ -32,4 +32,16 @@ class GeometricCalculationsService {
         .getRange(0, numberOfOffsets)
         .toList();
   }
+
+  Offset extendSegment(List<Offset> offsets, double length) {
+    Offset offsetA = offsets.first;
+    Offset offsetB = offsets.last;
+
+    double lengthAB = (offsetA - offsetB).distance;
+
+    double x = offsetB.dx + (offsetB.dx - offsetA.dx) / lengthAB * length;
+    double y = offsetB.dy + (offsetB.dy - offsetA.dy) / lengthAB * length;
+
+    return new Offset(x, y);
+  }
 }
