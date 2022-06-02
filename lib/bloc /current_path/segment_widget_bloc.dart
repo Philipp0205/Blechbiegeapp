@@ -187,7 +187,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   void _onPanDownSelectionMode(
       CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
     Offset offset = new Offset(
-        event.details.globalPosition.dx, event.details.globalPosition.dy - 80);
+        event.details.globalPosition.dx, event.details.globalPosition.dy - 100);
     Offset nearestOffset = _calculationService
         .getNNearestOffsets(offset, state.currentSegment.first.path, 1)
         .first;
@@ -195,12 +195,42 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     List<Offset> path = state.currentSegment.first.path;
     List<Offset> highlightedPoints = state.currentSegment.first.selectedOffsets;
 
-    if (nearestOffset != path.last) {
-      highlightedPoints = [
-        nearestOffset,
-        path[path.indexOf(nearestOffset) + 1]
-      ];
+    int index = path.indexOf(nearestOffset);
+
+    // TODO schlechter Code.
+    if (highlightedPoints.contains(nearestOffset)) {
+      print('highlichted points container nearest offset ... ');
+      highlightedPoints.remove(nearestOffset);
+    } else if (highlightedPoints.isNotEmpty && highlightedPoints.length <= 2) {
+      print('points.length = ${highlightedPoints.length}');
+      if (nearestOffset == path.last) {
+        print('nearest offset ist last');
+        if (highlightedPoints.contains(path[index - 1])) {
+          highlightedPoints.add(nearestOffset);
+        }
+      } else if (nearestOffset == path.first) {
+        print('nearest offset ist first');
+        if (highlightedPoints.contains(path[index + 1])) {
+          highlightedPoints.add(nearestOffset);
+        }
+      } else {
+        print('nearest offset is neither');
+        if (highlightedPoints.contains(path[index + 1]) ||
+            highlightedPoints.contains(path[index - 1])) {
+          highlightedPoints.add(nearestOffset);
+        }
+      }
+    } else if (highlightedPoints.length == 0) {
+      print('firest selected offset');
+      highlightedPoints.add(nearestOffset);
     }
+
+    // if (nearestOffset != path.last) {
+    //   highlightedPoints = [
+    //     nearestOffset,
+    //     path[path.indexOf(nearestOffset) + 1]
+    //   ];
+    // }
 
     Segment segment = new Segment(path, Colors.black, 5);
     segment.selectedOffsets = highlightedPoints;
@@ -213,24 +243,6 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     Point point = new Point(
         event.details.globalPosition.dx, event.details.globalPosition.dy - 80);
     _selectPoint(point, emit);
-  }
-
-/*
-       Distance(point1, currPoint)
-     + Distance(currPoint, point2)
-    == Distance(point1, point2)
-
-    https://stackoverflow.com/questions/11907947/how-to-check-if-a-point-lies-on-a-line-between-2-other-points/11912171#11912171
-  */
-  double getDistanceToLine(DragDownDetails details, Segment line) {
-    Point currentPoint =
-        new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
-    Point startPoint = new Point(line.path.first.dx, line.path.first.dy);
-    Point endPoint = new Point(line.path.last.dx, line.path.last.dy);
-
-    return startPoint.distanceTo(currentPoint) +
-        currentPoint.distanceTo(endPoint) -
-        startPoint.distanceTo(endPoint);
   }
 
   void _changeMode(
@@ -305,16 +317,13 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   void _changeSegmentPartLength(
       SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
-
     List<Offset> offsets = state.currentSegment.first.selectedOffsets;
     double currentLength = (offsets.first - offsets.last).distance;
 
-    Offset offset = _calculationService.extendSegment(offsets, (event.length - currentLength));
+    Offset offset = _calculationService.extendSegment(
+        offsets, (event.length - currentLength));
     Segment segment = new Segment([offsets.first, offset], Colors.black, 5);
     segment.selectedOffsets = [offsets.first, offset];
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
-
-
-
   }
 }

@@ -1,6 +1,9 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+
+import '../../model/segment.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
@@ -43,5 +46,23 @@ class GeometricCalculationsService {
     double y = offsetB.dy + (offsetB.dy - offsetA.dy) / lengthAB * length;
 
     return new Offset(x, y);
+  }
+
+  /*
+       Distance(point1, currPoint)
+     + Distance(currPoint, point2)
+    == Distance(point1, point2)
+
+    https://stackoverflow.com/questions/11907947/how-to-check-if-a-point-lies-on-a-line-between-2-other-points/11912171#11912171
+  */
+  double getDistanceToSegment(DragDownDetails details, Segment segment) {
+    Point currentPoint =
+    new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
+    Point startPoint = new Point(segment.path.first.dx, segment.path.first.dy);
+    Point endPoint = new Point(segment.path.last.dx, segment.path.last.dy);
+
+    return startPoint.distanceTo(currentPoint) +
+        currentPoint.distanceTo(endPoint) -
+        startPoint.distanceTo(endPoint);
   }
 }
