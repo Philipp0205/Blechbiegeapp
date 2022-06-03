@@ -1,18 +1,15 @@
-import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
-import 'package:open_bsp/bloc%20/current_path/geomettric_calculations_service.dart';
+import 'package:open_bsp/bloc%20/current_path/geometric_calculations_service.dart';
 import 'package:open_bsp/data/segments_repository.dart';
 import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/model/segment.dart';
 
-import 'geomettric_calculations_service.dart';
+import 'geometric_calculations_service.dart';
 
 class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   final SegmentsRepository repository;
@@ -97,7 +94,6 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
     List<Offset> path = state.currentSegment.first.path;
     path.add(event.firstDrawnOffset);
-    Segment segment = new Segment(path, Colors.black, 5);
   }
 
   void _onPanStartPointMode(
@@ -270,28 +266,6 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
           segment: state.currentSegment, mode: Mode.defaultMode));
     }
   }
-
-  void _changeSelectedSegmentDependingOnNewOffset(
-      Offset offset, Emitter<CurrentSegmentState> emit) {
-    List<Offset> offsets = state.currentSegment.first.path;
-    Segment segment = state.currentSegment.first;
-
-    if (segment.selectedEdge != null) {
-      if (segment.selectedEdge == segment.path.first) {
-        offsets
-          ..removeAt(0)
-          ..insert(0, offset);
-      } else {
-        offsets
-          ..removeLast()
-          ..add(offset);
-      }
-      Segment newSegment = new Segment(offsets, Colors.black, 5);
-      newSegment.selectedEdge = offset;
-      updateSegmentPointMode(newSegment, offset, emit);
-    }
-  }
-
   void updateSegmentPointMode(
       Segment segment, Offset offset, Emitter<CurrentSegmentState> emit) {
     segment
