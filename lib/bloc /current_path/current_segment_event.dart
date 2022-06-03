@@ -15,7 +15,9 @@ abstract class SegmentWidgetEvent extends Equatable {
 class CurrentSegmentPanStarted extends SegmentWidgetEvent {
   final Mode mode;
   final Offset firstDrawnOffset;
-  const CurrentSegmentPanStarted({required this.firstDrawnOffset, required this.mode});
+
+  const CurrentSegmentPanStarted(
+      {required this.firstDrawnOffset, required this.mode});
 }
 
 class CurrentSegmentPanUpdated extends SegmentWidgetEvent {
@@ -32,7 +34,6 @@ class CurrentSegmentPanEnded extends SegmentWidgetEvent {
   final Mode mode;
 
   CurrentSegmentPanEnded({required this.currentSegment, required this.mode});
-
 }
 
 class CurrentSegmentPanDowned extends SegmentWidgetEvent {
@@ -58,13 +59,17 @@ class CurrentSegmentModeChanged extends SegmentWidgetEvent {
 
 class CurrentSegmentUnselected extends SegmentWidgetEvent {
   const CurrentSegmentUnselected();
-} 
-
-class SegmentPartLengthChanged extends SegmentWidgetEvent {
-  final double length; 
-  const SegmentPartLengthChanged({required this.length});
-  
-  
 }
 
+class SegmentPartLengthChanged extends SegmentWidgetEvent {
+  final double length;
 
+  const SegmentPartLengthChanged({required this.length});
+}
+
+class SegmentPartAngleChanged extends SegmentWidgetEvent {
+  final double angle;
+  final double length;
+
+  const SegmentPartAngleChanged({required this.angle, required this.length});
+}

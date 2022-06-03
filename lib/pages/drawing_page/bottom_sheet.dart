@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
+import 'package:open_bsp/bloc%20/current_path/geomettric_calculations_service.dart';
 import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
@@ -28,13 +29,18 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   CurrentPathViewModel _currentPathVM = getIt<CurrentPathViewModel>();
   AllPathsViewModel _allPathsViewModel = getIt<AllPathsViewModel>();
 
-  final _controller = TextEditingController();
+  final GeometricCalculationsService _calculationsService =
+      new GeometricCalculationsService();
+
+  final _angleController = TextEditingController();
+  final _lengthController = TextEditingController();
 
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
-    _controller.dispose();
+    _angleController.dispose();
+    _lengthController.dispose();
     super.dispose();
   }
 
@@ -51,7 +57,13 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
     double distance = (offsets[index - 1] - offsets.last).distance;
 
     if (distance > 1) {
-      _controller.text = distance.toStringAsFixed(2);
+      _lengthController.text = distance.toStringAsFixed(2);
+    }
+
+    if (offsets.length == 2) {
+      double angle = _calculationsService.getAngle(offsets.first, offsets.last);
+
+      _angleController.text = angle.toStringAsFixed(2);
     }
 
     // Start listening to changes.
@@ -61,58 +73,75 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 400,
+      height: 320,
       child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
         builder: (context, state) {
-          return Padding(
-            padding: EdgeInsets.all(10),
-            child: Column(
-              children: [
-                Container(
-                  width: 100,
-                  height: 40,
-                  child: TextField(
-                      controller: _controller,
-                      keyboardType: TextInputType.number,
-                      onChanged: (text) {
-                        double length = double.parse(text);
-                        if (length != double.nan) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Container(
+                      width: 100,
+                      height: 40,
+                      child: TextField(
+                          controller: _lengthController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (text) {
+                            double length = double.parse(text);
+                            if (length != double.nan) {
+                              context.read<SegmentWidgetBloc>().add(
+                                  SegmentPartLengthChanged(length: length));
+                            }
+                          }),
+                    ),
+                  ),
+                  Container(
+                    width: 100,
+                    height: 40,
+                    child: TextField(
+                        controller: _angleController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (text) {
+                          context.read<SegmentWidgetBloc>().add(
+                              SegmentPartAngleChanged(
+                                  angle: double.parse(text),
+                                  length:
+                                      double.parse(_lengthController.text)));
+                        }),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.all(5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
                           context
                               .read<SegmentWidgetBloc>()
-                              .add(SegmentPartLengthChanged(length: length));
-                        }
-                      }),
+                              .add(SegmentPartDeleted());
+                        },
+                        child: const Text('Löschen')),
+                    ElevatedButton(
+                        onPressed: () {
+                          context.read<DrawingPageBloc>().add(
+                              DrawingPageModeChanged(mode: Mode.pointMode));
+                        },
+                        child: const Text('Edge M.')),
+                    ElevatedButton(
+                        onPressed: () {
+                          _currentPathVM.updateSegment(
+                              _currentPathVM.currentlyDrawnSegment);
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Speichern')),
+                  ],
                 ),
-                Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                          onPressed: () {
-                            context
-                                .read<SegmentWidgetBloc>()
-                                .add(SegmentPartDeleted());
-                          },
-                          child: const Text('Löschen')),
-                      ElevatedButton(
-                          onPressed: () {
-                            context.read<DrawingPageBloc>().add(
-                                DrawingPageModeChanged(mode: Mode.pointMode));
-                          },
-                          child: const Text('Edge M.')),
-                      ElevatedButton(
-                          onPressed: () {
-                            _currentPathVM.updateSegment(
-                                _currentPathVM.currentlyDrawnSegment);
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Speichern')),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),

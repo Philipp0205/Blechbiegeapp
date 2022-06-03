@@ -34,6 +34,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     on<SegmentPartDeleted>(_deleteSegmentPart);
     on<SegmentPartLengthChanged>(_changeSegmentPartLength);
     on<CurrentSegmentUnselected>(_unselectSegment);
+    on<SegmentPartAngleChanged>(_changeSegmentAngle);
   }
 
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
@@ -227,6 +228,13 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       highlightedPoints.add(nearestOffset);
     }
 
+    if (highlightedPoints.length == 2) {
+      double angle = _calculationService.getAngle(
+          highlightedPoints.first, highlightedPoints.last);
+      print('angle between ${highlightedPoints.first} and '
+          '${highlightedPoints.last} is $angle');
+    }
+
     // if (nearestOffset != path.last) {
     //   highlightedPoints = [
     //     nearestOffset,
@@ -295,8 +303,6 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   }
 
   void _selectPoint(Point point, Emitter<CurrentSegmentState> emit) {
-    print('_selectPoint');
-
     Segment segment = state.currentSegment.first;
     Point currentPoint = point,
         edgeA = new Point(segment.path.first.dx, segment.path.first.dy),
@@ -321,20 +327,46 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
     List<Offset> path = state.currentSegment.first.path;
     List<Offset> offsets = state.currentSegment.first.selectedOffsets;
-    int index = offsets.indexOf(offsets.last);
-    double currentLength = (offsets[index - 1] - offsets.last).distance;
+    int indexInPath = path.indexOf(offsets.last);
+    double currentLength =
+        (offsets[offsets.length - 2] - offsets.last).distance;
 
     Offset offset = _calculationService.extendSegment(
-        [offsets[index - 1], offsets.last], (event.length - currentLength));
+        [offsets[offsets.length - 2], offsets.last],
+        (event.length - currentLength));
 
     path
-      ..removeLast()
-      ..add(offset);
+      ..removeAt(indexInPath)
+      ..insert(indexInPath, offset);
 
     Segment segment = new Segment(path, Colors.black, 5);
     offsets
       ..removeLast()
       ..add(offset);
+
+    segment.selectedOffsets = offsets;
+    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+  }
+
+  void _changeSegmentAngle(
+      SegmentPartAngleChanged event, Emitter<CurrentSegmentState> emit) {
+    print('changeSegmentAngle');
+
+    List<Offset> path = state.currentSegment.first.path;
+    List<Offset> offsets = state.currentSegment.first.selectedOffsets;
+
+    Offset newOffset = _calculationService.calculatePointWithAngle(
+        offsets.first, event.length, event.angle);
+
+    int index = path.indexOf(offsets.last);
+    path
+      ..removeAt(index)
+      ..insert(index, newOffset);
+    offsets
+      ..removeLast()
+      ..add(newOffset);
+
+    Segment segment = new Segment(path, Colors.black, 5);
     segment.selectedOffsets = offsets;
     emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
   }
