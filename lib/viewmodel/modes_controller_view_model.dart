@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../model/appmodes.dart';
-import '../model/segment.dart';
+import '../model/segment_model.dart';
 
 class ModesViewModel extends ChangeNotifier {
 

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:open_bsp/model/segment.dart';
+import 'package:open_bsp/model/segment_model.dart';
 
 class LinkedSegment {
   Segment segmentA;

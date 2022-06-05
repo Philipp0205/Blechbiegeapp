@@ -14,7 +14,7 @@ import 'package:open_bsp/services/viewmodel_locator.dart';
 import '../../bloc /current_path/segment_widget_bloc.dart';
 import '../../bloc /current_path/current_segment_event.dart';
 import '../../model/appmodes.dart';
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';

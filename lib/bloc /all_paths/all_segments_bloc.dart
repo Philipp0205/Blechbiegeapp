@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
 import '../../data/segments_repository.dart';
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 
 part 'all_segments_event.dart';
 

@@ -7,7 +7,7 @@ import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/model/segment.dart';
+import 'package:open_bsp/model/segment_model.dart';
 
 import '../../model/appmodes.dart';
 import '../../services/viewmodel_locator.dart';

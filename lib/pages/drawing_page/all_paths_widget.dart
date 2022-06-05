@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:provider/provider.dart';
 
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 import '../../services/viewmodel_locator.dart';
 import '../../viewmodel/all_paths_view_model.dart';
 import 'sketcher.dart';

@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../model/appmodes.dart';
-import '../model/segment.dart';
+import '../model/segment_model.dart';
 
 class SketcherController extends ChangeNotifier {
   List<Segment> segments = [];

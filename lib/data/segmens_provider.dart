@@ -1,4 +1,4 @@
-import '../model/segment.dart';
+import '../model/segment_model.dart';
 
 class SegmentsProvider {
   List<Segment> _segments = [];

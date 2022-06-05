@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
 import '../model/appmodes.dart';
-import '../model/segment.dart';
+import '../model/segment_model.dart';
 import '../services/segment_data_service.dart';
 import 'modes_controller_view_model.dart';
 

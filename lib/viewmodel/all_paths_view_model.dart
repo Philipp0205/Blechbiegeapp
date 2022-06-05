@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:open_bsp/services/segment_data_service.dart';
 
-import '../model/segment.dart';
+import '../model/segment_model.dart';
 
 class AllPathsViewModel extends SegmentDataService {
 

@@ -6,7 +6,7 @@ import 'package:open_bsp/pages/drawing_page/bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/appmodes.dart';
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 import '../../services/viewmodel_locator.dart';
 import '../../viewmodel/current_path_view_model.dart';
 import '../../viewmodel/modes_controller_view_model.dart';

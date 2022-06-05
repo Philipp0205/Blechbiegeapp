@@ -1,6 +1,6 @@
 import 'package:open_bsp/data/segmens_provider.dart';
 
-import '../model/segment.dart';
+import '../model/segment_model.dart';
 
 class SegmentsRepository {
   final SegmentsProvider _segmentsProvider = new SegmentsProvider();

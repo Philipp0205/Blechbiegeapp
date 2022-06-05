@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 
 import '../../model/appmodes.dart';
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 
 abstract class SegmentWidgetEvent extends Equatable {
   const SegmentWidgetEvent();

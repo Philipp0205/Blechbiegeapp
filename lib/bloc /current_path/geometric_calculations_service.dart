@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
@@ -27,6 +27,8 @@ class GeometricCalculationsService {
     return distances;
   }
 
+  /// Returns nearest nearest offsets of [offset] in [offsets].
+  /// Number of nearest offsets is determined by [numberOfOffsets].
   List<Offset> getNNearestOffsets(
       Offset offset, List<Offset> offsets, int numberOfOffsets) {
     return _getOffsetsByDistance(offset, offsets)

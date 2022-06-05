@@ -2,7 +2,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../model/appmodes.dart';
-import '../../model/segment.dart';
+import '../../model/segment_model.dart';
 
 abstract class CurrentSegmentState extends Equatable {
   final List<Segment> currentSegment;
