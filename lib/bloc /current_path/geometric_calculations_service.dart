@@ -43,6 +43,7 @@ class GeometricCalculationsService {
     Offset offsetA = offsets.first;
     Offset offsetB = offsets.last;
 
+
     double lengthAB = (offsetA - offsetB).distance;
 
     double x = offsetB.dx + (offsetB.dx - offsetA.dx) / lengthAB * length;

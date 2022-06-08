@@ -1,23 +1,16 @@
 import 'dart:async';
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
-import 'package:open_bsp/services/segment_data_service.dart';
 import 'package:open_bsp/services/viewmodel_locator.dart';
 
 import '../../bloc /current_path/segment_widget_bloc.dart';
 import '../../bloc /current_path/current_segment_event.dart';
 import '../../model/appmodes.dart';
-import '../../model/segment_model.dart';
-import '../../viewmodel/all_paths_view_model.dart';
 import '../../viewmodel/current_path_view_model.dart';
-import '../../viewmodel/modes_controller_view_model.dart';
 import 'bottom_sheet.dart';
 import 'segment_widget.dart';
 
@@ -60,8 +53,7 @@ class _DrawingPageState extends State<DrawingPage> {
                 child: Icon(Icons.select_all), onTap: toggleSelectionMode),
             SpeedDialChild(child: Icon(Icons.circle), onTap: toggleDefaultMode),
             SpeedDialChild(
-                child: Icon(Icons.circle_notifications),
-                onTap: _bottomSheet),
+                child: Icon(Icons.circle_notifications), onTap: _bottomSheet),
           ],
         ),
       );
@@ -83,7 +75,7 @@ class _DrawingPageState extends State<DrawingPage> {
     context
         .read<DrawingPageBloc>()
         .add(DrawingPageModeChanged(mode: Mode.defaultMode));
-    context.read<SegmentWidgetBloc>().add(CurrentSegmentUnselected());
+    // context.read<SegmentWidgetBloc>().add(CurrentSegmentUnselected());
   }
 
   void _bottomSheet() {

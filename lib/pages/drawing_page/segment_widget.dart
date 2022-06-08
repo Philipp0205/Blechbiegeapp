@@ -3,13 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 
-import '../../bloc /all_paths/all_segments_bloc.dart';
 import '../../bloc /current_path/current_segment_event.dart';
 import '../../bloc /current_path/current_segment_state.dart';
 import '../../model/appmodes.dart';
-import 'bottom_sheet.dart';
 import 'sketcher.dart';
 
+/// Widget which the the line/segment is drawn on. Gestures from the user are
+/// registered via a [GestureDetector] and drawn on the screen with the
+/// [Sketcher] widget.
 class SegmentWidget extends StatefulWidget {
   @override
   _SegmentWidgetState createState() => _SegmentWidgetState();
@@ -29,6 +30,7 @@ class _SegmentWidgetState extends State<SegmentWidget> {
                   .add(CurrentSegmentModeChanged(mode: state.mode));
             }),
       ],
+      /// Rebuild when change in state happens.
       child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
           builder: (context, state) {
         return GestureDetector(
@@ -36,17 +38,13 @@ class _SegmentWidgetState extends State<SegmentWidget> {
           onPanUpdate: (details) => onPanUpdate(context, details, state),
           onPanEnd: (details) => onPanEnd(context, details, state),
           onPanDown: (details) => onPanDown(context, details, state),
-          onDoubleTap: () => onDoubleTab(context, state),
           child: RepaintBoundary(
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
-              padding: EdgeInsets.all(4.0),
-              color: Colors.transparent,
-              alignment: Alignment.topLeft,
               child: CustomPaint(
                 painter: Sketcher(
-                  lines: state.currentSegment,
+                  lines2: state.segment,
                 ),
               ),
             ),
@@ -56,6 +54,8 @@ class _SegmentWidgetState extends State<SegmentWidget> {
     );
   }
 
+  ///A pointer has contacted the screen with a primary button and has begun to
+  ///move.
   void onPanStart(BuildContext context, DragStartDetails details,
       CurrentSegmentState state) {
     RenderBox box = context.findRenderObject() as RenderBox;
@@ -67,6 +67,8 @@ class _SegmentWidgetState extends State<SegmentWidget> {
         .add(CurrentSegmentPanStarted(firstDrawnOffset: point2, mode: mode));
   }
 
+  ///  A pointer that is in contact with the screen with a primary button and
+  ///  moving has moved again.
   void onPanUpdate(BuildContext context, DragUpdateDetails details,
       CurrentSegmentState state) {
     RenderBox box = context.findRenderObject() as RenderBox;
@@ -74,26 +76,25 @@ class _SegmentWidgetState extends State<SegmentWidget> {
     Offset point2 = new Offset(point.dx, point.dy);
     Mode mode = context.read<DrawingPageBloc>().state.mode;
     context.read<SegmentWidgetBloc>().add(CurrentSegmentPanUpdated(
-        currentSegment: state.currentSegment, offset: point2, mode: mode));
+        segment: state.segment.first, offset: point2, mode: mode));
   }
 
+  /// A pointer that is in contact with the screen with a primary button and
+  /// moving has moved again.
   void onPanEnd(
       BuildContext context, DragEndDetails details, CurrentSegmentState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
-    context.read<SegmentWidgetBloc>().add(CurrentSegmentPanEnded(
-        currentSegment: state.currentSegment, mode: mode));
-    // context.read<AllSegmentsBloc>().add(AllSegmentsUpdated());
+    context
+        .read<SegmentWidgetBloc>()
+        .add(CurrentSegmentPanEnded(segment2: state.segment.first, mode: mode));
   }
 
+  /// The pointer that previously triggered onPanDown did not complete.
   void onPanDown(BuildContext context, DragDownDetails details,
       CurrentSegmentState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
     context
         .read<SegmentWidgetBloc>()
         .add(CurrentSegmentPanDowned(details: details, mode: mode));
-  }
-
-  void onDoubleTab(BuildContext context, CurrentSegmentState state) {
-
   }
 }

@@ -1,15 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
+import 'package:open_bsp/model/segment2.dart';
 
 import '../../model/appmodes.dart';
-import '../../model/segment_model.dart';
 
-abstract class SegmentWidgetEvent extends Equatable {
+abstract class SegmentWidgetEvent {
   const SegmentWidgetEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class CurrentSegmentPanStarted extends SegmentWidgetEvent {
@@ -21,19 +17,21 @@ class CurrentSegmentPanStarted extends SegmentWidgetEvent {
 }
 
 class CurrentSegmentPanUpdated extends SegmentWidgetEvent {
-  final List<Segment> currentSegment;
+  final Segment2 segment;
   final Offset offset;
   final Mode mode;
 
   const CurrentSegmentPanUpdated(
-      {required this.currentSegment, required this.offset, required this.mode});
+      {required this.segment, required this.offset, required this.mode});
 }
 
 class CurrentSegmentPanEnded extends SegmentWidgetEvent {
-  final List<Segment> currentSegment;
+  final Segment2 segment2;
   final Mode mode;
 
-  CurrentSegmentPanEnded({required this.currentSegment, required this.mode});
+  CurrentSegmentPanEnded({required this.segment2, required this.mode});
+
+
 }
 
 class CurrentSegmentPanDowned extends SegmentWidgetEvent {

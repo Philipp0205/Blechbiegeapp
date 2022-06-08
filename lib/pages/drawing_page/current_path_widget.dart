@@ -44,9 +44,9 @@ class _CurrentPathWidgetState extends State<CurrentPathWidget> {
                   //  print('currentSegemntmodel triggered ') ;
                   // });
                   return CustomPaint(
-                    painter: Sketcher(
-                      lines: [model.currentlyDrawnSegment],
-                    ),
+                    // painter: Sketcher(
+                    //   lines: [model.currentlyDrawnSegment],
+                    // ),
                   );
                 },
               )),

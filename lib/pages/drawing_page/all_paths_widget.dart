@@ -34,9 +34,9 @@ class _AllPathsWidgetState extends State<AllPathsWidget> {
                 print('allpathsviewmodel triggered');
               });
               return CustomPaint(
-                painter: Sketcher(
-                  lines: model.segments,
-                ),
+                // painter: Sketcher(
+                //   lines: model.segments,
+                // ),
               );
             },
           ),

@@ -8,6 +8,7 @@ import 'package:open_bsp/bloc%20/current_path/geometric_calculations_service.dar
 import 'package:open_bsp/data/segments_repository.dart';
 import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/model/segment_model.dart';
+import 'package:open_bsp/model/segment_offset.dart';
 
 import '../../model/segment2.dart';
 import 'geometric_calculations_service.dart';
@@ -18,23 +19,19 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       new GeometricCalculationsService();
 
   SegmentWidgetBloc(this.repository)
-      : super(
-            CurrentSegmentInitial(currentSegment: [], mode: Mode.defaultMode)) {
+      : super(CurrentSegmentInitial(segment: [], mode: Mode.defaultMode)) {
     /// Pan Events
     on<CurrentSegmentPanStarted>(_onPanStart);
     on<CurrentSegmentPanUpdated>(_onPanUpdate);
     on<CurrentSegmentPanEnded>(_onPanEnd);
     on<CurrentSegmentPanDowned>(_onPanDown);
 
-    /// Events regarding mode and current selected segment
+    /// Events for mode editing the segment
     on<CurrentSegmentModeChanged>(_changeMode);
     on<SegmentDeleted>(_deleteSegment);
     on<SegmentPartDeleted>(_deleteSegmentPart);
     on<SegmentPartLengthChanged>(_changeSegmentPartLength);
-    on<CurrentSegmentUnselected>(_unselectSegment);
     on<SegmentPartAngleChanged>(_changeSegmentAngle);
-
-    Segment2 defaultSegment = new Segment2(path: [], selectedOffsets: [],);
   }
 
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
@@ -45,7 +42,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
     switch (event.mode) {
       case Mode.defaultMode:
-        state.currentSegment.isEmpty
+        state.segment.isEmpty
             ? _onPanStartDefaultInitial(event, emit)
             : _onPanStartDefault(event, emit);
         break;
@@ -83,47 +80,47 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     }
   }
 
-  /// Creates initial segment if now segment was drawn on the screen before.
+  /// Creates segment if now segment was drawn on the screen before.
   void _onPanStartDefaultInitial(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+    SegmentOffset offset = new SegmentOffset(offset: event.firstDrawnOffset);
+    Segment2 segment2 =
+        new Segment2(path: [offset, offset], width: 5, color: Colors.black);
 
     Segment segment = new Segment(
         [event.firstDrawnOffset, event.firstDrawnOffset], Colors.black, 5);
     segment.selectedEdge = event.firstDrawnOffset;
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
+    emit(CurrentSegmentUpdate(segment: [segment2], mode: Mode.defaultMode));
   }
 
   /// Extends segment starting from the nearest offset from pointer.
   void _onPanStartDefault(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> path = state.currentSegment.first.path;
-    path.add(event.firstDrawnOffset);
+    List<SegmentOffset> path2 = state.segment.first.path;
+    path2.add(new SegmentOffset(offset: event.firstDrawnOffset));
+
+    emit(CurrentSegmentUpdate(
+        segment: [state.segment.first.copyWith(path2)],
+        mode: Mode.defaultMode));
   }
 
   void _onPanStartPointMode(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
-    print('onpanstart pointmode');
-    // _changeSelectedSegmentDependingOnNewOffset(event.firstDrawnOffset, emit);
-  }
+      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {}
 
   void _onPanUpdateDefaultMode(
       CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> path = state.currentSegment.first.path;
+    List<SegmentOffset> path2 = state.segment.first.path;
 
-    int indexOfSelectedPoint = state.currentSegment.first.indexOfSelectedPoint;
-
-    path
+    path2
       ..removeLast()
-      ..add(event.offset);
-    Segment segment = new Segment(path, Colors.black, 5);
-    segment.indexOfSelectedPoint = indexOfSelectedPoint;
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.defaultMode));
+      ..add(new SegmentOffset(offset: event.offset));
+
+    emit(CurrentSegmentUpdate(
+        segment: [event.segment.copyWith(path2)], mode: Mode.defaultMode));
   }
 
   void _onPanUpdatePointMode(
-      CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
-    // _changeSelectedSegmentDependingOnNewOffset(event.offset, emit);
-  }
+      CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {}
 
   void _onPanEnd(
       CurrentSegmentPanEnded event, Emitter<CurrentSegmentState> emit) {
@@ -146,29 +143,28 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   void _onPanEndDefaultMode(
       CurrentSegmentPanEnded event, Emitter<CurrentSegmentState> emit) {
     emit(CurrentSegmentUpdate(
-        segment: [event.currentSegment.first], mode: Mode.defaultMode));
+        segment: [event.segment2], mode: Mode.defaultMode));
   }
 
   void _deleteSegment(SegmentDeleted event, Emitter<CurrentSegmentState> emit) {
     emit(CurrentSegmentDelete());
   }
 
+  /// Deletes a part of a [Segment2]. To make a delete happen at least two
+  /// offsets in a segment have to be selected.
   void _deleteSegmentPart(
       SegmentPartDeleted event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> path = state.currentSegment.first.path;
-    List<Offset> selectedPoints = state.currentSegment.first.selectedOffsets;
+    List<SegmentOffset> offsets = state.segment.first.path;
+    offsets.removeLast();
 
-    path.remove(selectedPoints.last);
-
-    List<Offset> sortedPoints = List.from(selectedPoints)
-      ..sort((a, b) => path.indexOf(a) - path.indexOf(b));
-
-    selectedPoints.removeLast();
-
-    Segment segment = new Segment(path, Colors.black, 5);
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+    emit(CurrentSegmentUpdate(
+        segment: [state.segment.first.copyWith(offsets)],
+        mode: Mode.selectionMode));
   }
 
+  /// Different actions on pan down depending on the mode.
+  /// If the selection mode is selected the user can select one ore more
+  /// offsets of the segment.
   void _onPanDown(
       CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
     switch (event.mode) {
@@ -194,56 +190,25 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   /// from the selectedOffsets of a [Segment].
   void _onPanDownSelectionMode(
       CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
-    Offset offset = new Offset(
+    Offset panDownOffset = new Offset(
         event.details.globalPosition.dx, event.details.globalPosition.dy - 100);
-    Offset nearestOffset = _calculationService
-        .getNNearestOffsets(offset, state.currentSegment.first.path, 1)
-        .first;
 
-    List<Offset> path = state.currentSegment.first.path;
-    List<Offset> highlightedPoints = state.currentSegment.first.selectedOffsets;
+    List<SegmentOffset> path = state.segment.first.path;
+    List<Offset> offsets = path.map((e) => e.offset).toList();
+    Offset nearestOffset =
+        _calculationService.getNNearestOffsets(panDownOffset, offsets, 1).first;
 
-    int index = path.indexOf(nearestOffset);
-
-    // TODO schlechter Code.
-    if (highlightedPoints.contains(nearestOffset)) {
-      print('highlichted points container nearest offset ... ');
-      highlightedPoints.remove(nearestOffset);
-    } else if (highlightedPoints.isNotEmpty && highlightedPoints.length <= 2) {
-      print('points.length = ${highlightedPoints.length}');
-      if (nearestOffset == path.last) {
-        print('nearest offset ist last');
-        if (highlightedPoints.contains(path[index - 1])) {
-          highlightedPoints.add(nearestOffset);
-        }
-      } else if (nearestOffset == path.first) {
-        print('nearest offset ist first');
-        if (highlightedPoints.contains(path[index + 1])) {
-          highlightedPoints.add(nearestOffset);
-        }
-      } else {
-        print('nearest offset is neither');
-        if (highlightedPoints.contains(path[index + 1]) ||
-            highlightedPoints.contains(path[index - 1])) {
-          highlightedPoints.add(nearestOffset);
-        }
+    path.forEach((segmentOffset) {
+      if (segmentOffset.offset == nearestOffset) {
+        segmentOffset.isSelected
+            ? segmentOffset.isSelected = false
+            : segmentOffset.isSelected = true;
       }
-    } else if (highlightedPoints.length == 0) {
-      print('firest selected offset');
-      highlightedPoints.add(nearestOffset);
-    }
+    });
 
-    if (highlightedPoints.length == 2) {
-      double angle = _calculationService.getAngle(
-          highlightedPoints.first, highlightedPoints.last);
-      print('angle between ${highlightedPoints.first} and '
-          '${highlightedPoints.last} is $angle');
-    }
-
-    Segment segment = new Segment(path, Colors.black, 5);
-    segment.selectedOffsets = highlightedPoints;
-
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+    emit(CurrentSegmentUpdate(
+        segment: [state.segment.first.copyWith(path)],
+        mode: Mode.selectionMode));
   }
 
   void _onPanDownPointMode(
@@ -255,51 +220,30 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   void _changeMode(
       CurrentSegmentModeChanged event, Emitter<CurrentSegmentState> emit) {
-    emit(CurrentSegmentUpdate(segment: state.currentSegment, mode: event.mode));
-  }
-
-  void _unselectSegment(
-      CurrentSegmentUnselected event, Emitter<CurrentSegmentState> emit) {
-    if (state.currentSegment.length > 0) {
-      state.currentSegment.first
-        ..color = Colors.black
-        ..isSelected = false;
-      emit(CurrentSegmentUpdate(
-          segment: state.currentSegment, mode: Mode.defaultMode));
-    }
-  }
-
-  void updateSegmentPointMode(
-      Segment segment, Offset offset, Emitter<CurrentSegmentState> emit) {
-    segment
-      ..highlightPoints = true
-      ..isSelected = true
-      ..color = Colors.red;
-
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.pointMode));
+    emit(
+        CurrentSegmentUpdate(segment: [state.segment.first], mode: event.mode));
   }
 
   /// Selects nearest [Offset] of the [Segment] depending on the
   /// coordinates of [point].
   void _selectOffset(Point point, Emitter<CurrentSegmentState> emit) {
-    Segment segment = state.currentSegment.first;
-    Point currentPoint = point,
-        edgeA = new Point(segment.path.first.dx, segment.path.first.dy),
-        edgeB = new Point(segment.path.last.dx, segment.path.last.dy);
-
-    double threshold = 100,
-        distanceToA = currentPoint.distanceTo(edgeA),
-        distanceToB = currentPoint.distanceTo(edgeB);
-
-    if (distanceToA < distanceToB && distanceToA < threshold) {
-      print('segment: ${segment.path}');
-      segment.selectedEdge = new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
-      emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.pointMode));
-    } else if (distanceToB < distanceToA && distanceToB < threshold) {
-      print('segment: ${segment.path}');
-      segment.selectedEdge = new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
-      emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.pointMode));
-    } else {}
+    // Point currentPoint = point,
+    //
+    // double threshold = 100,
+    //     distanceToA = currentPoint.distanceTo(edgeA),
+    //     distanceToB = currentPoint.distanceTo(edgeB);
+    //
+    // if (distanceToA < distanceToB && distanceToA < threshold) {
+    //   print('segment: ${segment.path}');
+    //   segment.selectedEdge = new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
+    //   emit(CurrentSegmentUpdate(
+    //       segment: [segment], segment2: state.segment2!, mode: Mode.pointMode));
+    // } else if (distanceToB < distanceToA && distanceToB < threshold) {
+    //   print('segment: ${segment.path}');
+    //   segment.selectedEdge = new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
+    //   emit(CurrentSegmentUpdate(
+    //       segment: [segment], segment2: state.segment2!, mode: Mode.pointMode));
+    // } else {}
   }
 
   /// Changes the length of a part of a segment.
@@ -307,28 +251,29 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   /// length change.
   void _changeSegmentPartLength(
       SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
-    List<Offset> path = state.currentSegment.first.path;
-    List<Offset> selectedOffsets = state.currentSegment.first.selectedOffsets;
-    int indexInPath = path.indexOf(selectedOffsets.last);
+    print('changeSegmentPartLength');
+    List<SegmentOffset> path = state.segment.first.path;
+
+    List<SegmentOffset> selected =
+        path.where((element) => element.isSelected).toList();
+
     double currentLength =
-        (selectedOffsets[selectedOffsets.length - 2] - selectedOffsets.last)
-            .distance;
+        (selected.first.offset - selected.last.offset).distance;
 
-    Offset offset = _calculationService.extendSegment(
-        [selectedOffsets[selectedOffsets.length - 2], selectedOffsets.last],
-        (event.length - currentLength));
+    Offset offset2 = _calculationService.extendSegment(
+        selected.map((e) => e.offset).toList(), event.length - currentLength);
 
+    SegmentOffset segmentOffset = new SegmentOffset(offset: offset2);
+    segmentOffset.isSelected = true;
+
+    int index = path.indexOf(selected.last);
     path
-      ..removeAt(indexInPath)
-      ..insert(indexInPath, offset);
+      ..remove(selected.last)
+      ..insert(index, segmentOffset);
 
-    Segment segment = new Segment(path, Colors.black, 5);
-    selectedOffsets
-      ..removeLast()
-      ..add(offset);
-
-    segment.selectedOffsets = selectedOffsets;
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+    emit(CurrentSegmentUpdate(
+        segment: [state.segment.first.copyWith(path)],
+        mode: Mode.selectionMode));
   }
 
   /// Changes the angle of a part of a [Segment].
@@ -338,22 +283,26 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       SegmentPartAngleChanged event, Emitter<CurrentSegmentState> emit) {
     print('changeSegmentAngle');
 
-    List<Offset> path = state.currentSegment.first.path;
-    List<Offset> offsets = state.currentSegment.first.selectedOffsets;
+    List<SegmentOffset> path = state.segment.first.path;
+
+    List<SegmentOffset> selectedOffsets =
+        path.where((o) => o.isSelected).toList();
+
+    List<Offset> offsets = selectedOffsets.map((e) => e.offset).toList();
 
     Offset newOffset = _calculationService.calculatePointWithAngle(
         offsets.first, event.length, event.angle);
 
-    int index = path.indexOf(offsets.last);
-    path
-      ..removeAt(index)
-      ..insert(index, newOffset);
-    offsets
-      ..removeLast()
-      ..add(newOffset);
+    SegmentOffset segmentOffset = new SegmentOffset(offset: newOffset);
+    segmentOffset.isSelected = true;
 
-    Segment segment = new Segment(path, Colors.black, 5);
-    segment.selectedOffsets = offsets;
-    emit(CurrentSegmentUpdate(segment: [segment], mode: Mode.selectionMode));
+    int index = path.indexOf(selectedOffsets.last);
+    path
+      ..remove(selectedOffsets.last)
+      ..insert(index, segmentOffset);
+
+    emit(CurrentSegmentUpdate(
+        segment: [state.segment.first.copyWith(path)],
+        mode: Mode.selectionMode));
   }
 }

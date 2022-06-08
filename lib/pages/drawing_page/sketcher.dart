@@ -2,12 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../model/segment2.dart';
 import '../../model/segment_model.dart';
+import '../../model/segment_offset.dart';
 
 class Sketcher extends CustomPainter {
-  final List<Segment> lines;
+  // final List<Segment> lines;
+  final List<Segment2> lines2;
 
-  Sketcher({required this.lines});
+  Sketcher({required this.lines2});
 
   final PictureRecorder pictureRecorder = new PictureRecorder();
   late Canvas recordingCanvas;
@@ -17,48 +20,29 @@ class Sketcher extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (lines.length > 0) {
-      canvas = canvas;
-      recordingCanvas = new Canvas(pictureRecorder);
+    canvas = canvas;
+    recordingCanvas = new Canvas(pictureRecorder);
 
-      Paint paint = Paint()
-        ..color = Colors.red
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 5.0;
+    Paint paint = Paint()
+      ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0;
 
-      for (int i = 0; i < lines.length; ++i) {
-        if (lines[i] == null) continue;
-        for (int j = 0; j < lines[i].path.length - 1; ++j) {
-          if (lines[i].path[j] != null && lines[i].path[j + 1] != null) {
-            paint.color = lines[i].color;
-            paint.strokeWidth = lines[i].width;
-            canvas.drawLine(lines[i].path[j], lines[i].path[j + 1], paint);
-
-            if (lines[i].isSelected) {
-              toggleSegmentSelection(lines[i], canvas);
-            }
-
-            if (lines[i].selectedOffsets.isNotEmpty) {
-              highlightPoints(lines[i].selectedOffsets, canvas);
-            }
-
-            if (lines[i].selectedEdge != null) {
-              if (lines[i].highlightPoints) {
-                Offset offset = new Offset(lines[i].selectedEdge!.dx - 50,
-                    lines[i].selectedEdge!.dy + 20);
-                if (lastDrawnText != '') {
-                  drawText(canvas, lastDrawnText, offset,
-                      Colors.yellow[50] as Color);
-                }
-
-                String text =
-                    '${lines[i].selectedEdge!.dx.toStringAsFixed(2)} / ${lines[i].selectedEdge!.dy.toStringAsFixed(2)}';
-                drawText(canvas, text, offset, Colors.yellow[50] as Color);
-              }
-            }
-          }
-        }
+    if (lines2.isNotEmpty) {
+      List<SegmentOffset> path = lines2.first.path;
+      for (int i = 0; i < lines2.first.path.length - 1; ++i) {
+        canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
       }
+
+      List<Offset> selectedOffsets = lines2.first.path
+          .where((e) => e.isSelected)
+          .toList()
+          .map((e) => e.offset)
+          .toList();
+
+      highlightSelectedOffsets(selectedOffsets, canvas);
+
+
     }
   }
 
@@ -86,7 +70,7 @@ class Sketcher extends CustomPainter {
     }
   }
 
-  void highlightPoints(List<Offset> offsets, Canvas canvas) {
+  void highlightSelectedOffsets(List<Offset> offsets, Canvas canvas) {
     Paint paintBlue = Paint()
       ..color = Colors.blueAccent
       ..strokeCap = StrokeCap.round
@@ -113,6 +97,16 @@ class Sketcher extends CustomPainter {
       } else if (offsets.indexOf(offset) == 2) {
         canvas.drawCircle(offset, 10, paintPurple);
       }
+    });
+
+
+    /// Text
+    offsets.forEach((element) {
+      String text = '${element.dx.toStringAsFixed(1)} / '
+          '${element.dy.toStringAsFixed(1)}';
+      Offset offset = new Offset(element.dx - 40,
+          element.dy + 20);
+      drawText(canvas, text, offset, Colors.black);
     });
   }
 

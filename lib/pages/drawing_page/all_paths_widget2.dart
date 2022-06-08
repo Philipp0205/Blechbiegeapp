@@ -23,9 +23,9 @@ class _AllPathsWidget2State extends State<AllPathsWidget2> {
             padding: EdgeInsets.all(4.0),
             alignment: Alignment.topLeft,
             child: CustomPaint(
-              painter: Sketcher(
-                lines: state.segments,
-              ),
+              // painter: Sketcher(
+              //   lines: state.segments,
+              // ),
             ),
           ),
         );

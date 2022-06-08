@@ -8,6 +8,7 @@ import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/model/segment_model.dart';
+import 'package:open_bsp/model/segment_offset.dart';
 
 import '../../model/appmodes.dart';
 import '../../services/viewmodel_locator.dart';
@@ -47,33 +48,40 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   @override
   void initState() {
     super.initState();
-    List<Offset> offsets = context
+    List<SegmentOffset> offsets = context
         .read<SegmentWidgetBloc>()
         .state
-        .currentSegment
+        .segment
         .first
-        .selectedOffsets;
-    int index = offsets.indexOf(offsets.last);
-    double distance = (offsets[index - 1] - offsets.last).distance;
+        .path
+        .where((e) => e.isSelected)
+        .toList();
+
+    setInitialLength(offsets);
+    setInitialAngle(offsets);
+  }
+
+  void setInitialLength(List<SegmentOffset> offsets) {
+    double distance = (offsets.first.offset - offsets.last.offset).distance;
 
     if (distance > 1) {
       _lengthController.text = distance.toStringAsFixed(2);
     }
+  }
 
+  void setInitialAngle(List<SegmentOffset> offsets) {
     if (offsets.length == 2) {
-      double angle = _calculationsService.getAngle(offsets.first, offsets.last);
+      double angle = _calculationsService.getAngle(
+          offsets.first.offset, offsets.last.offset);
 
       _angleController.text = angle.toStringAsFixed(2);
     }
-
-    // Start listening to changes.
-    // myController.addListener(_printLatestValue);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 275,
+      height: 300,
       child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
         builder: (context, state) {
           return Column(
@@ -102,6 +110,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                           keyboardType: TextInputType.number,
                           onChanged: (text) {
                             double length = double.parse(text);
+                            print('length $length');
                             if (length != double.nan) {
                               context.read<SegmentWidgetBloc>().add(
                                   SegmentPartLengthChanged(length: length));
@@ -135,13 +144,14 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                     color: Colors.grey,
                   ),
                   IconButton(
-                      onPressed: () {
-                        context.read<DrawingPageBloc>().add(
-                            DrawingPageModeChanged(mode: Mode.pointMode));
-                      },
-                      icon: Icon(Icons.drag_indicator),
+                    onPressed: () {
+                      context
+                          .read<DrawingPageBloc>()
+                          .add(DrawingPageModeChanged(mode: Mode.pointMode));
+                    },
+                    icon: Icon(Icons.drag_indicator),
                     iconSize: 35,
-                      color: Colors.grey,
+                    color: Colors.grey,
                   ),
                 ],
               ),
