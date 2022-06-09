@@ -82,7 +82,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: 300,
-      child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
+      child: BlocBuilder<SegmentWidgetBloc, SegmentWidgetBlocState>(
         builder: (context, state) {
           return Column(
             children: [

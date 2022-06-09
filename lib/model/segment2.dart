@@ -18,10 +18,15 @@ class Segment2 {
 
   Segment2({required this.path, required this.width, required this.color});
 
-  Segment2 copyWith(List<SegmentOffset> path2, {List<SegmentOffset>? path, double? width, Color? color}) {
+  Segment2 copyWith({
+    List<SegmentOffset>? path,
+    double? width,
+    Color? color,
+  }) {
     return Segment2(
-        path: path ?? this.path,
-        width: width ?? this.width,
-        color: color ?? this.color);
+      path: path ?? this.path,
+      width: width ?? this.width,
+      color: color ?? this.color,
+    );
   }
 }

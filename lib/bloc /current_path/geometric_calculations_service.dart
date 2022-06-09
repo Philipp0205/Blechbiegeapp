@@ -43,7 +43,6 @@ class GeometricCalculationsService {
     Offset offsetA = offsets.first;
     Offset offsetB = offsets.last;
 
-
     double lengthAB = (offsetA - offsetB).distance;
 
     double x = offsetB.dx + (offsetB.dx - offsetA.dx) / lengthAB * length;
@@ -113,6 +112,15 @@ class GeometricCalculationsService {
 
     double x = centre.dx + (length * cos(radian));
     double y = centre.dy + (length * sin(radian));
+
+    return new Offset(x, y);
+  }
+
+  /// Given two offsets of a line starting is [offsetA] and ending is [offsetB]
+  /// find out the mid-point of a line.
+  Offset getMiddle(Offset offsetA, Offset offsetB) {
+    double x = (offsetA.dx + offsetB.dx) / 2;
+    double y = (offsetA.dy + offsetB.dy) / 2;
 
     return new Offset(x, y);
   }

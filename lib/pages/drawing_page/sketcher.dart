@@ -1,22 +1,25 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:open_bsp/bloc%20/current_path/geometric_calculations_service.dart';
 
 import '../../model/segment2.dart';
 import '../../model/segment_model.dart';
 import '../../model/segment_offset.dart';
 
 class Sketcher extends CustomPainter {
-  // final List<Segment> lines;
   final List<Segment2> lines2;
 
   Sketcher({required this.lines2});
 
-  final PictureRecorder pictureRecorder = new PictureRecorder();
+  PictureRecorder pictureRecorder = new PictureRecorder();
   late Canvas recordingCanvas;
   late Canvas canvas;
 
   String lastDrawnText = '';
+
+  GeometricCalculationsService _calculationsService =
+      new GeometricCalculationsService();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -41,8 +44,6 @@ class Sketcher extends CustomPainter {
           .toList();
 
       highlightSelectedOffsets(selectedOffsets, canvas);
-
-
     }
   }
 
@@ -99,21 +100,29 @@ class Sketcher extends CustomPainter {
       }
     });
 
-
     /// Text
     offsets.forEach((element) {
       String text = '${element.dx.toStringAsFixed(1)} / '
           '${element.dy.toStringAsFixed(1)}';
-      Offset offset = new Offset(element.dx - 40,
-          element.dy + 20);
-      drawText(canvas, text, offset, Colors.black);
+      Offset offset = new Offset(element.dx - 40, element.dy + 20);
+      drawText(canvas, text, offset, Colors.black, Colors.green[100],);
     });
+
+    if (offsets.length == 2) {
+      Offset midPoint = _calculationsService.getMiddle(offsets[0], offsets[1]);
+      Offset offset = new Offset(midPoint.dx - 15, midPoint.dy + 5);
+
+      String length = (offsets[0] - offsets[1]).distance.toStringAsFixed(1);
+
+      String text = '$length';
+      drawText(canvas, text, offset, Colors.red, Colors.yellow[50]);
+    }
   }
 
-  void drawText(Canvas canvas, String text, Offset offset, Color color) {
+  void drawText(Canvas canvas, String text, Offset offset, Color color, Color? backgroundColor) {
     TextStyle style = TextStyle(
         color: Colors.black,
-        backgroundColor: Colors.green[100],
+        backgroundColor: backgroundColor,
         decorationStyle: TextDecorationStyle.dotted,
         decorationColor: Colors.green,
         decorationThickness: 0.25);

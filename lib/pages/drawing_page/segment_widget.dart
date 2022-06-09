@@ -31,7 +31,7 @@ class _SegmentWidgetState extends State<SegmentWidget> {
             }),
       ],
       /// Rebuild when change in state happens.
-      child: BlocBuilder<SegmentWidgetBloc, CurrentSegmentState>(
+      child: BlocBuilder<SegmentWidgetBloc, SegmentWidgetBlocState>(
           builder: (context, state) {
         return GestureDetector(
           onPanStart: (details) => onPanStart(context, details, state),
@@ -57,7 +57,7 @@ class _SegmentWidgetState extends State<SegmentWidget> {
   ///A pointer has contacted the screen with a primary button and has begun to
   ///move.
   void onPanStart(BuildContext context, DragStartDetails details,
-      CurrentSegmentState state) {
+      SegmentWidgetBlocState state) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
@@ -70,7 +70,7 @@ class _SegmentWidgetState extends State<SegmentWidget> {
   ///  A pointer that is in contact with the screen with a primary button and
   ///  moving has moved again.
   void onPanUpdate(BuildContext context, DragUpdateDetails details,
-      CurrentSegmentState state) {
+      SegmentWidgetBlocState state) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
     Offset point2 = new Offset(point.dx, point.dy);
@@ -82,7 +82,7 @@ class _SegmentWidgetState extends State<SegmentWidget> {
   /// A pointer that is in contact with the screen with a primary button and
   /// moving has moved again.
   void onPanEnd(
-      BuildContext context, DragEndDetails details, CurrentSegmentState state) {
+      BuildContext context, DragEndDetails details, SegmentWidgetBlocState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
     context
         .read<SegmentWidgetBloc>()
@@ -91,7 +91,7 @@ class _SegmentWidgetState extends State<SegmentWidget> {
 
   /// The pointer that previously triggered onPanDown did not complete.
   void onPanDown(BuildContext context, DragDownDetails details,
-      CurrentSegmentState state) {
+      SegmentWidgetBlocState state) {
     Mode mode = context.read<DrawingPageBloc>().state.mode;
     context
         .read<SegmentWidgetBloc>()

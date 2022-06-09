@@ -3,26 +3,25 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/pages/drawing_page/all_paths_widget2.dart';
-import 'package:open_bsp/services/viewmodel_locator.dart';
 
+import '../../bloc /constructing/constructing_page_bloc.dart';
 import '../../bloc /current_path/segment_widget_bloc.dart';
-import '../../bloc /current_path/current_segment_event.dart';
 import '../../model/appmodes.dart';
-import '../../viewmodel/current_path_view_model.dart';
+import '../../model/segment2.dart';
 import 'bottom_sheet.dart';
 import 'segment_widget.dart';
 
 class DrawingPage extends StatefulWidget {
+  const DrawingPage({Key? key}) : super(key: key);
+
   @override
   _DrawingPageState createState() => _DrawingPageState();
 }
 
 class _DrawingPageState extends State<DrawingPage> {
-  // SketcherController viewmodel =  getIt<SketcherController>();
-  CurrentPathViewModel _currentPathVM = getIt<CurrentPathViewModel>();
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DrawingPageBloc, DrawingPageState>(
@@ -30,6 +29,7 @@ class _DrawingPageState extends State<DrawingPage> {
       return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
+        backgroundColor: Color(0xff009374),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [Text('Biegeapp'), Text(state.mode.name)],
@@ -38,22 +38,46 @@ class _DrawingPageState extends State<DrawingPage> {
         backgroundColor: Colors.yellow[50],
         body: Container(
           child: Stack(children: [
-            AllPathsWidget2(),
             SegmentWidget(),
             // AllPathsWidget(),
             // CurrentPathWidget()
           ]),
         ),
-        floatingActionButton: SpeedDial(
-          icon: Icons.add,
-          activeIcon: Icons.close,
+        floatingActionButton: Stack(
           children: [
-            SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
-            SpeedDialChild(
-                child: Icon(Icons.select_all), onTap: toggleSelectionMode),
-            SpeedDialChild(child: Icon(Icons.circle), onTap: toggleDefaultMode),
-            SpeedDialChild(
-                child: Icon(Icons.circle_notifications), onTap: _bottomSheet),
+            Positioned(
+              left: 40,
+              bottom: 20,
+              child: SpeedDial(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                icon: Icons.add,
+                activeIcon: Icons.close,
+                children: [
+                  SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
+                  SpeedDialChild(
+                      child: Icon(Icons.select_all),
+                      onTap: toggleSelectionMode),
+                  SpeedDialChild(
+                      child: Icon(Icons.circle), onTap: toggleDefaultMode),
+                  SpeedDialChild(
+                      child: Icon(Icons.circle_notifications),
+                      onTap: _bottomSheet),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              right: 10,
+              child: FloatingActionButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.arrow_right),
+                onPressed: () => _goToNextPage(),
+              ),
+            ),
           ],
         ),
       );
@@ -86,5 +110,13 @@ class _DrawingPageState extends State<DrawingPage> {
         return AppBottomSheet();
       },
     );
+  }
+
+  void _goToNextPage() {
+    List<Segment2> segment = context.read<SegmentWidgetBloc>().state.segment;
+    BlocProvider.of<ConstructingPageBloc>(context)
+        .add(ConstructingPageCreated(segment: segment));
+
+    Navigator.of(context).pushNamed('/second');
   }
 }

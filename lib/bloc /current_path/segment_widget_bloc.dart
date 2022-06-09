@@ -13,12 +13,11 @@ import 'package:open_bsp/model/segment_offset.dart';
 import '../../model/segment2.dart';
 import 'geometric_calculations_service.dart';
 
-class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
-  final SegmentsRepository repository;
+class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {
   GeometricCalculationsService _calculationService =
       new GeometricCalculationsService();
 
-  SegmentWidgetBloc(this.repository)
+  SegmentWidgetBloc()
       : super(CurrentSegmentInitial(segment: [], mode: Mode.defaultMode)) {
     /// Pan Events
     on<CurrentSegmentPanStarted>(_onPanStart);
@@ -39,7 +38,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   ///
   /// Depending on the App's [Mode] the behavior is different.
   void _onPanStart(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanStarted event, Emitter<SegmentWidgetBlocState> emit) {
     switch (event.mode) {
       case Mode.defaultMode:
         state.segment.isEmpty
@@ -63,7 +62,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   ///
   /// Depending on the App's [Mode] the behavior is different.
   void _onPanUpdate(
-      CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanUpdated event, Emitter<SegmentWidgetBlocState> emit) {
     switch (event.mode) {
       case Mode.defaultMode:
         _onPanUpdateDefaultMode(event, emit);
@@ -82,7 +81,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   /// Creates segment if now segment was drawn on the screen before.
   void _onPanStartDefaultInitial(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanStarted event, Emitter<SegmentWidgetBlocState> emit) {
     SegmentOffset offset =
         new SegmentOffset(offset: event.firstDrawnOffset, isSelected: false);
     Segment2 segment2 =
@@ -96,21 +95,21 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
   /// Extends segment starting from the nearest offset from pointer.
   void _onPanStartDefault(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanStarted event, Emitter<SegmentWidgetBlocState> emit) {
     List<SegmentOffset> path2 = state.segment.first.path;
     path2.add(
         new SegmentOffset(offset: event.firstDrawnOffset, isSelected: false));
 
     emit(CurrentSegmentUpdate(
-        segment: [state.segment.first.copyWith(path2)],
+        segment: [state.segment.first.copyWith(path: path2)],
         mode: Mode.defaultMode));
   }
 
   void _onPanStartPointMode(
-      CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {}
+      CurrentSegmentPanStarted event, Emitter<SegmentWidgetBlocState> emit) {}
 
   void _onPanUpdateDefaultMode(
-      CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanUpdated event, Emitter<SegmentWidgetBlocState> emit) {
     List<SegmentOffset> path2 = state.segment.first.path;
 
     path2
@@ -118,14 +117,14 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       ..add(new SegmentOffset(offset: event.offset, isSelected: false));
 
     emit(CurrentSegmentUpdate(
-        segment: [event.segment.copyWith(path2)], mode: Mode.defaultMode));
+        segment: [event.segment.copyWith(path: path2)], mode: Mode.defaultMode));
   }
 
   void _onPanUpdatePointMode(
-      CurrentSegmentPanUpdated event, Emitter<CurrentSegmentState> emit) {}
+      CurrentSegmentPanUpdated event, Emitter<SegmentWidgetBlocState> emit) {}
 
   void _onPanEnd(
-      CurrentSegmentPanEnded event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanEnded event, Emitter<SegmentWidgetBlocState> emit) {
     switch (event.mode) {
       case Mode.defaultMode:
         _onPanEndDefaultMode(event, emit);
@@ -143,24 +142,24 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   }
 
   void _onPanEndDefaultMode(
-      CurrentSegmentPanEnded event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanEnded event, Emitter<SegmentWidgetBlocState> emit) {
     emit(CurrentSegmentUpdate(
         segment: [event.segment2], mode: Mode.defaultMode));
   }
 
-  void _deleteSegment(SegmentDeleted event, Emitter<CurrentSegmentState> emit) {
+  void _deleteSegment(SegmentDeleted event, Emitter<SegmentWidgetBlocState> emit) {
     emit(CurrentSegmentDelete());
   }
 
   /// Deletes a part of a [Segment2]. To make a delete happen at least two
   /// offsets in a segment have to be selected.
   void _deleteSegmentPart(
-      SegmentPartDeleted event, Emitter<CurrentSegmentState> emit) {
+      SegmentPartDeleted event, Emitter<SegmentWidgetBlocState> emit) {
     List<SegmentOffset> offsets = state.segment.first.path;
     offsets.removeLast();
 
     emit(CurrentSegmentUpdate(
-        segment: [state.segment.first.copyWith(offsets)],
+        segment: [state.segment.first.copyWith(path: offsets)],
         mode: Mode.selectionMode));
   }
 
@@ -168,7 +167,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   /// If the selection mode is selected the user can select one ore more
   /// offsets of the segment.
   void _onPanDown(
-      CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanDowned event, Emitter<SegmentWidgetBlocState> emit) {
     switch (event.mode) {
       case Mode.defaultMode:
         // TODO: Handle this case.
@@ -191,7 +190,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   /// In selection mode the nearest point of the segment gets added (or removed)
   /// from the selectedOffsets of a [Segment].
   void _onPanDownSelectionMode(
-      CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanDowned event, Emitter<SegmentWidgetBlocState> emit) {
     Offset panDownOffset = new Offset(
         event.details.globalPosition.dx, event.details.globalPosition.dy - 100);
 
@@ -209,50 +208,28 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     });
 
     emit(CurrentSegmentUpdate(
-        segment: [state.segment.first.copyWith(path)],
+        segment: [state.segment.first.copyWith(path: path)],
         mode: Mode.selectionMode));
   }
 
   void _onPanDownPointMode(
-      CurrentSegmentPanDowned event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentPanDowned event, Emitter<SegmentWidgetBlocState> emit) {
     Point point = new Point(
         event.details.globalPosition.dx, event.details.globalPosition.dy - 80);
-    _selectOffset(point, emit);
   }
 
   void _changeMode(
-      CurrentSegmentModeChanged event, Emitter<CurrentSegmentState> emit) {
+      CurrentSegmentModeChanged event, Emitter<SegmentWidgetBlocState> emit) {
     emit(
         CurrentSegmentUpdate(segment: [state.segment.first], mode: event.mode));
-  }
 
-  /// Selects nearest [Offset] of the [Segment] depending on the
-  /// coordinates of [point].
-  void _selectOffset(Point point, Emitter<CurrentSegmentState> emit) {
-    // Point currentPoint = point,
-    //
-    // double threshold = 100,
-    //     distanceToA = currentPoint.distanceTo(edgeA),
-    //     distanceToB = currentPoint.distanceTo(edgeB);
-    //
-    // if (distanceToA < distanceToB && distanceToA < threshold) {
-    //   print('segment: ${segment.path}');
-    //   segment.selectedEdge = new Offset(edgeA.x.toDouble(), edgeA.y.toDouble());
-    //   emit(CurrentSegmentUpdate(
-    //       segment: [segment], segment2: state.segment2!, mode: Mode.pointMode));
-    // } else if (distanceToB < distanceToA && distanceToB < threshold) {
-    //   print('segment: ${segment.path}');
-    //   segment.selectedEdge = new Offset(edgeB.x.toDouble(), edgeB.y.toDouble());
-    //   emit(CurrentSegmentUpdate(
-    //       segment: [segment], segment2: state.segment2!, mode: Mode.pointMode));
-    // } else {}
   }
 
   /// Changes the length of a part of a segment.
   /// At lest two [selectedOffsets] in a [Segment] have to be present for a
   /// length change.
   void _changeSegmentPartLength(
-      SegmentPartLengthChanged event, Emitter<CurrentSegmentState> emit) {
+      SegmentPartLengthChanged event, Emitter<SegmentWidgetBlocState> emit) {
     print('changeSegmentPartLength');
     List<SegmentOffset> path = state.segment.first.path;
 
@@ -272,7 +249,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       ..insert(index, selected.last.copyWith(offset: offset2));
 
     emit(CurrentSegmentUpdate(
-        segment: [state.segment.first.copyWith(path)],
+        segment: [state.segment.first.copyWith(path: path)],
         mode: Mode.selectionMode));
   }
 
@@ -280,7 +257,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   /// The segment has to have at least two [selectedOffsets] to
   /// change the angle.
   void _changeSegmentAngle(
-      SegmentPartAngleChanged event, Emitter<CurrentSegmentState> emit) {
+      SegmentPartAngleChanged event, Emitter<SegmentWidgetBlocState> emit) {
     print('changeSegmentAngle');
 
     List<SegmentOffset> path = state.segment.first.path;
@@ -299,7 +276,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
       ..insert(index, selectedOffsets.last.copyWith(offset: newOffset));
 
     emit(CurrentSegmentUpdate(
-        segment: [state.segment.first.copyWith(path)],
+        segment: [state.segment.first.copyWith(path: path)],
         mode: Mode.selectionMode));
   }
 }
