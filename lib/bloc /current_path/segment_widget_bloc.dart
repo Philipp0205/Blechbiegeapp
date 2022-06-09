@@ -83,7 +83,8 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   /// Creates segment if now segment was drawn on the screen before.
   void _onPanStartDefaultInitial(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
-    SegmentOffset offset = new SegmentOffset(offset: event.firstDrawnOffset);
+    SegmentOffset offset =
+        new SegmentOffset(offset: event.firstDrawnOffset, isSelected: false);
     Segment2 segment2 =
         new Segment2(path: [offset, offset], width: 5, color: Colors.black);
 
@@ -97,7 +98,8 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
   void _onPanStartDefault(
       CurrentSegmentPanStarted event, Emitter<CurrentSegmentState> emit) {
     List<SegmentOffset> path2 = state.segment.first.path;
-    path2.add(new SegmentOffset(offset: event.firstDrawnOffset));
+    path2.add(
+        new SegmentOffset(offset: event.firstDrawnOffset, isSelected: false));
 
     emit(CurrentSegmentUpdate(
         segment: [state.segment.first.copyWith(path2)],
@@ -113,7 +115,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
 
     path2
       ..removeLast()
-      ..add(new SegmentOffset(offset: event.offset));
+      ..add(new SegmentOffset(offset: event.offset, isSelected: false));
 
     emit(CurrentSegmentUpdate(
         segment: [event.segment.copyWith(path2)], mode: Mode.defaultMode));
@@ -263,13 +265,11 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     Offset offset2 = _calculationService.extendSegment(
         selected.map((e) => e.offset).toList(), event.length - currentLength);
 
-    SegmentOffset segmentOffset = new SegmentOffset(offset: offset2);
-    segmentOffset.isSelected = true;
-
     int index = path.indexOf(selected.last);
+
     path
       ..remove(selected.last)
-      ..insert(index, segmentOffset);
+      ..insert(index, selected.last.copyWith(offset: offset2));
 
     emit(CurrentSegmentUpdate(
         segment: [state.segment.first.copyWith(path)],
@@ -293,13 +293,10 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, CurrentSegmentState> {
     Offset newOffset = _calculationService.calculatePointWithAngle(
         offsets.first, event.length, event.angle);
 
-    SegmentOffset segmentOffset = new SegmentOffset(offset: newOffset);
-    segmentOffset.isSelected = true;
-
     int index = path.indexOf(selectedOffsets.last);
     path
       ..remove(selectedOffsets.last)
-      ..insert(index, segmentOffset);
+      ..insert(index, selectedOffsets.last.copyWith(offset: newOffset));
 
     emit(CurrentSegmentUpdate(
         segment: [state.segment.first.copyWith(path)],
