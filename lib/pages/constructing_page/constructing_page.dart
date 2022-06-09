@@ -13,6 +13,7 @@ class ConstructingPage extends StatefulWidget {
 }
 
 class _ConstructingPageState extends State<ConstructingPage> {
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConstructingPageBloc, ConstructingPageState>(
@@ -31,17 +32,42 @@ class _ConstructingPageState extends State<ConstructingPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text('Test',
+                child: Text(
+                  'Test',
                   style: Theme.of(context).textTheme.headlineMedium,
-
                 ),
               ),
-              Container(
-                height: 300,
-                width: 500,
-                color: Colors.grey,
-                child: CustomPaint(
-                  painter: ConstructingSketcher(lines2: state.segment), ), ),
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Container(
+                  height: 300,
+                  width: 500,
+                  // color: Colors.yellow[50],
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                    width: 2,
+                  )),
+                  child: CustomPaint(
+                    painter: ConstructingSketcher(lines2: state.segment),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  // Checkbox(
+                  //     value: showCoordinates,
+                  //     onChanged: (bool? value) {
+                  //       showCoordinates = value!;
+                  //     }),
+                  // Text('Koordinaten anzeigen'),
+                  // Checkbox(
+                  //     value: showEdgeLengths,
+                  //     onChanged: (bool? value) {
+                  //       showEdgeLengths = value!;
+                  //     }),
+                  // Text('Längen anzeigen'),
+                ],
+              )
             ],
           ),
         ),

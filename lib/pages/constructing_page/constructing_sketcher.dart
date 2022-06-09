@@ -17,7 +17,7 @@ class ConstructingSketcher extends CustomPainter {
   String lastDrawnText = '';
 
   GeometricCalculationsService _calculationsService =
-  new GeometricCalculationsService();
+      new GeometricCalculationsService();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -30,23 +30,37 @@ class ConstructingSketcher extends CustomPainter {
       List<SegmentOffset> path = lines2.first.path;
       for (int i = 0; i < lines2.first.path.length - 1; ++i) {
         canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
+
+        String text =
+            '${(path[i].offset - path[i + 1].offset).distance.toStringAsFixed(1)} cm';
+
+        Offset middle =
+            _calculationsService.getMiddle(path[i].offset, path[i + 1].offset);
+        Offset offset = new Offset(middle.dx - 30, middle.dy - 20);
+
+        drawText(
+            canvas, text, offset, Colors.black, Colors.white.withOpacity(0.8));
       }
 
-      List<Offset> selectedOffsets = lines2.first.path
-          .where((e) => e.isSelected)
-          .toList()
-          .map((e) => e.offset)
-          .toList();
+      lines2.first.path.forEach((o) {
+        paint.color = Colors.blue;
+        canvas.drawCircle(o.offset, 7, paint);
 
+        String text =
+            '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
+
+        Offset offset = new Offset(o.offset.dx - 35, o.offset.dy - 30);
+        drawText(
+            canvas, text, offset, Colors.black, Colors.green.withOpacity(0.4));
+      });
     }
   }
 
-
-  void drawText(Canvas canvas, String text, Offset offset, Color color, Color? backgroundColor) {
+  void drawText(Canvas canvas, String text, Offset offset, Color color,
+      Color? backgroundColor) {
     TextStyle style = TextStyle(
         color: Colors.black,
         backgroundColor: backgroundColor,
-        decorationStyle: TextDecorationStyle.dotted,
         decorationColor: Colors.green,
         decorationThickness: 0.25);
 
@@ -57,10 +71,10 @@ class ConstructingSketcher extends CustomPainter {
         //maxLines: 25, // In both TextPainter and Paragraph there is no option to define max height, but there is `maxLines`
         textDirection: TextDirection
             .ltr // It is necessary for some weird reason... IMO should be LTR for default since well-known international languages (english, esperanto) are written left to right.
-    )
+        )
       ..layout(
           maxWidth:
-          500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
+              500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
     // BTW: using the TextPainter you can check size the text take to be rendered (without `paint`ing it).
     textPainter.paint(canvas, offset);
   }

@@ -3,6 +3,7 @@ part of 'constructing_page_bloc.dart';
 abstract class ConstructingPageState extends Equatable {
   final List<Segment2> segment;
 
+
   const ConstructingPageState({required this.segment});
 
   @override

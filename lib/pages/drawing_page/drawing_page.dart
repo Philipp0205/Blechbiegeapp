@@ -39,8 +39,6 @@ class _DrawingPageState extends State<DrawingPage> {
         body: Container(
           child: Stack(children: [
             SegmentWidget(),
-            // AllPathsWidget(),
-            // CurrentPathWidget()
           ]),
         ),
         floatingActionButton: Stack(
