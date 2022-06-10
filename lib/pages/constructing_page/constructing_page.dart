@@ -13,6 +13,8 @@ class ConstructingPage extends StatefulWidget {
 }
 
 class _ConstructingPageState extends State<ConstructingPage> {
+  bool showCoordinates = true;
+  bool showEdgeLengths = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,24 +50,42 @@ class _ConstructingPageState extends State<ConstructingPage> {
                     width: 2,
                   )),
                   child: CustomPaint(
-                    painter: ConstructingSketcher(lines2: state.segment),
+                    painter: ConstructingSketcher(
+                      lines2: state.segment,
+                      coordinatesShown: state.showCoordinates,
+                      edgeLengthsShown: state.showEdgeLengths,
+                      anglesShown: state.showAngles,
+                    ),
                   ),
                 ),
               ),
               Row(
                 children: [
-                  // Checkbox(
-                  //     value: showCoordinates,
-                  //     onChanged: (bool? value) {
-                  //       showCoordinates = value!;
-                  //     }),
-                  // Text('Koordinaten anzeigen'),
-                  // Checkbox(
-                  //     value: showEdgeLengths,
-                  //     onChanged: (bool? value) {
-                  //       showEdgeLengths = value!;
-                  //     }),
-                  // Text('Längen anzeigen'),
+                  Checkbox(
+                      value: state.showCoordinates,
+                      onChanged: (bool? value) {
+                        context.read<ConstructingPageBloc>().add(
+                            ConstructingPageCoordinatesShown(
+                                showCoordinates: value!));
+                      }),
+                  Text('Koordinaten'),
+                  Checkbox(
+                      value: state.showEdgeLengths,
+                      onChanged: (bool? value) {
+                        context.read<ConstructingPageBloc>().add(
+                            ConstructingPageEdgeLengthsShown(
+                                showEdgeLengths: value!));
+                      }),
+                  Text('Längen'),
+                  Checkbox(
+                      value: state.showAngles,
+                      onChanged: (bool? value) {
+                        context.read<ConstructingPageBloc>().add(
+                            ConstructingPageAnglesShown(
+                                showAngles: value!));
+                      }),
+
+                  Text('Winkel'),
                 ],
               )
             ],

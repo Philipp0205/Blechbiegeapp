@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
@@ -14,14 +15,26 @@ part 'constructing_page_state.dart';
 
 class ConstructingPageBloc
     extends Bloc<ConstructingPageEvent, ConstructingPageState> {
-  ConstructingPageBloc() : super(ConstructingPageCreate(segment: [])) {
+  // ConstructingPageBloc() : super(ConstructingPageCreate(segment: [])) {
+  ConstructingPageBloc()
+      : super(ConstructingPageInitial(
+            segment: [],
+            showCoordinates: false,
+            showEdgeLengths: false,
+            showAngles: false)) {
     on<ConstructingPageCreated>(_setInitialSegment);
+    on<ConstructingPageCoordinatesShown>(_showCoordinates);
+    on<ConstructingPageEdgeLengthsShown>(_showEdgeLengths);
+    on<ConstructingPageAnglesShown>(_showAngles);
   }
 
   void _setInitialSegment(
       ConstructingPageCreated event, Emitter<ConstructingPageState> emit) {
     List<SegmentOffset> result = cropSegmentToArea(event.segment.first);
-    emit(ConstructingPageCreate(segment: [event.segment.first.copyWith(path: result)]));
+
+    emit(state.copyWith(segment: [event.segment.first.copyWith(path: result)]));
+    // emit(ConstructingPageCreate(
+    //     segment: [event.segment.first.copyWith(path: result)]));
   }
 
   List<SegmentOffset> cropSegmentToArea(Segment2 segment) {
@@ -58,7 +71,7 @@ class ConstructingPageBloc
 
     path.forEach((o) {
       print('old y ${o.offset.dy}');
-      print('new y ${o.offset.dy - (smallestY.offset.dy -20)}');
+      print('new y ${o.offset.dy - (smallestY.offset.dy - 20)}');
       Offset offset =
           new Offset(o.offset.dx, o.offset.dy - (highestY.offset.dy - 40));
 
@@ -66,5 +79,20 @@ class ConstructingPageBloc
     });
 
     return result;
+  }
+
+  void _showCoordinates(ConstructingPageCoordinatesShown event,
+      Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(showCoordinates: event.showCoordinates));
+  }
+
+  void _showEdgeLengths(ConstructingPageEdgeLengthsShown event,
+      Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(showEdgeLengths: event.showEdgeLengths));
+  }
+
+  void _showAngles(
+      ConstructingPageAnglesShown event, Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(showAngles: event.showAngles));
   }
 }

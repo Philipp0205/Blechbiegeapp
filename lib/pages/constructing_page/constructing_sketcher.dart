@@ -9,8 +9,15 @@ import '../../model/segment_offset.dart';
 class ConstructingSketcher extends CustomPainter {
   // final List<Segment> lines;
   final List<Segment2> lines2;
+  final bool coordinatesShown;
+  final bool edgeLengthsShown;
+  final bool anglesShown;
 
-  ConstructingSketcher({required this.lines2});
+  ConstructingSketcher(
+      {required this.lines2,
+      required this.coordinatesShown,
+      required this.edgeLengthsShown,
+      required this.anglesShown});
 
   PictureRecorder pictureRecorder = new PictureRecorder();
 
@@ -31,29 +38,55 @@ class ConstructingSketcher extends CustomPainter {
       for (int i = 0; i < lines2.first.path.length - 1; ++i) {
         canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
 
-        String text =
-            '${(path[i].offset - path[i + 1].offset).distance.toStringAsFixed(1)} cm';
+        if (edgeLengthsShown) {
+          showEdgeLengths(canvas, path[i].offset, path[i + 1].offset);
+        }
 
-        Offset middle =
-            _calculationsService.getMiddle(path[i].offset, path[i + 1].offset);
-        Offset offset = new Offset(middle.dx - 30, middle.dy - 20);
-
-        drawText(
-            canvas, text, offset, Colors.black, Colors.white.withOpacity(0.8));
+        if (anglesShown) {
+          showAngles(canvas, path[i].offset, path[i+1].offset);
+        }
       }
 
-      lines2.first.path.forEach((o) {
-        paint.color = Colors.blue;
-        canvas.drawCircle(o.offset, 7, paint);
+      if (coordinatesShown) {
+        showCoordinates(canvas, lines2.first.path);
+      }
 
-        String text =
-            '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
-
-        Offset offset = new Offset(o.offset.dx - 35, o.offset.dy - 30);
-        drawText(
-            canvas, text, offset, Colors.black, Colors.green.withOpacity(0.4));
-      });
     }
+  }
+
+  void showEdgeLengths(Canvas canvas, Offset offsetA, Offset offsetB) {
+    String text = '${(offsetA - offsetB).distance.toStringAsFixed(1)} cm';
+
+    Offset middle = _calculationsService.getMiddle(offsetA, offsetB);
+    Offset offset = new Offset(middle.dx - 30, middle.dy - 20);
+
+    drawText(canvas, text, offset, Colors.black, Colors.white.withOpacity(0.8));
+  }
+
+  void showCoordinates(Canvas canvas, List<SegmentOffset> path) {
+    Paint paint = Paint()
+      ..color = Colors.blue
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0;
+
+    path.forEach((o) {
+      canvas.drawCircle(o.offset, 7, paint);
+
+      String text =
+          '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
+
+      Offset offset = new Offset(o.offset.dx - 35, o.offset.dy - 30);
+      drawText(
+          canvas, text, offset, Colors.black, Colors.green.withOpacity(0.4));
+    });
+  }
+
+  void showAngles(Canvas canvas, Offset offsetA, Offset offsetB) {
+    double angle = _calculationsService.getAngle(offsetA, offsetB);
+    String text = '${angle.toStringAsFixed(1)}°';
+    Offset middle = _calculationsService.getMiddle(offsetA, offsetB);
+    Offset offset = new Offset(middle.dx - 10, middle.dy + 4);
+    drawText(canvas, text, offset, Colors.red, Colors.white.withOpacity(0.8));
   }
 
   void drawText(Canvas canvas, String text, Offset offset, Color color,
