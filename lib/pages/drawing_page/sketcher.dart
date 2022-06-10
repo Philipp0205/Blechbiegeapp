@@ -108,15 +108,7 @@ class Sketcher extends CustomPainter {
       drawText(canvas, text, offset, Colors.black, Colors.green[100],);
     });
 
-    if (offsets.length == 2) {
-      Offset midPoint = _calculationsService.getMiddle(offsets[0], offsets[1]);
-      Offset offset = new Offset(midPoint.dx - 15, midPoint.dy + 5);
 
-      String length = (offsets[0] - offsets[1]).distance.toStringAsFixed(1);
-
-      String text = '$length';
-      drawText(canvas, text, offset, Colors.red, Colors.yellow[50]);
-    }
   }
 
   void drawText(Canvas canvas, String text, Offset offset, Color color, Color? backgroundColor) {

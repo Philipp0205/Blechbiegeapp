@@ -26,6 +26,7 @@ class ConstructingPageBloc
     on<ConstructingPageCoordinatesShown>(_showCoordinates);
     on<ConstructingPageEdgeLengthsShown>(_showEdgeLengths);
     on<ConstructingPageAnglesShown>(_showAngles);
+    on<ConstructingPageCheckboxChanged>(_showDataDependingOnCheckbox);
   }
 
   void _setInitialSegment(
@@ -95,4 +96,21 @@ class ConstructingPageBloc
       ConstructingPageAnglesShown event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(showAngles: event.showAngles));
   }
+
+  void _showDataDependingOnCheckbox(ConstructingPageCheckboxChanged event,
+      Emitter<ConstructingPageState> emit) {
+    switch (event.checkBox) {
+      case CheckBoxEnum.coordinates:
+        emit(state.copyWith(showCoordinates: event.checkBoxValue));
+        break;
+      case CheckBoxEnum.lengths:
+        emit(state.copyWith(showEdgeLengths: event.checkBoxValue));
+        break;
+      case CheckBoxEnum.angles:
+        emit(state.copyWith(showAngles: event.checkBoxValue));
+        break;
+    }
+  }
 }
+
+enum CheckBoxEnum { coordinates, lengths, angles }

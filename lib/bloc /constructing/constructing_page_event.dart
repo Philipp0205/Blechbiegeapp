@@ -10,10 +10,13 @@ class ConstructingPageCreated extends ConstructingPageEvent {
   const ConstructingPageCreated({required this.segment});
 }
 
-class ConstructingPageCheckboxChanges extends ConstructingPageEvent {
+class ConstructingPageCheckboxChanged extends ConstructingPageEvent {
+  final bool checkBoxValue;
+  final CheckBoxEnum checkBox;
 
+  const ConstructingPageCheckboxChanged(
+      {required this.checkBox, required this.checkBoxValue});
 }
-
 
 class ConstructingPageCoordinatesShown extends ConstructingPageEvent {
   final bool showCoordinates;
