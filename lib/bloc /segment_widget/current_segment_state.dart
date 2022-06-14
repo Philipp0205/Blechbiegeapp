@@ -1,5 +1,5 @@
 import '../../model/appmodes.dart';
-import '../../model/segment.dart';
+import '../../model/segment_widget/segment.dart';
 
 abstract class SegmentWidgetBlocState {
   /// This list should always contains only 1 value but is a List to prevent an

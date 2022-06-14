@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 
-import '../model/segment_model.dart';
+import '../model/segment_widget/segment.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
@@ -61,8 +61,10 @@ class GeometricCalculationsService {
   double getDistanceToSegment(DragDownDetails details, Segment segment) {
     Point currentPoint =
         new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
-    Point startPoint = new Point(segment.path.first.dx, segment.path.first.dy);
-    Point endPoint = new Point(segment.path.last.dx, segment.path.last.dy);
+    Point startPoint =
+        new Point(segment.path.first.offset.dx, segment.path.first.offset.dy);
+    Point endPoint =
+        new Point(segment.path.last.offset.dx, segment.path.last.offset.dy);
 
     return startPoint.distanceTo(currentPoint) +
         currentPoint.distanceTo(endPoint) -

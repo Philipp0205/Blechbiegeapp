@@ -8,7 +8,7 @@ import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/model/segment_offset.dart';
 
-import '../../model/segment.dart';
+import '../../model/segment_widget/segment.dart';
 import '../../services/geometric_calculations_service.dart';
 
 class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {

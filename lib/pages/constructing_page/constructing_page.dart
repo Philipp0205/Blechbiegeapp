@@ -51,7 +51,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   )),
                   child: CustomPaint(
                     painter: ConstructingSketcher(
-                      lines2: state.segment,
+                      lines: state.segment,
                       coordinatesShown: state.showCoordinates,
                       edgeLengthsShown: state.showEdgeLengths,
                       anglesShown: state.showAngles,

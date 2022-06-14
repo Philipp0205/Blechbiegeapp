@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
-import '../../model/segment.dart';
+import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 
 class Sketcher extends CustomPainter {

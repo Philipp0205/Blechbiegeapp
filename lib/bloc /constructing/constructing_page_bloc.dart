@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../model/segment.dart';
+import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 
 part 'constructing_page_event.dart';

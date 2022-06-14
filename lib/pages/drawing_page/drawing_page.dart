@@ -9,7 +9,7 @@ import 'package:open_bsp/bloc%20/segment_widget/current_segment_event.dart';
 import '../../bloc /constructing/constructing_page_bloc.dart';
 import '../../bloc /segment_widget/segment_widget_bloc.dart';
 import '../../model/appmodes.dart';
-import '../../model/segment.dart';
+import '../../model/segment_widget/segment.dart';
 import 'bottom_sheet.dart';
 import 'segment_widget.dart';
 

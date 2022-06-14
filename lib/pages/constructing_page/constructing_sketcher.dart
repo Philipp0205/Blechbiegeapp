@@ -2,20 +2,20 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../model/segment.dart';
+import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../services/geometric_calculations_service.dart';
 
 // section Constructing Sketcher
 class ConstructingSketcher extends CustomPainter {
   // final List<Segment> lines;
-  final List<Segment> lines2;
+  final List<Segment> lines;
   final bool coordinatesShown;
   final bool edgeLengthsShown;
   final bool anglesShown;
 
   ConstructingSketcher(
-      {required this.lines2,
+      {required this.lines,
       required this.coordinatesShown,
       required this.edgeLengthsShown,
       required this.anglesShown});
@@ -35,16 +35,16 @@ class ConstructingSketcher extends CustomPainter {
       ..strokeWidth = 5.0
       ..style = PaintingStyle.stroke;
 
-    List<SegmentOffset> shorterSegments = lines2.first.path;
+    List<SegmentOffset> shorterSegments = lines.first.path;
     Path drawnPath = new Path();
-    Offset firstOffset = lines2.first.path.first.offset;
+    Offset firstOffset = lines.first.path.first.offset;
     drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
 
     List<Offset> arcOffsets = [];
 
     // List<Offset> shortenedOffsets = shortSegments(lines2.first.path);
 
-    if (lines2.isNotEmpty) {
+    if (lines.isNotEmpty) {
     //   List<SegmentOffset> path = lines2.first.path;
     //   shortenedOffsets.forEach((o) {
     //     drawnPath.lineTo(o.dx, o.dy);
@@ -79,7 +79,7 @@ class ConstructingSketcher extends CustomPainter {
       // }
 
       if (coordinatesShown) {
-        showCoordinates(canvas, lines2.first.path);
+        showCoordinates(canvas, lines.first.path);
       }
     }
 
