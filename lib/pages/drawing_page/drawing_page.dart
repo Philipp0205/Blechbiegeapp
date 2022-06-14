@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
+import 'package:open_bsp/bloc%20/segment_widget/current_segment_event.dart';
 
 import '../../bloc /constructing/constructing_page_bloc.dart';
-import '../../bloc /current_path/current_segment_event.dart';
-import '../../bloc /current_path/segment_widget_bloc.dart';
+import '../../bloc /segment_widget/segment_widget_bloc.dart';
 import '../../model/appmodes.dart';
-import '../../model/segment2.dart';
+import '../../model/segment.dart';
 import 'bottom_sheet.dart';
 import 'segment_widget.dart';
 
@@ -110,7 +110,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _goToNextPage() {
-    List<Segment2> segment = context.read<SegmentWidgetBloc>().state.segment;
+    List<Segment> segment = context.read<SegmentWidgetBloc>().state.segment;
     print('gotonextpage');
     BlocProvider.of<ConstructingPageBloc>(context)
         .add(ConstructingPageCreated(segment: segment));

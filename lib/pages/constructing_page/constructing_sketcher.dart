@@ -2,14 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../model/segment2.dart';
+import '../../model/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../services/geometric_calculations_service.dart';
 
 // section Constructing Sketcher
 class ConstructingSketcher extends CustomPainter {
   // final List<Segment> lines;
-  final List<Segment2> lines2;
+  final List<Segment> lines2;
   final bool coordinatesShown;
   final bool edgeLengthsShown;
   final bool anglesShown;

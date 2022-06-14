@@ -1,7 +1,7 @@
 part of 'constructing_page_bloc.dart';
 
 class ConstructingPageState extends Equatable {
-  final List<Segment2> segment;
+  final List<Segment> segment;
   final bool showCoordinates;
   final bool showEdgeLengths;
   final bool showAngles;
@@ -13,7 +13,7 @@ class ConstructingPageState extends Equatable {
       required this.showAngles});
 
   ConstructingPageState copyWith({
-    List<Segment2>? segment,
+    List<Segment>? segment,
     bool? showCoordinates,
     bool? showEdgeLengths,
     bool? showAngles,
@@ -31,7 +31,7 @@ class ConstructingPageState extends Equatable {
 }
 
 class ConstructingPageInitial extends ConstructingPageState {
-  final List<Segment2> segment;
+  final List<Segment> segment;
   final bool showCoordinates;
   final bool showEdgeLengths;
   final bool showAngles;

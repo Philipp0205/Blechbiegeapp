@@ -11,19 +11,19 @@ import 'package:open_bsp/model/segment_offset.dart';
 ///
 /// https://dart.academy/creational-design-patterns-for-dart-and-flutter-builder/
 /// https://dart.academy/immutable-data-patterns-in-dart-and-flutter/
-class Segment2 {
+class Segment {
   final List<SegmentOffset> path;
   final double width;
   final Color color;
 
-  Segment2({required this.path, required this.width, required this.color});
+  Segment({required this.path, required this.width, required this.color});
 
-  Segment2 copyWith({
+  Segment copyWith({
     List<SegmentOffset>? path,
     double? width,
     Color? color,
   }) {
-    return Segment2(
+    return Segment(
       path: path ?? this.path,
       width: width ?? this.width,
       color: color ?? this.color,

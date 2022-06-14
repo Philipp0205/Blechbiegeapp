@@ -2,15 +2,13 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
+import 'package:open_bsp/bloc%20/segment_widget/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/segment_widget/current_segment_state.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
-import 'package:open_bsp/data/segments_repository.dart';
 import 'package:open_bsp/model/appmodes.dart';
-import 'package:open_bsp/model/segment_model.dart';
 import 'package:open_bsp/model/segment_offset.dart';
 
-import '../../model/segment2.dart';
+import '../../model/segment.dart';
 import '../../services/geometric_calculations_service.dart';
 
 class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {
@@ -84,12 +82,10 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
       CurrentSegmentPanStarted event, Emitter<SegmentWidgetBlocState> emit) {
     SegmentOffset offset =
         new SegmentOffset(offset: event.firstDrawnOffset, isSelected: false);
-    Segment2 segment2 =
-        new Segment2(path: [offset, offset], width: 5, color: Colors.black);
+    Segment segment2 =
+        new Segment(path: [offset, offset], width: 5, color: Colors.black);
 
-    Segment segment = new Segment(
-        [event.firstDrawnOffset, event.firstDrawnOffset], Colors.black, 5);
-    segment.selectedEdge = event.firstDrawnOffset;
+
     emit(CurrentSegmentUpdate(segment: [segment2], mode: Mode.defaultMode));
   }
 
@@ -151,7 +147,7 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
     emit(CurrentSegmentDelete());
   }
 
-  /// Deletes a part of a [Segment2]. To make a delete happen at least two
+  /// Deletes a part of a [Segment]. To make a delete happen at least two
   /// offsets in a segment have to be selected.
   void _deleteSegmentPart(
       SegmentPartDeleted event, Emitter<SegmentWidgetBlocState> emit) {

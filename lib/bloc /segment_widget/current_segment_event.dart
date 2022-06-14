@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:open_bsp/model/segment2.dart';
+import 'package:open_bsp/model/segment.dart';
 
 import '../../model/appmodes.dart';
 
@@ -17,7 +17,7 @@ class CurrentSegmentPanStarted extends SegmentWidgetEvent {
 }
 
 class CurrentSegmentPanUpdated extends SegmentWidgetEvent {
-  final Segment2 segment;
+  final Segment segment;
   final Offset offset;
   final Mode mode;
 
@@ -26,7 +26,7 @@ class CurrentSegmentPanUpdated extends SegmentWidgetEvent {
 }
 
 class CurrentSegmentPanEnded extends SegmentWidgetEvent {
-  final Segment2 segment2;
+  final Segment segment2;
   final Mode mode;
 
   CurrentSegmentPanEnded({required this.segment2, required this.mode});

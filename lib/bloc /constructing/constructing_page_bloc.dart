@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../model/segment2.dart';
+import '../../model/segment.dart';
 import '../../model/segment_offset.dart';
 
 part 'constructing_page_event.dart';
@@ -37,7 +37,7 @@ class ConstructingPageBloc
     //     segment: [event.segment.first.copyWith(path: result)]));
   }
 
-  List<SegmentOffset> cropSegmentToArea(Segment2 segment) {
+  List<SegmentOffset> cropSegmentToArea(Segment segment) {
     Map<int, double> xValues = {};
     Map<int, double> yValues = {};
 

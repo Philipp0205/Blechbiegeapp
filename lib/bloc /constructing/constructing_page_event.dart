@@ -5,7 +5,7 @@ abstract class ConstructingPageEvent {
 }
 
 class ConstructingPageCreated extends ConstructingPageEvent {
-  final List<Segment2> segment;
+  final List<Segment> segment;
 
   const ConstructingPageCreated({required this.segment});
 }

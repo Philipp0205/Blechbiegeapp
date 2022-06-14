@@ -1,11 +1,11 @@
 import '../../model/appmodes.dart';
-import '../../model/segment2.dart';
+import '../../model/segment.dart';
 
 abstract class SegmentWidgetBlocState {
   /// This list should always contains only 1 value but is a List to prevent an
   /// initial null value and the need to handle null values in general.
   /// It is easier to handle an empty list.
-  final List<Segment2> segment;
+  final List<Segment> segment;
   final Mode mode;
 
   const SegmentWidgetBlocState(
@@ -13,7 +13,7 @@ abstract class SegmentWidgetBlocState {
 }
 
 class CurrentSegmentInitial extends SegmentWidgetBlocState {
-  final List<Segment2> segment;
+  final List<Segment> segment;
   final Mode mode;
 
   const CurrentSegmentInitial({required this.segment, required this.mode})
@@ -21,7 +21,7 @@ class CurrentSegmentInitial extends SegmentWidgetBlocState {
 }
 
 class CurrentSegmentUpdate extends SegmentWidgetBlocState {
-  final List<Segment2> segment;
+  final List<Segment> segment;
   final Mode mode;
 
   const CurrentSegmentUpdate({required this.segment, required this.mode})
@@ -30,7 +30,7 @@ class CurrentSegmentUpdate extends SegmentWidgetBlocState {
 
 class CurrentSegmentSelect extends SegmentWidgetBlocState {
   CurrentSegmentSelect(
-      {required List<Segment2> segment})
+      {required List<Segment> segment})
       : super(segment: segment, mode: Mode.defaultMode);
 }
 

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/constructing/constructing_page_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/pages/constructing_page/constructing_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
 import 'package:open_bsp/services/color_service.dart';
+
+import 'bloc /segment_widget/segment_widget_bloc.dart';
 
 void main() {
   runApp(MyApp());
