@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/all_paths/all_segments_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/geometric_calculations_service.dart';
-import 'package:open_bsp/bloc%20/current_path/segment_widget_bloc.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
-import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/model/segment_model.dart';
 import 'package:open_bsp/model/segment_offset.dart';
 
+import '../../bloc /current_path/current_segment_event.dart';
+import '../../bloc /current_path/current_segment_state.dart';
+import '../../bloc /current_path/segment_widget_bloc.dart';
+import '../../services/geometric_calculations_service.dart';
 import '../../model/appmodes.dart';
-import '../../services/viewmodel_locator.dart';
-import '../../viewmodel/all_paths_view_model.dart';
-import '../../viewmodel/current_path_view_model.dart';
-import '../../viewmodel/modes_controller_view_model.dart';
 
 class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet({Key? key}) : super(key: key);
@@ -24,11 +18,6 @@ class AppBottomSheet extends StatefulWidget {
 }
 
 class _AppBottomSheetState extends State<AppBottomSheet> {
-  // SketcherController _allPathsController = getIt<SketcherController>();
-  AllPathsViewModel _allPathsVM = getIt<AllPathsViewModel>();
-  ModesViewModel _modesVM = getIt<ModesViewModel>();
-  CurrentPathViewModel _currentPathVM = getIt<CurrentPathViewModel>();
-  AllPathsViewModel _allPathsViewModel = getIt<AllPathsViewModel>();
 
   final GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
@@ -135,8 +124,6 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   ),
                   IconButton(
                     onPressed: () {
-                      _currentPathVM
-                          .updateSegment(_currentPathVM.currentlyDrawnSegment);
                       Navigator.pop(context);
                     },
                     icon: Icon(Icons.save),

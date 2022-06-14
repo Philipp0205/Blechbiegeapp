@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 
-import '../../model/segment_model.dart';
+import '../model/segment_model.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
@@ -95,6 +95,10 @@ class GeometricCalculationsService {
     }
 
     return angle;
+  }
+
+  double degreesToRadians(double degrees) {
+    return (degrees * pi) / 180;
   }
 
   /// If you are at point (x,y) and you want to move d unit in alpha

@@ -1,10 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:open_bsp/bloc%20/current_path/geometric_calculations_service.dart';
+import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/segment2.dart';
-import '../../model/segment_model.dart';
 import '../../model/segment_offset.dart';
 
 class Sketcher extends CustomPainter {
@@ -44,30 +43,6 @@ class Sketcher extends CustomPainter {
           .toList();
 
       highlightSelectedOffsets(selectedOffsets, canvas);
-    }
-  }
-
-  void toggleSegmentSelection(Segment line, Canvas canvas) {
-    Paint paint = Paint()
-      ..color = Colors.blueAccent
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
-
-    if (line.isSelected) {
-      if (line.selectedEdge == line.path.first) {
-        canvas.drawCircle(line.path.last, 10, paint);
-        paint.color = Colors.green;
-        canvas.drawCircle(line.path.first, 10, paint);
-      } else {
-        canvas.drawCircle(line.path.first, 10, paint);
-        paint.color = Colors.green;
-        canvas.drawCircle(line.path.last, 10, paint);
-      }
-    } else {
-      paint.color = Colors.yellow[50] as Color;
-      canvas.drawCircle(line.path.first, 10, paint);
-      canvas.drawCircle(line.path.last, 10, paint);
     }
   }
 
@@ -133,8 +108,6 @@ class Sketcher extends CustomPainter {
     // BTW: using the TextPainter you can check size the text take to be rendered (without `paint`ing it).
     textPainter.paint(canvas, offset);
   }
-
-  void makeSegmentSelected(Segment line, Canvas canvas) {}
 
   @override
   bool shouldRepaint(Sketcher oldDelegate) {

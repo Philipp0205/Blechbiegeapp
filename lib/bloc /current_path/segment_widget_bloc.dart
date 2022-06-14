@@ -4,14 +4,14 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_event.dart';
 import 'package:open_bsp/bloc%20/current_path/current_segment_state.dart';
-import 'package:open_bsp/bloc%20/current_path/geometric_calculations_service.dart';
+import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/data/segments_repository.dart';
 import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/model/segment_model.dart';
 import 'package:open_bsp/model/segment_offset.dart';
 
 import '../../model/segment2.dart';
-import 'geometric_calculations_service.dart';
+import '../../services/geometric_calculations_service.dart';
 
 class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {
   GeometricCalculationsService _calculationService =
