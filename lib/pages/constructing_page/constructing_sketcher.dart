@@ -1,10 +1,14 @@
-import 'dart:ui';
+import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../model/constructing_page/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../services/geometric_calculations_service.dart';
+import 'package:image/image.dart' as img;
 
 // section Constructing Sketcher
 class ConstructingSketcher extends CustomPainter {
@@ -20,101 +24,166 @@ class ConstructingSketcher extends CustomPainter {
       required this.edgeLengthsShown,
       required this.anglesShown});
 
-  PictureRecorder pictureRecorder = new PictureRecorder();
+  ui.PictureRecorder pictureRecorder = new ui.PictureRecorder();
 
   String lastDrawnText = '';
 
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
 
+  // section Paint segment
+  /*
+  *   ____       _       _                                          _
+  *  |  _ \ __ _(_)_ __ | |_    ___  ___  __ _ _ __ ___   ___ _ __ | |_
+  *  | |_) / _` | | '_ \| __|  / __|/ _ \/ _` | '_ ` _ \ / _ \ '_ \| __|
+  *  |  __/ (_| | | | | | |_   \__ \  __/ (_| | | | | | |  __/ | | | |_
+  *  |_|   \__,_|_|_| |_|\__|  |___/\___|\__, |_| |_| |_|\___|_| |_|\__|
+  *                                      |___/
+  */
+  //
   @override
   void paint(Canvas canvas, Size size) {
+    // Canvas recordingCanvas = new Canvas(pictureRecorder);
+
     Paint paint = Paint()
       ..color = Colors.black
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0
+      ..strokeWidth = 5
       ..style = PaintingStyle.stroke;
+
+    Paint _shadowPaint = Paint()
+      ..color = Color(0xff000000)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, sqrt(5));
 
     List<SegmentOffset> shorterSegments = lines.first.path;
     Path drawnPath = new Path();
     Offset firstOffset = lines.first.path.first.offset;
     drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
 
-    List<Offset> arcOffsets = [];
-
-    // List<Offset> shortenedOffsets = shortSegments(lines2.first.path);
+    List<Line> list = shortSegments(mapSegmentToLines(lines.first.path));
 
     if (lines.isNotEmpty) {
-    //   List<SegmentOffset> path = lines2.first.path;
-    //   shortenedOffsets.forEach((o) {
-    //     drawnPath.lineTo(o.dx, o.dy);
-    //   });
+      Path drawnPath = new Path();
 
-      // for (int i = 0; i < lines2.first.path.length - 1; ++i) {
-      //   Offset shortenedOffsetA = _calculationsService
-      //       .extendSegment([path[i].offset, path[i + 1].offset], -20);
-      //
-      //   Offset shortenedOffsetB = _calculationsService
-      //       .extendSegment([path[i + 1].offset, path[i].offset], -20);
-      //
-      //   if (path.first == path[i]) {
-      //     drawnPath.lineTo(shortenedOffsetA.dx, shortenedOffsetA.dy);
-      //     arcOffsets.add(path[i + 1].offset);
-      //   } else if (path.last == path[i + 1]) {
-      //     drawnPath.moveTo(shortenedOffsetA.dx, shortenedOffsetA.dy);
-      //     arcOffsets.add(shortenedOffsetA);
-      //   } else {
-      //     drawnPath.moveTo(shortenedOffsetA.dx, shortenedOffsetA.dy);
-      //     arcOffsets.addAll([shortenedOffsetA, shortenedOffsetB]);
-      //   }
-      //   drawnPath.lineTo(shortenedOffsetB.dx, shortenedOffsetB.dy);
-      //
-      //   if (edgeLengthsShown) {
-      //     showEdgeLengths(canvas, path[i].offset, path[i + 1].offset);
-      //   }
-      //
-      //   if (anglesShown) {
-      //     showAngles(canvas, path[i].offset, path[i + 1].offset);
-      //   }
-      // }
+      list.forEach((l) {
+        drawnPath
+          ..moveTo(l.start.offset.dx, l.start.offset.dy)
+          ..lineTo(l.end.offset.dx, l.end.offset.dy);
+      });
+
+      for (int i = 0; i < list.length - 1; ++i) {
+        drawnPath.moveTo(list[i].start.offset.dx, list[i].start.offset.dy);
+        double firstAngle = _calculationsService.getAngle(
+            list[i].start.offset, list[i].end.offset);
+        double secondAngle = _calculationsService.getAngle(
+            list[i + 1].start.offset, list[i + 1].end.offset);
+
+        // TODO falsch.
+        if (firstAngle > secondAngle) {
+          drawnPath.arcToPoint(list[i + 1].end.offset,
+              radius: Radius.circular(20), clockwise: true);
+        } else {
+          drawnPath.arcToPoint(list[i + 1].end.offset,
+              radius: Radius.circular(20), clockwise: true);
+        }
+      }
+
+      // recordingCanvas.drawPath(drawnPath, paint);
+      canvas.drawPath(drawnPath, paint);
+      createPicture(canvas, size, drawnPath, paint);
 
       if (coordinatesShown) {
-        showCoordinates(canvas, lines.first.path);
+        List<SegmentOffset> offsets = [];
+        offsets
+          ..addAll(list.map((e) => e.start).toList())
+          ..addAll(list.map((e) => e.end).toList());
+
+        // recordingCanvas.drawPath(drawnPath, paint);
+        // showCoordinates(recordingCanvas, offsets);
+      }
+    }
+  }
+
+  void createPicture(
+      Canvas recodingCanvas, Size size, Path path, Paint paint) async {
+    ui.PictureRecorder recorder = new ui.PictureRecorder();
+    Canvas canvas2 = new Canvas(recorder);
+    canvas2.drawPath(path, paint);
+
+    // ui.Picture picture = pictureRecorder.endRecording();
+    ui.Picture picture = recorder.endRecording();
+    ui.Image image =
+        await picture.toImage(size.width.toInt(), size.height.toInt());
+    // ByteData? data = await image.toByteData();
+    ByteData? data2 =
+        await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+
+    List<Offset> blackOffsets = [];
+
+    img.Image newImage = img.Image.fromBytes(
+        size.width.toInt(), size.height.toInt(), data2!.buffer.asUint8List());
+
+    for (int x = 0; x < size.width.toInt(); ++x) {
+      for (int y = 0; y < size.height.toInt(); ++y) {
+        int color = newImage.getPixel(x, y) ;
+
+        if (Color(color) == Colors.black) {
+          blackOffsets.add(new Offset(x.toDouble(), y.toDouble()));
+        }
       }
     }
 
-    // canvas.drawPath(drawnPath, paint);
-    //
-    // // section drawArc
-    // final curvesPaint = Paint()
-    //   ..strokeWidth = 5
-    //   ..color = Colors.greenAccent[700]!
-    //   ..style = PaintingStyle.stroke;
-    //
-    // Offset arcCenter1 = lines2.first.path[1].offset;
-    // Offset arcCenter2 = new Offset(arcCenter1.dx, arcCenter1.dy);
-    // final arcRect = Rect.fromCircle(center: arcCenter2, radius: 40);
+    print('blackOffsets length: ${blackOffsets.length}');
+
+    // final rgbaColor = data2!.getUint32(pixelDataOffset);
+    // final argbColor = ((rgbaColor & 0x000000FF) << 24) | ((rgbaColor & 0xFFFFFF00) >> 8);
+    // print('color: $argbColor');
   }
 
-  List<Offset> shortSegments(List<SegmentOffset> offsets) {
-    print('short Segments');
-    List<Offset> result = [];
-    // if (lines2.isNotEmpty) {
-    //   List<SegmentOffset> path = lines2.first.path;
-    //   for (int i = 0; i < path.length - 1; i + 2) {
-    //     Offset shortenedOffsetA = _calculationsService
-    //         .extendSegment([path[i].offset, path[i + 1].offset], -20);
-    //
-    //     Offset shortenedOffsetB = _calculationsService
-    //         .extendSegment([path[i + 1].offset, path[i].offset], -20);
-    //
-    //     result.addAll([shortenedOffsetA, shortenedOffsetB]);
-    //   }
-    // }
+  int _getBitmapPixelOffset({
+    required int imageWidth,
+    required int x,
+    required int y,
+  }) {
+    return ((y * imageWidth) + x) * 4;
+  }
+
+  /// Shorts all lines by the same length.
+  List<Line> shortSegments(List<Line> lines) {
+    List<Line> result = [];
+
+    lines.forEach((l) {
+      List<Offset> shortOffsets = _calculationsService.changeLengthOfSegment(
+          l.start.offset, l.end.offset, -20, true);
+
+      result.add(new Line(
+          start:
+              new SegmentOffset(offset: shortOffsets.first, isSelected: false),
+          end:
+              new SegmentOffset(offset: shortOffsets.last, isSelected: false)));
+    });
 
     return result;
   }
 
+  List<Line> mapSegmentToLines(List<SegmentOffset> offsets) {
+    List<Line> lines = [];
+    for (int i = 0; i < offsets.length - 1; ++i) {
+      lines.add(new Line(start: offsets[i], end: offsets[i + 1]));
+    }
+    return lines;
+  }
+
+  // section Segment details
+  /*
+  *   ____                                  _          _      _        _ _
+  *  / ___|  ___  __ _ _ __ ___   ___ _ __ | |_     __| | ___| |_ __ _(_) |___
+  *  \___ \ / _ \/ _` | '_ ` _ \ / _ \ '_ \| __|   / _` |/ _ \ __/ _` | | / __|
+  *   ___) |  __/ (_| | | | | | |  __/ | | | |_   | (_| |  __/ || (_| | | \__ \
+  *  |____/ \___|\__, |_| |_| |_|\___|_| |_|\__|   \__,_|\___|\__\__,_|_|_|___/
+  *              |___/
+  */
+  //
   void showEdgeLengths(Canvas canvas, Offset offsetA, Offset offsetB) {
     String text = '${(offsetA - offsetB).distance.toStringAsFixed(1)} cm';
 
@@ -134,12 +203,12 @@ class ConstructingSketcher extends CustomPainter {
     path.forEach((o) {
       canvas.drawCircle(o.offset, 7, paint);
 
-      String text =
-          '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
-
-      Offset offset = new Offset(o.offset.dx - 35, o.offset.dy - 30);
-      drawText(
-          canvas, text, offset, Colors.black, Colors.green.withOpacity(0.4));
+      // String text =
+      //     '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
+      //
+      // Offset offset = new Offset(o.offset.dx - 35, o.offset.dy - 30);
+      // drawText(
+      //     canvas, text, offset, Colors.black, Colors.green.withOpacity(0.4));
     });
   }
 

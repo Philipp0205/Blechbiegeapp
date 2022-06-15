@@ -8,6 +8,16 @@ import '../model/segment_widget/segment.dart';
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
 class GeometricCalculationsService {
+  //section Offsets
+  /*
+  *    ___   __  __          _       
+  *   / _ \ / _|/ _|___  ___| |_ ___ 
+  *  | | | | |_| |_/ __|/ _ \ __/ __|
+  *  | |_| |  _|  _\__ \  __/ |_\__ \
+  *   \___/|_| |_| |___/\___|\__|___/
+  *                                  
+  */
+
   /// Returns sorted Map according to distance of [offset] to each element
   /// in [offsets].
   Map<Offset, double> _getOffsetsByDistance(
@@ -38,17 +48,42 @@ class GeometricCalculationsService {
         .toList();
   }
 
-  /// Extends a segment consisting of two [offsets] by given [length].
-  Offset extendSegment(List<Offset> offsets, double length) {
-    Offset offsetA = offsets.first;
-    Offset offsetB = offsets.last;
-
-    double lengthAB = (offsetA - offsetB).distance;
-
-    double x = offsetB.dx + (offsetB.dx - offsetA.dx) / lengthAB * length;
-    double y = offsetB.dy + (offsetB.dy - offsetA.dy) / lengthAB * length;
+  Offset changeLengthOfOffset(Offset start, Offset end, double length) {
+    double lengthAB = (start - end).distance;
+    double x = end.dx + (end.dx - start.dx) / lengthAB * length;
+    double y = end.dy + (end.dy - start.dy) / lengthAB * length;
 
     return new Offset(x, y);
+  }
+
+  // section Segments
+  /*
+  *   ____                                  _
+  *  / ___|  ___  __ _ _ __ ___   ___ _ __ | |_ ___
+  *  \___ \ / _ \/ _` | '_ ` _ \ / _ \ '_ \| __/ __|
+  *   ___) |  __/ (_| | | | | | |  __/ | | | |_\__ \
+  *  |____/ \___|\__, |_| |_| |_|\___|_| |_|\__|___/
+  *              |___/
+  */
+
+  /// Changes the  length of a segment consisting of two Offsets [start]  and
+  /// [end] by given [length]. Can handle negative lengths!
+  ///
+  /// Changes the [end] Offset or both Offsets if [bothEnds] is true.
+  /// Return one offset if only the end changes, return two offsets if both
+  /// ends change.
+  List<Offset> changeLengthOfSegment(
+      Offset start, Offset end, double length, bool bothEnds) {
+    List<Offset> result = [];
+
+    Offset newStart = changeLengthOfOffset(start, end, length);
+    if (bothEnds) {
+      Offset newEnd = changeLengthOfOffset(end, start, length);
+      result.addAll([newStart, newEnd]);
+    } else {
+      result.add(newStart);
+    }
+    return result;
   }
 
   /*
@@ -70,6 +105,26 @@ class GeometricCalculationsService {
         currentPoint.distanceTo(endPoint) -
         startPoint.distanceTo(endPoint);
   }
+
+  /// Given two offsets of a line starting is [offsetA] and ending is [offsetB]
+  /// find out the mid-point of a line.
+  Offset getMiddle(Offset offsetA, Offset offsetB) {
+    double x = (offsetA.dx + offsetB.dx) / 2;
+    double y = (offsetA.dy + offsetB.dy) / 2;
+
+    return new Offset(x, y);
+  }
+
+  // section Angles & Radians
+  /*
+  *      _                _               ___      ____           _ _
+  *     / \   _ __   __ _| | ___  ___    ( _ )    |  _ \ __ _  __| (_) __ _ _ __  ___
+  *    / _ \ | '_ \ / _` | |/ _ \/ __|   / _ \/\  | |_) / _` |/ _` | |/ _` | '_ \/ __|
+  *   / ___ \| | | | (_| | |  __/\__ \  | (_>  <  |  _ < (_| | (_| | | (_| | | | \__ \
+  *  /_/   \_\_| |_|\__, |_|\___||___/   \___/\/  |_| \_\__,_|\__,_|_|\__,_|_| |_|___/
+  *                 |___/
+  */
+  //
 
   /// Returns the angle between a [centre] offset and another [offset]
   ///
@@ -118,15 +173,6 @@ class GeometricCalculationsService {
 
     double x = centre.dx + (length * cos(radian));
     double y = centre.dy + (length * sin(radian));
-
-    return new Offset(x, y);
-  }
-
-  /// Given two offsets of a line starting is [offsetA] and ending is [offsetB]
-  /// find out the mid-point of a line.
-  Offset getMiddle(Offset offsetA, Offset offsetB) {
-    double x = (offsetA.dx + offsetB.dx) / 2;
-    double y = (offsetA.dy + offsetB.dy) / 2;
 
     return new Offset(x, y);
   }

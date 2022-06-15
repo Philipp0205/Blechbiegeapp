@@ -10,6 +10,16 @@ class ConstructingPageCreated extends ConstructingPageEvent {
   const ConstructingPageCreated({required this.segment});
 }
 
+// section Segment details
+/*
+*   ____                                  _          _      _        _ _
+*  / ___|  ___  __ _ _ __ ___   ___ _ __ | |_     __| | ___| |_ __ _(_) |___
+*  \___ \ / _ \/ _` | '_ ` _ \ / _ \ '_ \| __|   / _` |/ _ \ __/ _` | | / __|
+*   ___) |  __/ (_| | | | | | |  __/ | | | |_   | (_| |  __/ || (_| | | \__ \
+*  |____/ \___|\__, |_| |_| |_|\___|_| |_|\__|   \__,_|\___|\__\__,_|_|_|___/
+*              |___/
+*/
+
 class ConstructingPageCheckboxChanged extends ConstructingPageEvent {
   final bool checkBoxValue;
   final CheckBoxEnum checkBox;
@@ -20,18 +30,29 @@ class ConstructingPageCheckboxChanged extends ConstructingPageEvent {
 
 class ConstructingPageCoordinatesShown extends ConstructingPageEvent {
   final bool showCoordinates;
-
   const ConstructingPageCoordinatesShown({required this.showCoordinates});
 }
 
 class ConstructingPageEdgeLengthsShown extends ConstructingPageEvent {
   final bool showEdgeLengths;
-
   const ConstructingPageEdgeLengthsShown({required this.showEdgeLengths});
 }
 
 class ConstructingPageAnglesShown extends ConstructingPageEvent {
   final bool showAngles;
-
   const ConstructingPageAnglesShown({required this.showAngles});
+}
+
+// section Debugging
+/*
+*   ____       _                       _
+*  |  _ \  ___| |__  _   _  __ _  __ _(_)_ __   __ _
+*  | | | |/ _ \ '_ \| | | |/ _` |/ _` | | '_ \ / _` |
+*  | |_| |  __/ |_) | |_| | (_| | (_| | | | | | (_| |
+*  |____/ \___|_.__/ \__,_|\__, |\__, |_|_| |_|\__, |
+*                          |___/ |___/         |___/
+*/
+class ConstructingPageColorChanged extends ConstructingPageEvent {
+  final Color color;
+  const ConstructingPageColorChanged({required this.color});
 }

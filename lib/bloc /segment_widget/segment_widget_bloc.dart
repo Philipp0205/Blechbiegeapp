@@ -11,7 +11,8 @@ import 'package:open_bsp/model/segment_offset.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../services/geometric_calculations_service.dart';
 
-class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {
+class SegmentWidgetBloc
+    extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {
   GeometricCalculationsService _calculationService =
       new GeometricCalculationsService();
 
@@ -85,7 +86,6 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
     Segment segment2 =
         new Segment(path: [offset, offset], width: 5, color: Colors.black);
 
-
     emit(CurrentSegmentUpdate(segment: [segment2], mode: Mode.defaultMode));
   }
 
@@ -113,7 +113,8 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
       ..add(new SegmentOffset(offset: event.offset, isSelected: false));
 
     emit(CurrentSegmentUpdate(
-        segment: [event.segment.copyWith(path: path2)], mode: Mode.defaultMode));
+        segment: [event.segment.copyWith(path: path2)],
+        mode: Mode.defaultMode));
   }
 
   void _onPanUpdatePointMode(
@@ -143,7 +144,8 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
         segment: [event.segment2], mode: Mode.defaultMode));
   }
 
-  void _deleteSegment(SegmentDeleted event, Emitter<SegmentWidgetBlocState> emit) {
+  void _deleteSegment(
+      SegmentDeleted event, Emitter<SegmentWidgetBlocState> emit) {
     emit(CurrentSegmentDelete());
   }
 
@@ -218,7 +220,6 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
       CurrentSegmentModeChanged event, Emitter<SegmentWidgetBlocState> emit) {
     emit(
         CurrentSegmentUpdate(segment: [state.segment.first], mode: event.mode));
-
   }
 
   /// Changes the length of a part of a segment.
@@ -235,8 +236,10 @@ class SegmentWidgetBloc extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState>
     double currentLength =
         (selected.first.offset - selected.last.offset).distance;
 
-    Offset offset2 = _calculationService.extendSegment(
-        selected.map((e) => e.offset).toList(), event.length - currentLength);
+    Offset offset2 = _calculationService
+        .changeLengthOfSegment(selected.first.offset, selected.last.offset,
+            event.length - currentLength, false)
+        .first;
 
     int index = path.indexOf(selected.last);
 

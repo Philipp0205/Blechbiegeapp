@@ -32,6 +32,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
         body: Container(
           child: Column(
             children: [
+              // section Title
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -39,6 +40,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
+              // section CustomPainter
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Container(
@@ -59,14 +61,17 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   ),
                 ),
               ),
+              // section Checkboxes
               Row(
                 children: [
                   Checkbox(
                       value: state.showCoordinates,
                       onChanged: (bool? value) {
                         context.read<ConstructingPageBloc>().add(
-                            ConstructingPageCoordinatesShown(
-                                showCoordinates: value!));
+                            // ConstructingPageCoordinatesShown(
+                            //     showCoordinates: value!));
+                            ConstructingPageColorChanged(color: Color(0x00400000)));
+                        print('checkbox');
                       }),
                   Text('Koordinaten'),
                   Checkbox(
@@ -81,11 +86,9 @@ class _ConstructingPageState extends State<ConstructingPage> {
                       value: state.showAngles,
                       onChanged: (bool? value) {
                         context.read<ConstructingPageBloc>().add(
-                            ConstructingPageAnglesShown(
-                                showAngles: value!));
+                            ConstructingPageAnglesShown(showAngles: value!));
                       }),
-
-                  Text('Winkel'),
+                  Text('Winkel')
                 ],
               )
             ],
