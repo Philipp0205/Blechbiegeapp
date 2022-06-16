@@ -23,7 +23,8 @@ class ConstructingPageBloc
             showEdgeLengths: false,
             showAngles: false,
             color: Colors.black,
-            s: 5)) {
+            s: 5,
+            r: 20)) {
     on<ConstructingPageCreated>(_setInitialSegment);
     on<ConstructingPageCoordinatesShown>(_showCoordinates);
     on<ConstructingPageColorChanged>(_changeColor);
@@ -31,16 +32,17 @@ class ConstructingPageBloc
     on<ConstructingPageAnglesShown>(_showAngles);
     on<ConstructingPageCheckboxChanged>(_showDataDependingOnCheckbox);
     on<ConstructingPageSChanged>(_changeThicknes);
+    on<ConstructingPageRChanged>(_changeRadius);
   }
 
   // section Draw initial segment
   /*
-  *   ____                        _       _ _   _       _                                        _
-  *  |  _ \ _ __ __ ___      __  (_)_ __ (_) |_(_) __ _| |   ___  ___  __ _ _ __ ___   ___ _ __ | |_
+  *   ____                        _       _ _   _       _                                        _   
+  *  |  _ \ _ __ __ ___      __  (_)_ __ (_) |_(_) __ _| |   ___  ___  __ _ _ __ ___   ___ _ __ | |_ 
   *  | | | | '__/ _` \ \ /\ / /  | | '_ \| | __| |/ _` | |  / __|/ _ \/ _` | '_ ` _ \ / _ \ '_ \| __|
-  *  | |_| | | | (_| |\ V  V /   | | | | | | |_| | (_| | |  \__ \  __/ (_| | | | | | |  __/ | | | |_
+  *  | |_| | | | (_| |\ V  V /   | | | | | | |_| | (_| | |  \__ \  __/ (_| | | | | | |  __/ | | | |_ 
   *  |____/|_|  \__,_| \_/\_/    |_|_| |_|_|\__|_|\__,_|_|  |___/\___|\__, |_| |_| |_|\___|_| |_|\__|
-  *                                                                   |___/
+  *                                                                   |___/                          
   */
 
   void _setInitialSegment(
@@ -142,6 +144,10 @@ class ConstructingPageBloc
   void _changeThicknes(
       ConstructingPageSChanged event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(s: event.s));
+  }
+
+  void _changeRadius(ConstructingPageRChanged event, Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(r: event.r));
   }
 }
 

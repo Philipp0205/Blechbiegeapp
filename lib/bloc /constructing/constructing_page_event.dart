@@ -48,6 +48,11 @@ class ConstructingPageSChanged extends ConstructingPageEvent {
   const ConstructingPageSChanged({required this.s});
 }
 
+class ConstructingPageRChanged extends ConstructingPageEvent {
+  final double r;
+  const ConstructingPageRChanged({required this.r});
+}
+
 
 // section Debugging
 /*

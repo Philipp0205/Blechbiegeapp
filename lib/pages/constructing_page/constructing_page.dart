@@ -17,22 +17,39 @@ class _ConstructingPageState extends State<ConstructingPage> {
   bool showEdgeLengths = false;
 
   final _sController = TextEditingController();
+  final _rController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
     double s = context.read<ConstructingPageBloc>().state.s;
+    double r = context.read<ConstructingPageBloc>().state.r;
     _sController.text = s.toStringAsFixed(0);
+
+    _rController.text = r.toStringAsFixed(0);
+  }
+
+  List<DropdownMenuItem<String>> get dropdownItems {
+    List<DropdownMenuItem<String>> menuItems = [
+      DropdownMenuItem(child: Text("USA"), value: "USA"),
+      DropdownMenuItem(child: Text("Canada"), value: "Canada"),
+      DropdownMenuItem(child: Text("Brazil"), value: "Brazil"),
+      DropdownMenuItem(child: Text("England"), value: "England"),
+    ];
+    return menuItems;
   }
 
   @override
   void dispose() {
     _sController.dispose();
+    _sController.dispose();
     super.dispose();
   }
 
   @override
+  String selectedValue = "USA";
+
   Widget build(BuildContext context) {
     return BlocBuilder<ConstructingPageBloc, ConstructingPageState>(
         builder: (context, state) {
@@ -49,13 +66,6 @@ class _ConstructingPageState extends State<ConstructingPage> {
           child: Column(
             children: [
               // section Title
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                // child: Text(
-                //   'Test',
-                //   style: Theme.of(context).textTheme.headlineMedium,
-                // ),
-              ),
               // section CustomPainter
               Padding(
                 padding: const EdgeInsets.all(4.0),
@@ -73,7 +83,8 @@ class _ConstructingPageState extends State<ConstructingPage> {
                         coordinatesShown: state.showCoordinates,
                         edgeLengthsShown: state.showEdgeLengths,
                         anglesShown: state.showAngles,
-                        s: state.s),
+                        s: state.s,
+                        r: state.r),
                   ),
                 ),
               ),
@@ -115,6 +126,12 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   Text('Winkel')
                 ],
               ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Divider(
+                  color: Colors.black,
+                ),
+              ),
               // section thickness
               /*
               *   _   _     _      _
@@ -140,7 +157,36 @@ class _ConstructingPageState extends State<ConstructingPage> {
                                     s: double.parse(_sController.text)));
                           }),
                     ),
-                    Text('Bleckdicke (s)'),
+                    Text('Bleckdicke (s)   '),
+                    Container(
+                      width: 30,
+                      height: 30,
+                      child: TextField(
+                          controller: _rController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (text) {
+                            context.read<ConstructingPageBloc>().add(
+                                ConstructingPageRChanged(
+                                    r: double.parse(_rController.text)));
+                          }),
+                    ),
+                    Text('Radius (r) (buggy)'),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
+                child: Row(
+                  children: [
+                    // DropdownButton(
+                    //     value: selectedValue,
+                    //     onChanged: (String? newValue){
+                    //       setState(() {
+                    //         selectedValue = newValue!;
+                    //       });
+                    //     },
+                    //     items: dropdownItems
+                    // )
                   ],
                 ),
               )

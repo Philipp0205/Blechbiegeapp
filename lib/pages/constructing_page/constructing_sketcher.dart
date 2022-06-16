@@ -17,13 +17,16 @@ class ConstructingSketcher extends CustomPainter {
   final bool edgeLengthsShown;
   final bool anglesShown;
   final double s;
+  final double r;
 
-  ConstructingSketcher(
-      {required this.lines,
-      required this.coordinatesShown,
-      required this.edgeLengthsShown,
-      required this.anglesShown,
-      required this.s});
+  ConstructingSketcher({
+    required this.lines,
+    required this.coordinatesShown,
+    required this.edgeLengthsShown,
+    required this.anglesShown,
+    required this.s,
+    required this.r
+  });
 
   ui.PictureRecorder pictureRecorder = new ui.PictureRecorder();
 
@@ -74,13 +77,12 @@ class ConstructingSketcher extends CustomPainter {
         double secondAngle = _calculationsService.getAngle(
             list[i + 1].start.offset, list[i + 1].end.offset);
 
-
         if (firstAngle < secondAngle) {
           drawnPath.arcToPoint(list[i + 1].end.offset,
-              radius: Radius.circular(20), clockwise: false);
+              radius: Radius.circular(r), clockwise: false);
         } else {
           drawnPath.arcToPoint(list[i + 1].end.offset,
-              radius: Radius.circular(20), clockwise: true);
+              radius: Radius.circular(r), clockwise: true);
         }
       }
 
@@ -202,13 +204,8 @@ class ConstructingSketcher extends CustomPainter {
           '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
 
       Offset offset = new Offset(o.offset.dx - 35, o.offset.dy + 30);
-      drawText(
-          canvas, text, offset, Colors.black, Colors.yellow[50]);
-
-
+      drawText(canvas, text, offset, Colors.black, Colors.yellow[50]);
     });
-
-
   }
 
   void showAngles(Canvas canvas, Offset offsetA, Offset offsetB) {

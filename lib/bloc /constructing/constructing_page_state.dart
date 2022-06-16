@@ -6,7 +6,7 @@ class ConstructingPageState extends Equatable {
   final bool showEdgeLengths;
   final bool showAngles;
   final double s;
-  final double radius;
+  final double r;
 
   //debugging
   final Color color;
@@ -18,7 +18,7 @@ class ConstructingPageState extends Equatable {
       required this.showAngles,
       required this.color,
       required this.s,
-      required this.radius});
+      required this.r});
 
   ConstructingPageState copyWith(
       {List<Segment>? segment,
@@ -27,7 +27,7 @@ class ConstructingPageState extends Equatable {
       bool? showAngles,
       Color? color,
       double? s,
-      double? radius}) {
+      double? r}) {
     return ConstructingPageState(
       segment: segment ?? this.segment,
       showCoordinates: showCoordinates ?? this.showCoordinates,
@@ -35,13 +35,13 @@ class ConstructingPageState extends Equatable {
       showAngles: showAngles ?? this.showAngles,
       color: color ?? this.color,
       s: s ?? this.s,
-      radius: radius ?? this.radius,
+      r: r ?? this.r,
     );
   }
 
   @override
   List<Object?> get props =>
-      [segment, showCoordinates, showEdgeLengths, showAngles, color, s];
+      [segment, showCoordinates, showEdgeLengths, showAngles, color, s, r];
 }
 
 class ConstructingPageInitial extends ConstructingPageState {
@@ -51,7 +51,7 @@ class ConstructingPageInitial extends ConstructingPageState {
   final bool showAngles;
   final Color color;
   final double s;
-  final double radius;
+  final double r;
 
   const ConstructingPageInitial({
     required this.segment,
@@ -60,7 +60,7 @@ class ConstructingPageInitial extends ConstructingPageState {
     required this.showAngles,
     required this.color,
     required this.s,
-    required this.radius,
+    required this.r,
   }) : super(
             segment: segment,
             showEdgeLengths: showEdgeLengths,
@@ -68,5 +68,5 @@ class ConstructingPageInitial extends ConstructingPageState {
             showAngles: showAngles,
             color: color,
             s: s,
-            radius: radius);
+            r: r);
 }
