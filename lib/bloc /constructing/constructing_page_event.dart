@@ -43,6 +43,12 @@ class ConstructingPageAnglesShown extends ConstructingPageEvent {
   const ConstructingPageAnglesShown({required this.showAngles});
 }
 
+class ConstructingPageSChanged extends ConstructingPageEvent {
+  final double s;
+  const ConstructingPageSChanged({required this.s});
+}
+
+
 // section Debugging
 /*
 *   ____       _                       _

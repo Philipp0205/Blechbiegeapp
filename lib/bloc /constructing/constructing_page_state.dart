@@ -5,37 +5,43 @@ class ConstructingPageState extends Equatable {
   final bool showCoordinates;
   final bool showEdgeLengths;
   final bool showAngles;
+  final double s;
+  final double radius;
 
   //debugging
   final Color color;
 
-  const ConstructingPageState({
-    required this.segment,
-    required this.showEdgeLengths,
-    required this.showCoordinates,
-    required this.showAngles,
-    required this.color,
-  });
+  const ConstructingPageState(
+      {required this.segment,
+      required this.showEdgeLengths,
+      required this.showCoordinates,
+      required this.showAngles,
+      required this.color,
+      required this.s,
+      required this.radius});
 
-  ConstructingPageState copyWith({
-    List<Segment>? segment,
-    bool? showCoordinates,
-    bool? showEdgeLengths,
-    bool? showAngles,
-    Color? color,
-  }) {
+  ConstructingPageState copyWith(
+      {List<Segment>? segment,
+      bool? showCoordinates,
+      bool? showEdgeLengths,
+      bool? showAngles,
+      Color? color,
+      double? s,
+      double? radius}) {
     return ConstructingPageState(
       segment: segment ?? this.segment,
       showCoordinates: showCoordinates ?? this.showCoordinates,
       showEdgeLengths: showEdgeLengths ?? this.showEdgeLengths,
       showAngles: showAngles ?? this.showAngles,
       color: color ?? this.color,
+      s: s ?? this.s,
+      radius: radius ?? this.radius,
     );
   }
 
   @override
   List<Object?> get props =>
-      [segment, showCoordinates, showEdgeLengths, showAngles, color];
+      [segment, showCoordinates, showEdgeLengths, showAngles, color, s];
 }
 
 class ConstructingPageInitial extends ConstructingPageState {
@@ -44,31 +50,23 @@ class ConstructingPageInitial extends ConstructingPageState {
   final bool showEdgeLengths;
   final bool showAngles;
   final Color color;
+  final double s;
+  final double radius;
 
-  const ConstructingPageInitial(
-      {required this.segment,
-      required this.showCoordinates,
-      required this.showEdgeLengths,
-      required this.showAngles,
-      required this.color})
-      : super(
+  const ConstructingPageInitial({
+    required this.segment,
+    required this.showCoordinates,
+    required this.showEdgeLengths,
+    required this.showAngles,
+    required this.color,
+    required this.s,
+    required this.radius,
+  }) : super(
             segment: segment,
             showEdgeLengths: showEdgeLengths,
             showCoordinates: showCoordinates,
             showAngles: showAngles,
-            color: color);
+            color: color,
+            s: s,
+            radius: radius);
 }
-
-// class ConstructingPageCreate extends ConstructingPageState {
-//   final List<Segment2> segment;
-//
-//   const ConstructingPageCreate({required this.segment})
-//       : super(segment: segment);
-// }
-//
-// class ConstructingPageToggleCoordinates extends ConstructingPageState {
-//   final bool areShown;
-//
-//   const ConstructingPageToggleCoordinates({required this.areShown}) :
-//         super()
-// }

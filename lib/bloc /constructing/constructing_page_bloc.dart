@@ -22,14 +22,26 @@ class ConstructingPageBloc
             showCoordinates: false,
             showEdgeLengths: false,
             showAngles: false,
-            color: Colors.black)) {
+            color: Colors.black,
+            s: 5)) {
     on<ConstructingPageCreated>(_setInitialSegment);
     on<ConstructingPageCoordinatesShown>(_showCoordinates);
     on<ConstructingPageColorChanged>(_changeColor);
     on<ConstructingPageEdgeLengthsShown>(_showEdgeLengths);
     on<ConstructingPageAnglesShown>(_showAngles);
     on<ConstructingPageCheckboxChanged>(_showDataDependingOnCheckbox);
+    on<ConstructingPageSChanged>(_changeThicknes);
   }
+
+  // section Draw initial segment
+  /*
+  *   ____                        _       _ _   _       _                                        _
+  *  |  _ \ _ __ __ ___      __  (_)_ __ (_) |_(_) __ _| |   ___  ___  __ _ _ __ ___   ___ _ __ | |_
+  *  | | | | '__/ _` \ \ /\ / /  | | '_ \| | __| |/ _` | |  / __|/ _ \/ _` | '_ ` _ \ / _ \ '_ \| __|
+  *  | |_| | | | (_| |\ V  V /   | | | | | | |_| | (_| | |  \__ \  __/ (_| | | | | | |  __/ | | | |_
+  *  |____/|_|  \__,_| \_/\_/    |_|_| |_|_|\__|_|\__,_|_|  |___/\___|\__, |_| |_| |_|\___|_| |_|\__|
+  *                                                                   |___/
+  */
 
   void _setInitialSegment(
       ConstructingPageCreated event, Emitter<ConstructingPageState> emit) {
@@ -106,7 +118,8 @@ class ConstructingPageBloc
     emit(state.copyWith(showAngles: event.showAngles));
   }
 
-  void _changeColor(ConstructingPageColorChanged event, Emitter<ConstructingPageState> emit) {
+  void _changeColor(
+      ConstructingPageColorChanged event, Emitter<ConstructingPageState> emit) {
     print('new color ${event.color.toString()}');
     emit(state.copyWith(color: event.color));
   }
@@ -124,6 +137,11 @@ class ConstructingPageBloc
         emit(state.copyWith(showAngles: event.checkBoxValue));
         break;
     }
+  }
+
+  void _changeThicknes(
+      ConstructingPageSChanged event, Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(s: event.s));
   }
 }
 

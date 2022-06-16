@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -17,12 +16,14 @@ class ConstructingSketcher extends CustomPainter {
   final bool coordinatesShown;
   final bool edgeLengthsShown;
   final bool anglesShown;
+  final double s;
 
   ConstructingSketcher(
       {required this.lines,
       required this.coordinatesShown,
       required this.edgeLengthsShown,
-      required this.anglesShown});
+      required this.anglesShown,
+      required this.s});
 
   ui.PictureRecorder pictureRecorder = new ui.PictureRecorder();
 
@@ -48,14 +49,9 @@ class ConstructingSketcher extends CustomPainter {
     Paint paint = Paint()
       ..color = Colors.black
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5
+      ..strokeWidth = s
       ..style = PaintingStyle.stroke;
 
-    Paint _shadowPaint = Paint()
-      ..color = Color(0xff000000)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, sqrt(5));
-
-    List<SegmentOffset> shorterSegments = lines.first.path;
     Path drawnPath = new Path();
     Offset firstOffset = lines.first.path.first.offset;
     drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
@@ -74,21 +70,20 @@ class ConstructingSketcher extends CustomPainter {
       for (int i = 0; i < list.length - 1; ++i) {
         drawnPath.moveTo(list[i].start.offset.dx, list[i].start.offset.dy);
         double firstAngle = _calculationsService.getAngle(
-            list[i].start.offset, list[i].end.offset);
+            list[i].end.offset, list[i].start.offset);
         double secondAngle = _calculationsService.getAngle(
             list[i + 1].start.offset, list[i + 1].end.offset);
 
-        // TODO falsch.
-        if (firstAngle > secondAngle) {
+
+        if (firstAngle < secondAngle) {
           drawnPath.arcToPoint(list[i + 1].end.offset,
-              radius: Radius.circular(20), clockwise: true);
+              radius: Radius.circular(20), clockwise: false);
         } else {
           drawnPath.arcToPoint(list[i + 1].end.offset,
               radius: Radius.circular(20), clockwise: true);
         }
       }
 
-      // recordingCanvas.drawPath(drawnPath, paint);
       canvas.drawPath(drawnPath, paint);
       createPicture(canvas, size, drawnPath, paint);
 
@@ -98,9 +93,18 @@ class ConstructingSketcher extends CustomPainter {
           ..addAll(list.map((e) => e.start).toList())
           ..addAll(list.map((e) => e.end).toList());
 
-        // recordingCanvas.drawPath(drawnPath, paint);
-        // showCoordinates(recordingCanvas, offsets);
+        showCoordinates(canvas, offsets);
       }
+
+      list.forEach((l) {
+        if (edgeLengthsShown) {
+          showEdgeLengths(canvas, l.start.offset, l.end.offset);
+        }
+
+        if (anglesShown) {
+          showAngles(canvas, l.start.offset, l.end.offset);
+        }
+      });
     }
   }
 
@@ -125,7 +129,7 @@ class ConstructingSketcher extends CustomPainter {
 
     for (int x = 0; x < size.width.toInt(); ++x) {
       for (int y = 0; y < size.height.toInt(); ++y) {
-        int color = newImage.getPixel(x, y) ;
+        int color = newImage.getPixel(x, y);
 
         if (Color(color) == Colors.black) {
           blackOffsets.add(new Offset(x.toDouble(), y.toDouble()));
@@ -133,19 +137,7 @@ class ConstructingSketcher extends CustomPainter {
       }
     }
 
-    print('blackOffsets length: ${blackOffsets.length}');
-
-    // final rgbaColor = data2!.getUint32(pixelDataOffset);
-    // final argbColor = ((rgbaColor & 0x000000FF) << 24) | ((rgbaColor & 0xFFFFFF00) >> 8);
-    // print('color: $argbColor');
-  }
-
-  int _getBitmapPixelOffset({
-    required int imageWidth,
-    required int x,
-    required int y,
-  }) {
-    return ((y * imageWidth) + x) * 4;
+    // print('blackOffsets length: ${blackOffsets.length}');
   }
 
   /// Shorts all lines by the same length.
@@ -200,20 +192,27 @@ class ConstructingSketcher extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0;
 
+    // Iterate in separate loops so that circled do not overlay the text.
     path.forEach((o) {
       canvas.drawCircle(o.offset, 7, paint);
-
-      // String text =
-      //     '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
-      //
-      // Offset offset = new Offset(o.offset.dx - 35, o.offset.dy - 30);
-      // drawText(
-      //     canvas, text, offset, Colors.black, Colors.green.withOpacity(0.4));
     });
+
+    path.forEach((o) {
+      String text =
+          '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
+
+      Offset offset = new Offset(o.offset.dx - 35, o.offset.dy + 30);
+      drawText(
+          canvas, text, offset, Colors.black, Colors.yellow[50]);
+
+
+    });
+
+
   }
 
   void showAngles(Canvas canvas, Offset offsetA, Offset offsetB) {
-    double angle = _calculationsService.getAngle(offsetA, offsetB);
+    double angle = _calculationsService.getAngle(offsetB, offsetA);
     String text = '${angle.toStringAsFixed(1)}°';
     Offset middle = _calculationsService.getMiddle(offsetA, offsetB);
     Offset offset = new Offset(middle.dx - 10, middle.dy + 4);
