@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/pages/constructing_page/constructing_page_segment_widget.dart';
 import 'package:open_bsp/pages/constructing_page/constructing_sketcher.dart';
 
 import '../../bloc /constructing/constructing_page_bloc.dart';
@@ -69,24 +70,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
               // section CustomPainter
               Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Container(
-                  height: 300,
-                  width: 500,
-                  // color: Colors.yellow[50],
-                  decoration: BoxDecoration(
-                      border: Border.all(
-                    width: 2,
-                  )),
-                  child: CustomPaint(
-                    painter: ConstructingSketcher(
-                        lines: state.segment,
-                        coordinatesShown: state.showCoordinates,
-                        edgeLengthsShown: state.showEdgeLengths,
-                        anglesShown: state.showAngles,
-                        s: state.s,
-                        r: state.r),
-                  ),
-                ),
+                child: ConstructingPageSegmentWidget(),
               ),
               // section Checkboxes
               /*

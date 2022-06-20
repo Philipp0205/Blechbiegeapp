@@ -8,8 +8,14 @@ abstract class SegmentWidgetBlocState {
   final List<Segment> segment;
   final Mode mode;
 
+
   const SegmentWidgetBlocState(
       {required this.segment, required this.mode});
+
+
+  @override
+  List<Object?> get props => [segment, mode];
+
 }
 
 class CurrentSegmentInitial extends SegmentWidgetBlocState {

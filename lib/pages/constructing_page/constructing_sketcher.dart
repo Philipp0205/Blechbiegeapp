@@ -19,21 +19,19 @@ class ConstructingSketcher extends CustomPainter {
   final double s;
   final double r;
 
-  ConstructingSketcher({
-    required this.lines,
+  ConstructingSketcher({required this.lines,
     required this.coordinatesShown,
     required this.edgeLengthsShown,
     required this.anglesShown,
     required this.s,
-    required this.r
-  });
+    required this.r});
 
   ui.PictureRecorder pictureRecorder = new ui.PictureRecorder();
 
   String lastDrawnText = '';
 
   GeometricCalculationsService _calculationsService =
-      new GeometricCalculationsService();
+  new GeometricCalculationsService();
 
   // section Paint segment
   /*
@@ -72,28 +70,21 @@ class ConstructingSketcher extends CustomPainter {
 
       for (int i = 0; i < list.length - 1; ++i) {
         drawnPath.moveTo(list[i].start.offset.dx, list[i].start.offset.dy);
-        double firstAngle = _calculationsService.getAngle(
-            list[i].end.offset, list[i].start.offset);
-        double secondAngle = _calculationsService.getAngle(
-            list[i + 1].start.offset, list[i + 1].end.offset);
 
-        if (firstAngle < secondAngle) {
+        bool direction = _calculationsService.getDirection(list[i].end.offset,
+            list[i+1].start.offset, lines.first.path[i].offset);
+
           drawnPath.arcToPoint(list[i + 1].end.offset,
-              radius: Radius.circular(r), clockwise: false);
-        } else {
-          drawnPath.arcToPoint(list[i + 1].end.offset,
-              radius: Radius.circular(r), clockwise: true);
+              radius: Radius.circular(r), clockwise: direction);
         }
-      }
 
       canvas.drawPath(drawnPath, paint);
       createPicture(canvas, size, drawnPath, paint);
 
       if (coordinatesShown) {
         List<SegmentOffset> offsets = [];
-        offsets
-          ..addAll(list.map((e) => e.start).toList())
-          ..addAll(list.map((e) => e.end).toList());
+        offsets..addAll(list.map((e) => e.start).toList())..addAll(
+            list.map((e) => e.end).toList());
 
         showCoordinates(canvas, offsets);
       }
@@ -110,8 +101,8 @@ class ConstructingSketcher extends CustomPainter {
     }
   }
 
-  void createPicture(
-      Canvas recodingCanvas, Size size, Path path, Paint paint) async {
+  void createPicture(Canvas recodingCanvas, Size size, Path path,
+      Paint paint) async {
     ui.PictureRecorder recorder = new ui.PictureRecorder();
     Canvas canvas2 = new Canvas(recorder);
     canvas2.drawPath(path, paint);
@@ -119,10 +110,10 @@ class ConstructingSketcher extends CustomPainter {
     // ui.Picture picture = pictureRecorder.endRecording();
     ui.Picture picture = recorder.endRecording();
     ui.Image image =
-        await picture.toImage(size.width.toInt(), size.height.toInt());
+    await picture.toImage(size.width.toInt(), size.height.toInt());
     // ByteData? data = await image.toByteData();
     ByteData? data2 =
-        await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
     List<Offset> blackOffsets = [];
 
@@ -152,9 +143,9 @@ class ConstructingSketcher extends CustomPainter {
 
       result.add(new Line(
           start:
-              new SegmentOffset(offset: shortOffsets.first, isSelected: false),
+          new SegmentOffset(offset: shortOffsets.first, isSelected: false),
           end:
-              new SegmentOffset(offset: shortOffsets.last, isSelected: false)));
+          new SegmentOffset(offset: shortOffsets.last, isSelected: false)));
     });
 
     return result;
@@ -201,7 +192,8 @@ class ConstructingSketcher extends CustomPainter {
 
     path.forEach((o) {
       String text =
-          '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
+          '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(
+          1)}';
 
       Offset offset = new Offset(o.offset.dx - 35, o.offset.dy + 30);
       drawText(canvas, text, offset, Colors.black, Colors.yellow[50]);
@@ -228,9 +220,10 @@ class ConstructingSketcher extends CustomPainter {
       text: TextSpan(text: text, style: style),
       textAlign: TextAlign.start,
       textDirection: TextDirection.ltr,
-    )..layout(
-        maxWidth:
-            500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
+    )
+      ..layout(
+          maxWidth:
+          500); // TextPainter doesn't need to have specified width (would use infinity if not defined).
     // BTW: using the TextPainter you can check size the text take to be rendered (without `paint`ing it).
 
     textPainter.paint(canvas, offset);
@@ -239,7 +232,7 @@ class ConstructingSketcher extends CustomPainter {
   TextPainter measureText(Canvas canvas, String text, TextStyle style) {
     final textSpan = TextSpan(text: text, style: style);
     final textPainter =
-        TextPainter(text: textSpan, textDirection: TextDirection.ltr);
+    TextPainter(text: textSpan, textDirection: TextDirection.ltr);
     textPainter.layout(minWidth: 0, maxWidth: double.maxFinite);
     return textPainter;
   }

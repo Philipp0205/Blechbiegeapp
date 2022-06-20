@@ -135,7 +135,6 @@ class GeometricCalculationsService {
   /// nb, there are 2 possible angles and if u.y is positive then angle is in first quadrant, negative then second
   ///
   /// https://stackoverflow.com/a/38024982/7127837
-
   double getAngle(Offset centre, Offset offset) {
     double x = offset.dx - centre.dx;
     double y = offset.dy - centre.dy;
@@ -152,6 +151,26 @@ class GeometricCalculationsService {
     }
 
     return angle;
+  }
+
+  double getMagnitude(Offset centre, Offset offset) {
+    double x = offset.dx - centre.dx;
+    double y = offset.dy - centre.dy;
+
+    return sqrt(x * x + y * y);
+  }
+
+  /// Determines the direction of an arc. Which means that if it is clockwise
+  /// (true) or anti-clockwise (false).
+  ///
+  /// Three parts of the arcs are needed, the [start], [middle] and [end] Offset
+  /// of the arc.
+  ///
+  /// https://stackoverflow.com/questions/33960924/is-arc-clockwise-or-counter-clockwise
+  bool getDirection(Offset start, Offset end, Offset middle) {
+    return ((end.dx - start.dx) * (middle.dy - start.dy) -
+            (end.dy - start.dy) * (middle.dx - start.dx)) >
+        0;
   }
 
   double degreesToRadians(double degrees) {
