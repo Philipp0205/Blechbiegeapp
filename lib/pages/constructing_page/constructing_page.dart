@@ -72,16 +72,6 @@ class _ConstructingPageState extends State<ConstructingPage> {
                 padding: const EdgeInsets.all(4.0),
                 child: ConstructingPageSegmentWidget(),
               ),
-              // section Checkboxes
-              /*
-              *    ____ _               _    _
-              *   / ___| |__   ___  ___| | _| |__   _____  _____  ___
-              *  | |   | '_ \ / _ \/ __| |/ / '_ \ / _ \ \/ / _ \/ __|
-              *  | |___| | | |  __/ (__|   <| |_) | (_) >  <  __/\__ \
-              *   \____|_| |_|\___|\___|_|\_\_.__/ \___/_/\_\___||___/
-              *
-              */
-
               Row(
                 children: [
                   Checkbox(
@@ -116,15 +106,6 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   color: Colors.black,
                 ),
               ),
-              // section thickness
-              /*
-              *   _   _     _      _
-              *  | |_| |__ (_) ___| | ___ __   ___  ___ ___
-              *  | __| '_ \| |/ __| |/ / '_ \ / _ \/ __/ __|
-              *  | |_| | | | | (__|   <| | | |  __/\__ \__ \
-              *   \__|_| |_|_|\___|_|\_\_| |_|\___||___/___/
-              *
-              */
               Padding(
                 padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
                 child: Row(
@@ -149,31 +130,18 @@ class _ConstructingPageState extends State<ConstructingPage> {
                           controller: _rController,
                           keyboardType: TextInputType.number,
                           onChanged: (text) {
-                            context.read<ConstructingPageBloc>().add(
-                                ConstructingPageRChanged(
-                                    r: double.parse(_rController.text)));
+                            double? value = double.tryParse(text);
+                            if (value != null) {
+                              context.read<ConstructingPageBloc>().add(
+                                  ConstructingPageRChanged(
+                                      r: double.parse(_rController.text)));
+                            }
                           }),
                     ),
-                    Text('Radius (r) (buggy)'),
+                    Text('Radius (r)'),
                   ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
-                child: Row(
-                  children: [
-                    // DropdownButton(
-                    //     value: selectedValue,
-                    //     onChanged: (String? newValue){
-                    //       setState(() {
-                    //         selectedValue = newValue!;
-                    //       });
-                    //     },
-                    //     items: dropdownItems
-                    // )
-                  ],
-                ),
-              )
             ],
           ),
         ),
