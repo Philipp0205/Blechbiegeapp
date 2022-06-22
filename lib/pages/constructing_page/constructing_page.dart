@@ -44,7 +44,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
   @override
   void dispose() {
     _sController.dispose();
-    _sController.dispose();
+    _rController.dispose();
     super.dispose();
   }
 
@@ -62,7 +62,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
             children: [Text('Biegeapp')],
           ),
         ),
-        backgroundColor: Colors.yellow[50],
+        backgroundColor: Colors.white,
         body: Container(
           child: Column(
             children: [

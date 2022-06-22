@@ -19,7 +19,7 @@ class AppBottomSheet extends StatefulWidget {
 class _AppBottomSheetState extends State<AppBottomSheet> {
 
   final GeometricCalculationsService _calculationsService =
-      new GeometricCalculationsService();
+  new GeometricCalculationsService();
 
   final _angleController = TextEditingController();
   final _lengthController = TextEditingController();
@@ -114,11 +114,15 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                         controller: _angleController,
                         keyboardType: TextInputType.number,
                         onChanged: (text) {
-                          context.read<SegmentWidgetBloc>().add(
-                              SegmentPartAngleChanged(
-                                  angle: double.parse(text),
-                                  length:
-                                      double.parse(_lengthController.text)));
+                          double? value = double.tryParse(text);
+
+                          if (value != null) {
+                            context.read<SegmentWidgetBloc>().add(
+                                SegmentPartAngleChanged(
+                                    angle: value,
+                                    length:
+                                    double.parse(_lengthController.text)));
+                          };
                         }),
                   ),
                   IconButton(

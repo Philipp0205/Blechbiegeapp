@@ -34,7 +34,7 @@ class _DrawingPageState extends State<DrawingPage> {
             children: [Text('Biegeapp'), Text(state.mode.name)],
           ),
         ),
-        backgroundColor: Colors.yellow[50],
+        backgroundColor: Colors.white,
         body: Container(
           child: Stack(children: [
             SegmentWidget(),

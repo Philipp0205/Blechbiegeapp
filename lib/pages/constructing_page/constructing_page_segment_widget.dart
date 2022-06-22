@@ -19,7 +19,6 @@ class _ConstructingPageSegmentWidgetState
     return Container(
       height: 300,
       width: 500,
-      // color: Colors.yellow[50],
       decoration: BoxDecoration(
           border: Border.all(
         width: 2,

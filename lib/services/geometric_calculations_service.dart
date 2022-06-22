@@ -1,23 +1,15 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+import 'package:vector_math/vector_math.dart';
 
+import '../model/line.dart';
+import '../model/segment_offset.dart';
 import '../model/segment_widget/segment.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
 class GeometricCalculationsService {
-  //section Offsets
-  /*
-  *    ___   __  __          _       
-  *   / _ \ / _|/ _|___  ___| |_ ___ 
-  *  | | | | |_| |_/ __|/ _ \ __/ __|
-  *  | |_| |  _|  _\__ \  __/ |_\__ \
-  *   \___/|_| |_| |___/\___|\__|___/
-  *                                  
-  */
-
   /// Returns sorted Map according to distance of [offset] to each element
   /// in [offsets].
   Map<Offset, double> _getOffsetsByDistance(
@@ -48,7 +40,7 @@ class GeometricCalculationsService {
         .toList();
   }
 
-  Offset changeLengthOfOffset(Offset start, Offset end, double length) {
+  Offset _changeLengthOfOffset(Offset start, Offset end, double length) {
     double lengthAB = (start - end).distance;
     double x = end.dx + (end.dx - start.dx) / lengthAB * length;
     double y = end.dy + (end.dy - start.dy) / lengthAB * length;
@@ -56,32 +48,43 @@ class GeometricCalculationsService {
     return new Offset(x, y);
   }
 
-  // section Segments
-  /*
-  *   ____                                  _
-  *  / ___|  ___  __ _ _ __ ___   ___ _ __ | |_ ___
-  *  \___ \ / _ \/ _` | '_ ` _ \ / _ \ '_ \| __/ __|
-  *   ___) |  __/ (_| | | | | | |  __/ | | | |_\__ \
-  *  |____/ \___|\__, |_| |_| |_|\___|_| |_|\__|___/
-  *              |___/
-  */
-
   /// Changes the  length of a segment consisting of two Offsets [start]  and
   /// [end] by given [length]. Can handle negative lengths!
   ///
-  /// Changes the [end] Offset or both Offsets if [bothEnds] is true.
-  /// Return one offset if only the end changes, return two offsets if both
-  /// ends change.
+  /// With [shortStart] and [shortEnd] it is possible to set the ends which
+  /// should be shorted. It is possible to short only one end or both.
+  ///
+  /// Always two offsets are returned. Only one end got shorted one of the
+  /// results will be  the same offset.
   List<Offset> changeLengthOfSegment(
-      Offset start, Offset end, double length, bool bothEnds) {
+      Offset start, Offset end, double length, bool shortStart, bool shortEnd) {
     List<Offset> result = [];
 
-    Offset newStart = changeLengthOfOffset(start, end, length);
-    if (bothEnds) {
-      Offset newEnd = changeLengthOfOffset(end, start, length);
+    Offset newStart = _changeLengthOfOffset(start, end, length);
+    Offset newEnd = _changeLengthOfOffset(end, start, length);
+    if (shortStart && shortEnd) {
       result.addAll([newStart, newEnd]);
+    } else if (shortStart) {
+      result.addAll([newStart, end]);
     } else {
-      result.add(newStart);
+      result.addAll([start, newEnd]);
+    }
+    return result;
+  }
+
+  Line changeLengthOfSegment2(
+      Offset start, Offset end, double length, bool shortStart, bool shortEnd) {
+    SegmentOffset newStart = new SegmentOffset(
+        offset: _changeLengthOfOffset(start, end, length), isSelected: false);
+    SegmentOffset newEnd = new SegmentOffset(
+        offset: _changeLengthOfOffset(end, start, length), isSelected: false);
+
+    Line result = Line(start: newStart, end: newEnd);
+    if (shortStart) {
+      result.copyWith(end: new SegmentOffset(offset: end, isSelected: false));
+    } else if (shortEnd) {
+      result.copyWith(
+          start: new SegmentOffset(offset: start, isSelected: false));
     }
     return result;
   }
@@ -116,15 +119,6 @@ class GeometricCalculationsService {
   }
 
   // section Angles & Radians
-  /*
-  *      _                _               ___      ____           _ _
-  *     / \   _ __   __ _| | ___  ___    ( _ )    |  _ \ __ _  __| (_) __ _ _ __  ___
-  *    / _ \ | '_ \ / _` | |/ _ \/ __|   / _ \/\  | |_) / _` |/ _` | |/ _` | '_ \/ __|
-  *   / ___ \| | | | (_| | |  __/\__ \  | (_>  <  |  _ < (_| | (_| | | (_| | | | \__ \
-  *  /_/   \_\_| |_|\__, |_|\___||___/   \___/\/  |_| \_\__,_|\__,_|_|\__,_|_| |_|___/
-  *                 |___/
-  */
-  //
 
   /// Returns the angle between a [centre] offset and another [offset]
   ///
@@ -151,6 +145,41 @@ class GeometricCalculationsService {
     }
 
     return angle;
+  }
+
+  // (P1L1(x1, y1), P2L1(x2, y2) and P1L1(x1, y1), P2L3(x2, y3))
+  double getInnerAngle(Line lineA, Line lineB) {
+    // public static double angleBetween2Lines(Line2D line1, Line2D line2)
+    // {
+    //     double angle1 = Math.atan2(line1.getY1() - line1.getY2(),
+    //                                line1.getX1() - line1.getX2());
+    //     double angle2 = Math.atan2(line2.getY1() - line2.getY2(),
+    //                                line2.getX1() - line2.getX2());
+    //     return angle1-angle2;
+    // }
+
+    // double slope1 = (line1.getY1() - line1.getY2()) / (line1.getX1() - line1.getX2());
+    //    double slope2 = (line2.getY1() - line2.getY2()) / (line2.getX1() - line2.getX2());
+
+    double slopeA = (lineA.start.offset.dy - lineA.end.offset.dy) /
+        (lineA.start.offset.dx - lineA.end.offset.dx);
+    double slopeB = (lineB.start.offset.dy - lineB.end.offset.dy) /
+        (lineB.start.offset.dx - lineB.end.offset.dx);
+    print('slopeA $slopeA, sloeB $slopeB');
+
+    double angle = atan((slopeA - slopeB) / (1 - (slopeA * slopeB)));
+    print('angle $angle');
+
+    // atan2(vector1.y - vector2.y, vector1.x - vector2.x)
+    double angleA = atan2(lineA.end.offset.dx - lineA.start.offset.dx,
+        lineA.end.offset.dy - lineA.start.offset.dy);
+
+    double angleB = atan2(lineB.end.offset.dx - lineB.start.offset.dx,
+        lineB.end.offset.dy - lineB.start.offset.dy);
+
+    print('Inner angle: angleA: $angleA, angleB: $angleB');
+
+    return (angleA - angleB).abs();
   }
 
   double getMagnitude(Offset centre, Offset offset) {
@@ -194,5 +223,59 @@ class GeometricCalculationsService {
     double y = centre.dy + (length * sin(radian));
 
     return new Offset(x, y);
+  }
+
+  /// Changes the angle of one [Line] to another. The orientation of the first
+  /// line stays the same but the second line changes.
+  void _changeSegmentAngle2(Line lineA, Line lineB, double angle) {
+    double angleA = getAngle(lineA.start.offset, lineB.end.offset);
+    double angleB = getAngle(lineA.start.offset, lineB.end.offset);
+
+    double currentAngle = getAngleBetweenTwoLines(angleA, angleB);
+  }
+
+  double getAngleBetweenTwoLines(double angleA, double angleB) {
+    double angle;
+    if (angleA > angleB) {
+      angle = angleA - angleB;
+      print('$angleA - $angleB = $angle');
+    } else {
+      angle = angleB - angleA;
+      print('$angleB - $angleA = $angle');
+    }
+
+    print('angle: 180 - $angle = ${angle}');
+
+    if (angle > 180) {
+      angle = 360 - angle;
+    }
+
+
+    return angle;
+  }
+
+  Vector2 createVectorFromLines(Line lineA) {
+    Offset a = new Offset(lineA.start.offset.dx, lineA.start.offset.dy);
+    Offset b = new Offset(lineA.end.offset.dx, lineA.end.offset.dy);
+
+    // Offset c = new Offset(lineB.start.offset.dx, lineB.start.offset.dy);
+    // Offset d = new Offset(lineB.end.offset.dx, lineB.end.offset.dy);
+
+    return new Vector2((a.dx - b.dx).abs(), (a.dy - b.dy).abs());
+  }
+
+  /// atan2(vector1.y - vector2.y, vector1.x - vector2.x)
+  /// angle = arccos[(xa * xb + ya * yb) / (√(xa2 + ya2) * √(xb2 + yb2))]
+  double getAngleFromVectors(Vector2 vector1, Vector2 vector2) {
+
+    double angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
+
+    if (angle > pi) {
+      angle -= 2 * pi;
+    } else if (angle <= -pi) {
+      angle += 2 * pi;
+    }
+
+    return (angle * radians2Degrees).abs();
   }
 }

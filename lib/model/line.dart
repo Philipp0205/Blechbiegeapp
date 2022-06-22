@@ -6,4 +6,14 @@ class Line {
   final SegmentOffset end;
 
   const Line({required this.start, required this.end});
+
+  Line copyWith({
+    SegmentOffset? start,
+    SegmentOffset? end,
+  }) {
+    return Line(
+      start: start ?? this.start,
+      end: end ?? this.end,
+    );
+  }
 }
