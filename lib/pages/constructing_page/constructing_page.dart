@@ -1,10 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/pages/constructing_page/constructing_page_segment_widget.dart';
-import 'package:open_bsp/pages/constructing_page/constructing_sketcher.dart';
 
-import '../../bloc /constructing/constructing_page_bloc.dart';
+import '../../bloc /configuration_page/configuration_page_bloc.dart';
 
 class ConstructingPage extends StatefulWidget {
   const ConstructingPage({Key? key}) : super(key: key);
@@ -24,8 +22,8 @@ class _ConstructingPageState extends State<ConstructingPage> {
   void initState() {
     super.initState();
 
-    double s = context.read<ConstructingPageBloc>().state.s;
-    double r = context.read<ConstructingPageBloc>().state.r;
+    double s = context.read<ConfigurationPageBloc>().state.s;
+    double r = context.read<ConfigurationPageBloc>().state.r;
     _sController.text = s.toStringAsFixed(0);
 
     _rController.text = r.toStringAsFixed(0);
@@ -52,7 +50,7 @@ class _ConstructingPageState extends State<ConstructingPage> {
   String selectedValue = "USA";
 
   Widget build(BuildContext context) {
-    return BlocBuilder<ConstructingPageBloc, ConstructingPageState>(
+    return BlocBuilder<ConfigurationPageBloc, ConstructingPageState>(
         builder: (context, state) {
       return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -77,8 +75,8 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   Checkbox(
                       value: state.showCoordinates,
                       onChanged: (bool? value) {
-                        context.read<ConstructingPageBloc>().add(
-                            ConstructingPageCoordinatesShown(
+                        context.read<ConfigurationPageBloc>().add(
+                            ConfigCoordinatesShown(
                                 showCoordinates: value!));
                         print('checkbox');
                       }),
@@ -86,16 +84,16 @@ class _ConstructingPageState extends State<ConstructingPage> {
                   Checkbox(
                       value: state.showEdgeLengths,
                       onChanged: (bool? value) {
-                        context.read<ConstructingPageBloc>().add(
-                            ConstructingPageEdgeLengthsShown(
+                        context.read<ConfigurationPageBloc>().add(
+                            ConfigEdgeLengthsShown(
                                 showEdgeLengths: value!));
                       }),
                   Text('Längen'),
                   Checkbox(
                       value: state.showAngles,
                       onChanged: (bool? value) {
-                        context.read<ConstructingPageBloc>().add(
-                            ConstructingPageAnglesShown(showAngles: value!));
+                        context.read<ConfigurationPageBloc>().add(
+                            ConfigAnglesShown(showAngles: value!));
                       }),
                   Text('Winkel')
                 ],
@@ -117,8 +115,8 @@ class _ConstructingPageState extends State<ConstructingPage> {
                           controller: _sController,
                           keyboardType: TextInputType.number,
                           onChanged: (text) {
-                            context.read<ConstructingPageBloc>().add(
-                                ConstructingPageSChanged(
+                            context.read<ConfigurationPageBloc>().add(
+                                ConfigSChanged(
                                     s: double.parse(_sController.text)));
                           }),
                     ),
@@ -132,8 +130,8 @@ class _ConstructingPageState extends State<ConstructingPage> {
                           onChanged: (text) {
                             double? value = double.tryParse(text);
                             if (value != null) {
-                              context.read<ConstructingPageBloc>().add(
-                                  ConstructingPageRChanged(
+                              context.read<ConfigurationPageBloc>().add(
+                                  ConfigRChanged(
                                       r: double.parse(_rController.text)));
                             }
                           }),

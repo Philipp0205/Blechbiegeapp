@@ -1,7 +1,3 @@
-import 'dart:async';
-import 'dart:math';
-import 'dart:ui';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -9,14 +5,14 @@ import 'package:flutter/material.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 
-part 'constructing_page_event.dart';
+part 'configuration_page_event.dart';
 
-part 'constructing_page_state.dart';
+part 'configuration_page_state.dart';
 
-class ConstructingPageBloc
-    extends Bloc<ConstructingPageEvent, ConstructingPageState> {
+class ConfigurationPageBloc
+    extends Bloc<ConfigurationPageEvent, ConstructingPageState> {
   // ConstructingPageBloc() : super(ConstructingPageCreate(segment: [])) {
-  ConstructingPageBloc()
+  ConfigurationPageBloc()
       : super(ConstructingPageInitial(
             segment: [],
             showCoordinates: false,
@@ -25,14 +21,13 @@ class ConstructingPageBloc
             color: Colors.black,
             s: 5,
             r: 20)) {
-    on<ConstructingPageCreated>(_setInitialSegment);
-    on<ConstructingPageCoordinatesShown>(_showCoordinates);
-    on<ConstructingPageColorChanged>(_changeColor);
-    on<ConstructingPageEdgeLengthsShown>(_showEdgeLengths);
-    on<ConstructingPageAnglesShown>(_showAngles);
-    on<ConstructingPageCheckboxChanged>(_showDataDependingOnCheckbox);
-    on<ConstructingPageSChanged>(_changeThicknes);
-    on<ConstructingPageRChanged>(_changeRadius);
+    on<ConfigPageCreated>(_setInitialSegment);
+    on<ConfigCoordinatesShown>(_showCoordinates);
+    on<ConfigEdgeLengthsShown>(_showEdgeLengths);
+    on<ConfigAnglesShown>(_showAngles);
+    on<ConfigCheckboxChanged>(_showDataDependingOnCheckbox);
+    on<ConfigSChanged>(_changeThicknes);
+    on<ConfigRChanged>(_changeRadius);
   }
 
   // section Draw initial segment
@@ -46,7 +41,7 @@ class ConstructingPageBloc
   */
 
   void _setInitialSegment(
-      ConstructingPageCreated event, Emitter<ConstructingPageState> emit) {
+      ConfigPageCreated event, Emitter<ConstructingPageState> emit) {
     List<SegmentOffset> result = cropSegmentToArea(event.segment.first);
 
     emit(state.copyWith(segment: [event.segment.first.copyWith(path: result)]));
@@ -105,28 +100,22 @@ class ConstructingPageBloc
   *  |____/ \___|\__, |_| |_| |_|\___|_| |_|\__|   \__,_|\___|\__\__,_|_|_|___/
   *              |___/
   */
-  void _showCoordinates(ConstructingPageCoordinatesShown event,
+  void _showCoordinates(ConfigCoordinatesShown event,
       Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(showCoordinates: event.showCoordinates));
   }
 
-  void _showEdgeLengths(ConstructingPageEdgeLengthsShown event,
+  void _showEdgeLengths(ConfigEdgeLengthsShown event,
       Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(showEdgeLengths: event.showEdgeLengths));
   }
 
   void _showAngles(
-      ConstructingPageAnglesShown event, Emitter<ConstructingPageState> emit) {
+      ConfigAnglesShown event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(showAngles: event.showAngles));
   }
 
-  void _changeColor(
-      ConstructingPageColorChanged event, Emitter<ConstructingPageState> emit) {
-    print('new color ${event.color.toString()}');
-    emit(state.copyWith(color: event.color));
-  }
-
-  void _showDataDependingOnCheckbox(ConstructingPageCheckboxChanged event,
+  void _showDataDependingOnCheckbox(ConfigCheckboxChanged event,
       Emitter<ConstructingPageState> emit) {
     switch (event.checkBox) {
       case CheckBoxEnum.coordinates:
@@ -142,11 +131,11 @@ class ConstructingPageBloc
   }
 
   void _changeThicknes(
-      ConstructingPageSChanged event, Emitter<ConstructingPageState> emit) {
+      ConfigSChanged event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(s: event.s));
   }
 
-  void _changeRadius(ConstructingPageRChanged event, Emitter<ConstructingPageState> emit) {
+  void _changeRadius(ConfigRChanged event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(r: event.r));
   }
 }

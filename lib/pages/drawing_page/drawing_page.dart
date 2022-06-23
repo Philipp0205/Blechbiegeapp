@@ -6,7 +6,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/bloc%20/segment_widget/current_segment_event.dart';
 
-import '../../bloc /constructing/constructing_page_bloc.dart';
+import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../bloc /segment_widget/segment_widget_bloc.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment_widget/segment.dart';
@@ -112,8 +112,8 @@ class _DrawingPageState extends State<DrawingPage> {
   void _goToNextPage() {
     List<Segment> segment = context.read<SegmentWidgetBloc>().state.segment;
     print('gotonextpage');
-    BlocProvider.of<ConstructingPageBloc>(context)
-        .add(ConstructingPageCreated(segment: segment));
+    BlocProvider.of<ConfigurationPageBloc>(context)
+        .add(ConfigPageCreated(segment: segment));
 
     Navigator.of(context).pushNamed('/second');
   }

@@ -1,4 +1,4 @@
-part of 'constructing_page_bloc.dart';
+part of 'configuration_page_bloc.dart';
 
 class ConstructingPageState extends Equatable {
   final List<Segment> segment;

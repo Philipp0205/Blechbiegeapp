@@ -11,7 +11,7 @@ import '../../services/geometric_calculations_service.dart';
 import 'package:image/image.dart' as img;
 
 /// Sketcher for the second page that comes after initially drawing a [Segment].
-/// Allows configuration of existing [Segment]:
+/// Allows configuration_page of existing [Segment]:
 ///
 /// - Shows details like coordinates, lengths of the edges and angles.
 /// - Allows to change the thickness (s) of the segment.
@@ -19,20 +19,20 @@ import 'package:image/image.dart' as img;
 ///   a radius (r).
 ///
 /// Naming: A [Segment] consists of multiple [Line]s.
-class ConstructingSketcher extends CustomPainter {
+class ConfigurationSketcher extends CustomPainter {
   // Segment details
   final bool coordinatesShown;
   final bool edgeLengthsShown;
   final bool anglesShown;
 
-  // Segment configuration
+  // Segment configuration_page
   final double s;
   final double r;
 
   final List<Segment> lines;
 
   // Constructor
-  ConstructingSketcher(
+  ConfigurationSketcher(
       {required this.lines,
       required this.coordinatesShown,
       required this.edgeLengthsShown,
@@ -183,7 +183,7 @@ class ConstructingSketcher extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(ConstructingSketcher oldDelegate) {
+  bool shouldRepaint(ConfigurationSketcher oldDelegate) {
     return true;
   }
 

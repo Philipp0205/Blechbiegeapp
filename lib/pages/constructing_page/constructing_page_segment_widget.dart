@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/constructing/constructing_page_bloc.dart';
+import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 
 import 'constructing_sketcher.dart';
 
@@ -23,10 +23,10 @@ class _ConstructingPageSegmentWidgetState
           border: Border.all(
         width: 2,
       )),
-      child: BlocBuilder<ConstructingPageBloc, ConstructingPageState>(
+      child: BlocBuilder<ConfigurationPageBloc, ConstructingPageState>(
           builder: (context, state) {
         return CustomPaint(
-          painter: ConstructingSketcher(
+          painter: ConfigurationSketcher(
               lines: state.segment,
               coordinatesShown: state.showCoordinates,
               edgeLengthsShown: state.showEdgeLengths,
