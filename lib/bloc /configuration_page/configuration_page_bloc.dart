@@ -30,26 +30,16 @@ class ConfigurationPageBloc
     on<ConfigRChanged>(_changeRadius);
   }
 
-  // section Draw initial segment
-  /*
-  *   ____                        _       _ _   _       _                                        _   
-  *  |  _ \ _ __ __ ___      __  (_)_ __ (_) |_(_) __ _| |   ___  ___  __ _ _ __ ___   ___ _ __ | |_ 
-  *  | | | | '__/ _` \ \ /\ / /  | | '_ \| | __| |/ _` | |  / __|/ _ \/ _` | '_ ` _ \ / _ \ '_ \| __|
-  *  | |_| | | | (_| |\ V  V /   | | | | | | |_| | (_| | |  \__ \  __/ (_| | | | | | |  __/ | | | |_ 
-  *  |____/|_|  \__,_| \_/\_/    |_|_| |_|_|\__|_|\__,_|_|  |___/\___|\__, |_| |_| |_|\___|_| |_|\__|
-  *                                                                   |___/                          
-  */
-
+  /// When no segment exists an initial segment gets created.
   void _setInitialSegment(
       ConfigPageCreated event, Emitter<ConstructingPageState> emit) {
-    List<SegmentOffset> result = cropSegmentToArea(event.segment.first);
+    List<SegmentOffset> result = _cropSegmentToArea(event.segment.first);
 
     emit(state.copyWith(segment: [event.segment.first.copyWith(path: result)]));
-    // emit(ConstructingPageCreate(
-    //     segment: [event.segment.first.copyWith(path: result)]));
   }
 
-  List<SegmentOffset> cropSegmentToArea(Segment segment) {
+  /// Moves a segment on the y-axis to fit another canvas and not overshoot it. 
+  List<SegmentOffset> _cropSegmentToArea(Segment segment) {
     Map<int, double> xValues = {};
     Map<int, double> yValues = {};
 
@@ -74,9 +64,6 @@ class ConfigurationPageBloc
 
     print('');
 
-    SegmentOffset smallestX = segment.path[xValues.entries.last.key];
-    SegmentOffset smallestY = segment.path[yValues.entries.last.key];
-    SegmentOffset highestX = segment.path[xValues.entries.first.key];
     SegmentOffset highestY = segment.path[yValues.entries.first.key];
 
     List<SegmentOffset> result = [];
@@ -91,30 +78,7 @@ class ConfigurationPageBloc
     return result;
   }
 
-  // section Segment details
-  /*
-  *   ____                                  _          _      _        _ _
-  *  / ___|  ___  __ _ _ __ ___   ___ _ __ | |_     __| | ___| |_ __ _(_) |___
-  *  \___ \ / _ \/ _` | '_ ` _ \ / _ \ '_ \| __|   / _` |/ _ \ __/ _` | | / __|
-  *   ___) |  __/ (_| | | | | | |  __/ | | | |_   | (_| |  __/ || (_| | | \__ \
-  *  |____/ \___|\__, |_| |_| |_|\___|_| |_|\__|   \__,_|\___|\__\__,_|_|_|___/
-  *              |___/
-  */
-  void _showCoordinates(ConfigCoordinatesShown event,
-      Emitter<ConstructingPageState> emit) {
-    emit(state.copyWith(showCoordinates: event.showCoordinates));
-  }
-
-  void _showEdgeLengths(ConfigEdgeLengthsShown event,
-      Emitter<ConstructingPageState> emit) {
-    emit(state.copyWith(showEdgeLengths: event.showEdgeLengths));
-  }
-
-  void _showAngles(
-      ConfigAnglesShown event, Emitter<ConstructingPageState> emit) {
-    emit(state.copyWith(showAngles: event.showAngles));
-  }
-
+  /// Decides depending on the [CheckBoxEnum] what should be shown.
   void _showDataDependingOnCheckbox(ConfigCheckboxChanged event,
       Emitter<ConstructingPageState> emit) {
     switch (event.checkBox) {
@@ -130,11 +94,31 @@ class ConfigurationPageBloc
     }
   }
 
+  /// Handles event for showing the coordinates of each line on the canvas.
+  void _showCoordinates(ConfigCoordinatesShown event,
+      Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(showCoordinates: event.showCoordinates));
+  }
+
+  /// Handles event for showing the lengths of each line on the canvas.
+  void _showEdgeLengths(ConfigEdgeLengthsShown event,
+      Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(showEdgeLengths: event.showEdgeLengths));
+  }
+
+  /// Handles the event for showing the inner angles between liens on the canvas.
+  void _showAngles(
+      ConfigAnglesShown event, Emitter<ConstructingPageState> emit) {
+    emit(state.copyWith(showAngles: event.showAngles));
+  }
+
+  /// Handles event that changes the thickness of the line.
   void _changeThicknes(
       ConfigSChanged event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(s: event.s));
   }
 
+  /// Handles the event that changes the radius of the curves that are drawn.j
   void _changeRadius(ConfigRChanged event, Emitter<ConstructingPageState> emit) {
     emit(state.copyWith(r: event.r));
   }
