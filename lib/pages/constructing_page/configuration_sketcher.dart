@@ -257,7 +257,7 @@ class ConfigurationSketcher extends CustomPainter {
 
     Offset offset = new Offset(middle.dx - 15, middle.dy + 4);
 
-    drawText(canvas, text, offset, Colors.black, Colors.yellow[50]);
+    drawText(canvas, text, offset, Colors.black, Colors.white);
   }
 
   /// Draws the coordinates of each [SegmentOffset] in the [path] on an 
@@ -278,7 +278,7 @@ class ConfigurationSketcher extends CustomPainter {
           '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
 
       Offset offset = new Offset(o.offset.dx - 35, o.offset.dy + 30);
-      drawText(canvas, text, offset, Colors.black, Colors.yellow[50]);
+      drawText(canvas, text, offset, Colors.black, Colors.white);
     });
   }
 
@@ -288,6 +288,7 @@ class ConfigurationSketcher extends CustomPainter {
     v.Vector2 vectorB = _calculationsService.createVectorFromLines(lineB);
 
     double angle = _calculationsService.getAngleFromVectors(vectorA, vectorB);
+    // double angle = _calculationsService.getInnerAngle(lineA, lineB);
 
     String text = '${angle.toStringAsFixed(1)}°';
 

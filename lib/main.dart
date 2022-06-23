@@ -4,9 +4,10 @@ import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/pages/constructing_page/configuration_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
+import 'package:open_bsp/pages/simulation_page/simulation_page.dart';
 import 'package:open_bsp/services/color_service.dart';
 
-import 'bloc /segment_widget/segment_widget_bloc.dart';
+import 'bloc /drawing_page/segment_widget/segment_widget_bloc.dart';
 
 void main() {
   runApp(MyApp());
@@ -40,7 +41,8 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => const DrawingPage(),
-          '/second': (context) => const ConfigurationPage()
+          '/second': (context) => const ConfigurationPage(),
+          '/third': (context) => const SimulationPage()
         },
         // ),
       ),

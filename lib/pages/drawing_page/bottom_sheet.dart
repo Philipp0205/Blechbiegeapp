@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/model/segment_offset.dart';
 
-import '../../bloc /segment_widget/current_segment_event.dart';
-import '../../bloc /segment_widget/current_segment_state.dart';
-import '../../bloc /segment_widget/segment_widget_bloc.dart';
+import '../../bloc /drawing_page/segment_widget/current_segment_event.dart';
+import '../../bloc /drawing_page/segment_widget/current_segment_state.dart';
+import '../../bloc /drawing_page/segment_widget/segment_widget_bloc.dart';
 import '../../services/geometric_calculations_service.dart';
 import '../../model/appmodes.dart';
 

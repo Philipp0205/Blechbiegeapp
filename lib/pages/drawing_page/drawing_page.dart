@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/bloc%20/segment_widget/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/drawing_page/segment_widget/current_segment_event.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
-import '../../bloc /segment_widget/segment_widget_bloc.dart';
+import '../../bloc /drawing_page/segment_widget/segment_widget_bloc.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment_widget/segment.dart';
 import 'bottom_sheet.dart';

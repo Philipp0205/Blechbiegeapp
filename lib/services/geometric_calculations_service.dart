@@ -147,40 +147,6 @@ class GeometricCalculationsService {
     return angle;
   }
 
-  // (P1L1(x1, y1), P2L1(x2, y2) and P1L1(x1, y1), P2L3(x2, y3))
-  double getInnerAngle(Line lineA, Line lineB) {
-    // public static double angleBetween2Lines(Line2D line1, Line2D line2)
-    // {
-    //     double angle1 = Math.atan2(line1.getY1() - line1.getY2(),
-    //                                line1.getX1() - line1.getX2());
-    //     double angle2 = Math.atan2(line2.getY1() - line2.getY2(),
-    //                                line2.getX1() - line2.getX2());
-    //     return angle1-angle2;
-    // }
-
-    // double slope1 = (line1.getY1() - line1.getY2()) / (line1.getX1() - line1.getX2());
-    //    double slope2 = (line2.getY1() - line2.getY2()) / (line2.getX1() - line2.getX2());
-
-    double slopeA = (lineA.start.offset.dy - lineA.end.offset.dy) /
-        (lineA.start.offset.dx - lineA.end.offset.dx);
-    double slopeB = (lineB.start.offset.dy - lineB.end.offset.dy) /
-        (lineB.start.offset.dx - lineB.end.offset.dx);
-    print('slopeA $slopeA, sloeB $slopeB');
-
-    double angle = atan((slopeA - slopeB) / (1 - (slopeA * slopeB)));
-    print('angle $angle');
-
-    // atan2(vector1.y - vector2.y, vector1.x - vector2.x)
-    double angleA = atan2(lineA.end.offset.dx - lineA.start.offset.dx,
-        lineA.end.offset.dy - lineA.start.offset.dy);
-
-    double angleB = atan2(lineB.end.offset.dx - lineB.start.offset.dx,
-        lineB.end.offset.dy - lineB.start.offset.dy);
-
-    print('Inner angle: angleA: $angleA, angleB: $angleB');
-
-    return (angleA - angleB).abs();
-  }
 
   double getMagnitude(Offset centre, Offset offset) {
     double x = offset.dx - centre.dx;
@@ -244,14 +210,13 @@ class GeometricCalculationsService {
       print('$angleB - $angleA = $angle');
     }
 
-    print('angle: 180 - $angle = ${angle}');
-
     if (angle > 180) {
       angle = 360 - angle;
     }
     return angle;
   }
 
+  /// Calculates a Vector from given [line].
   Vector2 createVectorFromLines(Line lineA) {
     Offset a = new Offset(lineA.start.offset.dx, lineA.start.offset.dy);
     Offset b = new Offset(lineA.end.offset.dx, lineA.end.offset.dy);
@@ -275,5 +240,12 @@ class GeometricCalculationsService {
     }
 
     return (angle * radians2Degrees).abs();
+  }
+
+  double getInnerAngle(Line lineA, Line lineB) {
+    double angleA = getAngle(lineA.start.offset, lineB.end.offset);
+    double angleB = getAngle(lineB.start.offset, lineB.end.offset);
+
+    return (angleA - angleB).abs();
   }
 }

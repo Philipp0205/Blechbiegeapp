@@ -1,18 +1,15 @@
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/bloc%20/segment_widget/current_segment_event.dart';
-import 'package:open_bsp/bloc%20/segment_widget/current_segment_state.dart';
+import 'package:open_bsp/bloc%20/drawing_page/segment_widget/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/drawing_page/segment_widget/current_segment_state.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/model/appmodes.dart';
 import 'package:open_bsp/model/segment_offset.dart';
-import 'package:vector_math/vector_math_64.dart' as v;
 
-import '../../model/line.dart';
-import '../../model/segment_widget/segment.dart';
-import '../../services/geometric_calculations_service.dart';
+import '../../../model/segment_widget/segment.dart';
+import '../../../services/geometric_calculations_service.dart';
 
 class SegmentWidgetBloc
     extends Bloc<SegmentWidgetEvent, SegmentWidgetBlocState> {
@@ -260,43 +257,37 @@ class SegmentWidgetBloc
   /// change the angle.
   void _changeSegmentAngle(
       SegmentPartAngleChanged event, Emitter<SegmentWidgetBlocState> emit) {
-
     List<SegmentOffset> path = state.segment.first.path;
-    List<SegmentOffset> selectedOffsets =
-    path.where((o) => o.isSelected).toList();
+    List<SegmentOffset> selectedSegmentOffsets =
+        path.where((offset) => offset.isSelected).toList();
 
-    List<Offset> offsets = selectedOffsets.map((e) => e.offset).toList();
+    List<Offset> selectedOffsets = selectedSegmentOffsets.map((e) => e.offset).toList();
 
-    if (event.angle >= 0) {
-      double newAngle = 0;
-      if (path.length == 2) {
-        newAngle = event.angle;
-      } else {
-        int i = path.indexOf(selectedOffsets.first);
-        double prevAngle = 0;
+    double newAngle = 0;
 
-        prevAngle =
-            _calculationService.getAngle(path[i - 1].offset, path[i].offset);
 
-        newAngle = prevAngle + event.angle;
-      }
+    if (selectedOffsets.first == path.first.offset) {
+      newAngle = event.angle;
+    } else {
+      int i = path.indexOf(selectedSegmentOffsets.first);
+      double prevAngle = 0;
 
-      Offset newOffset = _calculationService.calculatePointWithAngle(
-          offsets.first, event.length, newAngle);
+      prevAngle =
+          _calculationService.getAngle(path[i - 1].offset, path[i].offset);
 
-      int index = path.indexOf(selectedOffsets.last);
-      path
-        ..remove(selectedOffsets.last)
-        ..insert(index, selectedOffsets.last.copyWith(offset: newOffset));
-
-      emit(CurrentSegmentUpdate(
-          segment: [state.segment.first.copyWith(path: path)],
-          mode: Mode.selectionMode));
+      newAngle = prevAngle + event.angle;
     }
-  }
 
-  void _changeSegmentAngle2(
-      SegmentPartAngleChanged event, Emitter<SegmentWidgetBlocState> emit) {
+    Offset newOffset = _calculationService.calculatePointWithAngle(
+        selectedOffsets.first, event.length, newAngle);
 
+    int index = path.indexOf(selectedSegmentOffsets.last);
+    path
+      ..remove(selectedSegmentOffsets.last)
+      ..insert(index, selectedSegmentOffsets.last.copyWith(offset: newOffset));
+
+    emit(CurrentSegmentUpdate(
+        segment: [state.segment.first.copyWith(path: path)],
+        mode: Mode.selectionMode));
   }
 }

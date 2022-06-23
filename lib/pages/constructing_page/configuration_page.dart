@@ -61,6 +61,36 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           ),
         ),
         backgroundColor: Colors.white,
+          floatingActionButton: Stack(
+            children: [
+              /// Left Button
+              Positioned(
+                left: 40,
+                bottom: 20,
+                child: FloatingActionButton(
+                  heroTag: "btn1",
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.arrow_left),
+                onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              /// Right Button
+              Positioned(
+                bottom: 20,
+                right: 10,
+                child: FloatingActionButton(
+                  heroTag: "btn2",
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.arrow_right),
+                  onPressed: () => Navigator.of(context).pushNamed("/third"),
+                ),
+              ),
+            ],
+          ),
         body: Container(
           child: Column(
             children: [
