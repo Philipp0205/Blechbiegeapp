@@ -13,6 +13,10 @@ import '../../model/segment_widget/segment.dart';
 import 'bottom_sheet.dart';
 import 'segment_widget.dart';
 
+/// On this page the user can draw a single line representing the the profile
+/// of a metal sheet.
+///
+/// The length and angle of the lines can be changed in a bottom sheet.
 class DrawingPage extends StatefulWidget {
   const DrawingPage({Key? key}) : super(key: key);
 
@@ -42,6 +46,7 @@ class _DrawingPageState extends State<DrawingPage> {
         ),
         floatingActionButton: Stack(
           children: [
+            /// Left Button
             Positioned(
               left: 40,
               bottom: 20,
@@ -52,18 +57,19 @@ class _DrawingPageState extends State<DrawingPage> {
                 icon: Icons.add,
                 activeIcon: Icons.close,
                 children: [
-                  SpeedDialChild(child: Icon(Icons.delete), onTap: clear),
+                  SpeedDialChild(child: Icon(Icons.delete), onTap: _clearCanvas),
                   SpeedDialChild(
                       child: Icon(Icons.select_all),
-                      onTap: toggleSelectionMode),
+                      onTap: _toggleSelectionMode),
                   SpeedDialChild(
-                      child: Icon(Icons.circle), onTap: toggleDefaultMode),
+                      child: Icon(Icons.circle), onTap: _toggleDefaultMode),
                   SpeedDialChild(
                       child: Icon(Icons.circle_notifications),
                       onTap: _bottomSheet),
                 ],
               ),
             ),
+            /// Right Button
             Positioned(
               bottom: 20,
               right: 10,
@@ -81,18 +87,17 @@ class _DrawingPageState extends State<DrawingPage> {
     });
   }
 
-  Future<void> clear() async {
+  Future<void> _clearCanvas() async {
     BlocProvider.of<SegmentWidgetBloc>(context).add((SegmentDeleted()));
-    // BlocProvider.of<AllSegmentsBloc>(context).add(AllSegmentsDeleted());
   }
 
-  void toggleSelectionMode() {
+  void _toggleSelectionMode() {
     context
         .read<DrawingPageBloc>()
         .add(DrawingPageModeChanged(mode: Mode.selectionMode));
   }
 
-  void toggleDefaultMode() {
+  void _toggleDefaultMode() {
     context
         .read<DrawingPageBloc>()
         .add(DrawingPageModeChanged(mode: Mode.defaultMode));

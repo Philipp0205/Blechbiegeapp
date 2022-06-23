@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 
-import 'constructing_sketcher.dart';
+import 'configuration_sketcher.dart';
 
 class ConstructingPageSegmentWidget extends StatefulWidget {
   const ConstructingPageSegmentWidget({Key? key}) : super(key: key);

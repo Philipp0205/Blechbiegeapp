@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/pages/constructing_page/constructing_page.dart';
+import 'package:open_bsp/pages/constructing_page/configuration_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
 import 'package:open_bsp/services/color_service.dart';
 
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => const DrawingPage(),
-          '/second': (context) => const ConstructingPage()
+          '/second': (context) => const ConfigurationPage()
         },
         // ),
       ),

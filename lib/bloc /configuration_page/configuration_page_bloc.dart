@@ -6,7 +6,6 @@ import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 
 part 'configuration_page_event.dart';
-
 part 'configuration_page_state.dart';
 
 class ConfigurationPageBloc
@@ -18,7 +17,6 @@ class ConfigurationPageBloc
             showCoordinates: false,
             showEdgeLengths: false,
             showAngles: false,
-            color: Colors.black,
             s: 5,
             r: 20)) {
     on<ConfigPageCreated>(_setInitialSegment);

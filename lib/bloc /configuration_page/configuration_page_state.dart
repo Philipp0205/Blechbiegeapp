@@ -8,15 +8,11 @@ class ConstructingPageState extends Equatable {
   final double s;
   final double r;
 
-  //debugging
-  final Color color;
-
   const ConstructingPageState(
       {required this.segment,
       required this.showEdgeLengths,
       required this.showCoordinates,
       required this.showAngles,
-      required this.color,
       required this.s,
       required this.r});
 
@@ -33,7 +29,6 @@ class ConstructingPageState extends Equatable {
       showCoordinates: showCoordinates ?? this.showCoordinates,
       showEdgeLengths: showEdgeLengths ?? this.showEdgeLengths,
       showAngles: showAngles ?? this.showAngles,
-      color: color ?? this.color,
       s: s ?? this.s,
       r: r ?? this.r,
     );
@@ -41,7 +36,7 @@ class ConstructingPageState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [segment, showCoordinates, showEdgeLengths, showAngles, color, s, r];
+      [segment, showCoordinates, showEdgeLengths, showAngles, s, r];
 }
 
 class ConstructingPageInitial extends ConstructingPageState {
@@ -49,7 +44,6 @@ class ConstructingPageInitial extends ConstructingPageState {
   final bool showCoordinates;
   final bool showEdgeLengths;
   final bool showAngles;
-  final Color color;
   final double s;
   final double r;
 
@@ -58,7 +52,6 @@ class ConstructingPageInitial extends ConstructingPageState {
     required this.showCoordinates,
     required this.showEdgeLengths,
     required this.showAngles,
-    required this.color,
     required this.s,
     required this.r,
   }) : super(
@@ -66,7 +59,6 @@ class ConstructingPageInitial extends ConstructingPageState {
             showEdgeLengths: showEdgeLengths,
             showCoordinates: showCoordinates,
             showAngles: showAngles,
-            color: color,
             s: s,
             r: r);
 }

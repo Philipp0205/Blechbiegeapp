@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/pages/constructing_page/constructing_page_segment_widget.dart';
+import 'package:open_bsp/pages/constructing_page/config_page_segment_widget.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 
-class ConstructingPage extends StatefulWidget {
-  const ConstructingPage({Key? key}) : super(key: key);
+class ConfigurationPage extends StatefulWidget {
+  const ConfigurationPage({Key? key}) : super(key: key);
 
   @override
-  _ConstructingPageState createState() => _ConstructingPageState();
+  _ConfigurationPageState createState() => _ConfigurationPageState();
 }
 
-class _ConstructingPageState extends State<ConstructingPage> {
+class _ConfigurationPageState extends State<ConfigurationPage> {
   bool showCoordinates = true;
   bool showEdgeLengths = false;
 
