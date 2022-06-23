@@ -279,11 +279,6 @@ class SegmentWidgetBloc
             _calculationService.getAngle(path[i - 1].offset, path[i].offset);
 
         newAngle = prevAngle + event.angle;
-
-        print('angleOfPrevious: $prevAngle');
-        print('wantedAngle: ${event.angle}');
-
-        print('newAngle $newAngle');
       }
 
       Offset newOffset = _calculationService.calculatePointWithAngle(
