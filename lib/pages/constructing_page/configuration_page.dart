@@ -29,16 +29,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     _rController.text = r.toStringAsFixed(0);
   }
 
-  List<DropdownMenuItem<String>> get dropdownItems {
-    List<DropdownMenuItem<String>> menuItems = [
-      DropdownMenuItem(child: Text("USA"), value: "USA"),
-      DropdownMenuItem(child: Text("Canada"), value: "Canada"),
-      DropdownMenuItem(child: Text("Brazil"), value: "Brazil"),
-      DropdownMenuItem(child: Text("England"), value: "England"),
-    ];
-    return menuItems;
-  }
-
   @override
   void dispose() {
     _sController.dispose();
@@ -47,8 +37,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   @override
-  String selectedValue = "USA";
-
   Widget build(BuildContext context) {
     return BlocBuilder<ConfigurationPageBloc, ConstructingPageState>(
         builder: (context, state) {
