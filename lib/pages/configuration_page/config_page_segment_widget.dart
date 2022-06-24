@@ -23,7 +23,7 @@ class _ConstructingPageSegmentWidgetState
           border: Border.all(
         width: 2,
       )),
-      child: BlocBuilder<ConfigurationPageBloc, ConstructingPageState>(
+      child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
         return CustomPaint(
           painter: ConfigurationSketcher(

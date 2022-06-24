@@ -1,24 +1,18 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 
-class Sketcher extends CustomPainter {
-  final List<Segment> lines2;
+class DrawingSketcher extends CustomPainter {
+  final List<Segment> lines;
 
-  Sketcher({required this.lines2});
+  DrawingSketcher({required this.lines});
 
   PictureRecorder pictureRecorder = new PictureRecorder();
   late Canvas recordingCanvas;
   late Canvas canvas;
-
-  String lastDrawnText = '';
-
-  GeometricCalculationsService _calculationsService =
-      new GeometricCalculationsService();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -30,13 +24,13 @@ class Sketcher extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0;
 
-    if (lines2.isNotEmpty) {
-      List<SegmentOffset> path = lines2.first.path;
-      for (int i = 0; i < lines2.first.path.length - 1; ++i) {
+    if (lines.isNotEmpty) {
+      List<SegmentOffset> path = lines.first.path;
+      for (int i = 0; i < lines.first.path.length - 1; ++i) {
         canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
       }
 
-      List<Offset> selectedOffsets = lines2.first.path
+      List<Offset> selectedOffsets = lines.first.path
           .where((e) => e.isSelected)
           .toList()
           .map((e) => e.offset)
@@ -110,9 +104,7 @@ class Sketcher extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(Sketcher oldDelegate) {
+  bool shouldRepaint(DrawingSketcher oldDelegate) {
     return true;
   }
-
-  void getColorOfCoordinate() {}
 }

@@ -288,7 +288,6 @@ class ConfigurationSketcher extends CustomPainter {
     v.Vector2 vectorB = _calculationsService.createVectorFromLines(lineB);
 
     double angle = _calculationsService.getAngleFromVectors(vectorA, vectorB);
-    // double angle = _calculationsService.getInnerAngle(lineA, lineB);
 
     String text = '${angle.toStringAsFixed(1)}°';
 

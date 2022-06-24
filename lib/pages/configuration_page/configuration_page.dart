@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/pages/constructing_page/config_page_segment_widget.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../../model/segment_widget/segment.dart';
+import 'config_page_segment_widget.dart';
 
 class ConfigurationPage extends StatefulWidget {
   const ConfigurationPage({Key? key}) : super(key: key);
@@ -22,8 +25,8 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   void initState() {
     super.initState();
 
-    double s = context.read<ConfigurationPageBloc>().state.s;
-    double r = context.read<ConfigurationPageBloc>().state.r;
+    double s = context.read<ConfigPageBloc>().state.s;
+    double r = context.read<ConfigPageBloc>().state.r;
     _sController.text = s.toStringAsFixed(0);
 
     _rController.text = r.toStringAsFixed(0);
@@ -38,7 +41,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConfigurationPageBloc, ConstructingPageState>(
+    return BlocBuilder<ConfigPageBloc, ConfigPageState>(
         builder: (context, state) {
       return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -49,41 +52,53 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           ),
         ),
         backgroundColor: Colors.white,
-          floatingActionButton: Stack(
-            children: [
-              /// Left Button
-              Positioned(
-                left: 40,
-                bottom: 20,
-                child: FloatingActionButton(
-                  heroTag: "btn1",
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.arrow_left),
-                onPressed: () => Navigator.of(context).pop(),
+        floatingActionButton: Stack(
+          children: [
+            /// Left Button
+            Positioned(
+              left: 40,
+              bottom: 20,
+              child: SpeedDial(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                icon: Icons.add,
+                activeIcon: Icons.close,
+                children: [
+                  SpeedDialChild(
+                    child: Icon(Icons.add),
+                    onTap: () => _createShape(state.segment.first),
+                  )
+                ],
               ),
-              /// Right Button
-              Positioned(
-                bottom: 20,
-                right: 10,
-                child: FloatingActionButton(
-                  heroTag: "btn2",
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.arrow_right),
-                  onPressed: () => Navigator.of(context).pushNamed("/third"),
+              // child: FloatingActionButton(
+              //   heroTag: "btn1",
+              //   shape: RoundedRectangleBorder(
+              //     borderRadius: BorderRadius.circular(10),
+              //   ),
+              //   child: Icon(Icons.arrow_left),
+              // onPressed: () => Navigator.of(context).pop(),
+              // ),
+            ),
+
+            /// Right Button
+            Positioned(
+              bottom: 20,
+              right: 10,
+              child: FloatingActionButton(
+                heroTag: "btn2",
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Icon(Icons.arrow_right),
+                onPressed: () => Navigator.of(context).pushNamed("/third"),
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
         body: Container(
           child: Column(
             children: [
-              // section Title
-              // section CustomPainter
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: ConstructingPageSegmentWidget(),
@@ -93,25 +108,24 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   Checkbox(
                       value: state.showCoordinates,
                       onChanged: (bool? value) {
-                        context.read<ConfigurationPageBloc>().add(
-                            ConfigCoordinatesShown(
-                                showCoordinates: value!));
+                        context.read<ConfigPageBloc>().add(
+                            ConfigCoordinatesShown(showCoordinates: value!));
                         print('checkbox');
                       }),
                   Text('Koordinaten'),
                   Checkbox(
                       value: state.showEdgeLengths,
                       onChanged: (bool? value) {
-                        context.read<ConfigurationPageBloc>().add(
-                            ConfigEdgeLengthsShown(
-                                showEdgeLengths: value!));
+                        context.read<ConfigPageBloc>().add(
+                            ConfigEdgeLengthsShown(showEdgeLengths: value!));
                       }),
                   Text('Längen'),
                   Checkbox(
                       value: state.showAngles,
                       onChanged: (bool? value) {
-                        context.read<ConfigurationPageBloc>().add(
-                            ConfigAnglesShown(showAngles: value!));
+                        context
+                            .read<ConfigPageBloc>()
+                            .add(ConfigAnglesShown(showAngles: value!));
                       }),
                   Text('Winkel')
                 ],
@@ -133,7 +147,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                           controller: _sController,
                           keyboardType: TextInputType.number,
                           onChanged: (text) {
-                            context.read<ConfigurationPageBloc>().add(
+                            context.read<ConfigPageBloc>().add(
                                 ConfigSChanged(
                                     s: double.parse(_sController.text)));
                           }),
@@ -148,7 +162,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                           onChanged: (text) {
                             double? value = double.tryParse(text);
                             if (value != null) {
-                              context.read<ConfigurationPageBloc>().add(
+                              context.read<ConfigPageBloc>().add(
                                   ConfigRChanged(
                                       r: double.parse(_rController.text)));
                             }
@@ -163,5 +177,13 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         ),
       );
     });
+  }
+
+  void _createShape(Segment segment) {
+    showModalBottomSheet(context: context,
+        builder: (BuildContext context) {
+      return AddShapeBottomSheet();
+        },
+    );
   }
 }

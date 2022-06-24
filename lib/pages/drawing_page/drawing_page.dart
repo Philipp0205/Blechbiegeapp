@@ -117,7 +117,7 @@ class _DrawingPageState extends State<DrawingPage> {
   void _goToNextPage() {
     List<Segment> segment = context.read<SegmentWidgetBloc>().state.segment;
     print('gotonextpage');
-    BlocProvider.of<ConfigurationPageBloc>(context)
+    BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(segment: segment));
 
     Navigator.of(context).pushNamed('/second');

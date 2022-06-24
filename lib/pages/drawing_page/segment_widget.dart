@@ -10,7 +10,7 @@ import 'sketcher.dart';
 
 /// Widget which the the line/segment is drawn on. Gestures from the user are
 /// registered via a [GestureDetector] and drawn on the screen with the
-/// [Sketcher] widget.
+/// [DrawingSketcher] widget.
 class SegmentWidget extends StatefulWidget {
   @override
   _SegmentWidgetState createState() => _SegmentWidgetState();
@@ -43,8 +43,8 @@ class _SegmentWidgetState extends State<SegmentWidget> {
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               child: CustomPaint(
-                painter: Sketcher(
-                  lines2: state.segment,
+                painter: DrawingSketcher(
+                  lines: state.segment,
                 ),
               ),
             ),
