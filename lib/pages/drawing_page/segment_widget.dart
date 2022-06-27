@@ -33,18 +33,51 @@ class _SegmentWidgetState extends State<SegmentWidget> {
       /// Rebuild when change in state happens.
       child: BlocBuilder<SegmentWidgetBloc, SegmentWidgetBlocState>(
           builder: (context, state) {
-        return GestureDetector(
-          onPanStart: (details) => onPanStart(context, details, state),
-          onPanUpdate: (details) => onPanUpdate(context, details, state),
-          onPanEnd: (details) => onPanEnd(context, details, state),
-          onPanDown: (details) => onPanDown(context, details, state),
-          child: RepaintBoundary(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: CustomPaint(
-                painter: DrawingSketcher(
-                  lines: state.segment,
+        return Container(
+          height: 300,
+          width: 500,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.5),
+              width: 2
+            ),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10)
+            ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  offset: const Offset(0,3), //Offset
+                  blurRadius: 7,
+                  spreadRadius: 5,
+                ), //BoxShadow
+                // BoxShadow(
+                //   color: Colors.white,
+                //   offset: const Offset(0.0, 0.0),
+                //   blurRadius: 0.0,
+                //   spreadRadius: 0.0,
+                // ), //BoxShadow
+              ],
+          ),
+          child: GestureDetector(
+            onPanStart: (details) => onPanStart(context, details, state),
+            onPanUpdate: (details) => onPanUpdate(context, details, state),
+            onPanEnd: (details) => onPanEnd(context, details, state),
+            onPanDown: (details) => onPanDown(context, details, state),
+            child: RepaintBoundary(
+              child: Container(
+                // width: MediaQuery.of(context).size.width,
+                // height: MediaQuery.of(context).size.height,
+                width: 300,
+                height: 500,
+                child: CustomPaint(
+                  painter: DrawingSketcher(
+                    lines: state.segment,
+                  ),
                 ),
               ),
             ),

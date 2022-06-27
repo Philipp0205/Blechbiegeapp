@@ -130,6 +130,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
     shapes.add(event.shape);
     emit(state.copyWith(shapes: shapes));
   }
+
 }
 
 enum CheckBoxEnum { coordinates, lengths, angles }

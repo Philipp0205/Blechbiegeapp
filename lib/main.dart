@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
+import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/configuration_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
+import 'package:open_bsp/pages/shapes_page/shapes_page.dart';
 import 'package:open_bsp/pages/simulation_page/simulation_page.dart';
 import 'package:open_bsp/services/color_service.dart';
 
@@ -34,7 +36,11 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => SimulationPageBloc(),
         ),
+        BlocProvider(
+          create: (_) => ShapesPageBloc(),
+        )
       ],
+
       child: MaterialApp(
         title: 'Flutter Demo',
         // home: DrawingPage(),
@@ -46,7 +52,8 @@ class MyApp extends StatelessWidget {
         routes: {
           '/': (context) => const DrawingPage(),
           '/second': (context) => const ConfigurationPage(),
-          '/third': (context) => const SimulationPage()
+          '/third': (context) => const SimulationPage(),
+          '/shapes': (context) => const ShapesPage()
         },
         // ),
       ),

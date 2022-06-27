@@ -98,7 +98,6 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                           keyboardType: TextInputType.number,
                           onChanged: (text) {
                             double length = double.parse(text);
-                            print('length $length');
                             if (length != double.nan) {
                               context.read<SegmentWidgetBloc>().add(
                                   SegmentPartLengthChanged(length: length));

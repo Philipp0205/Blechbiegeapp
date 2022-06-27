@@ -68,17 +68,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   SpeedDialChild(
                     child: Icon(Icons.add),
                     onTap: () => _createShape(state.segment.first),
-                  )
+                  ),
                 ],
               ),
-              // child: FloatingActionButton(
-              //   heroTag: "btn1",
-              //   shape: RoundedRectangleBorder(
-              //     borderRadius: BorderRadius.circular(10),
-              //   ),
-              //   child: Icon(Icons.arrow_left),
-              // onPressed: () => Navigator.of(context).pop(),
-              // ),
             ),
 
             /// Right Button

@@ -40,9 +40,21 @@ class _DrawingPageState extends State<DrawingPage> {
         ),
         backgroundColor: Colors.white,
         body: Container(
-          child: Stack(children: [
-            SegmentWidget(),
-          ]),
+          child: Column(
+            children: [
+              Container(
+               height: 300,
+                width: 500,
+                child: Stack(children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SegmentWidget(),
+                  ),
+                  Divider(),
+                ]),
+              ),
+            ],
+          ),
         ),
         floatingActionButton: Stack(
           children: [
