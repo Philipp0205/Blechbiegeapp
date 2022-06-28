@@ -2,13 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../model/Line2.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 
-class DrawingSketcher extends CustomPainter {
+class DrawingWidgetSketcher extends CustomPainter {
   final List<Segment> lines;
+  final List<Line2> lines2;
 
-  DrawingSketcher({required this.lines});
+  DrawingWidgetSketcher({required this.lines, required this.lines2});
 
   PictureRecorder pictureRecorder = new PictureRecorder();
   late Canvas recordingCanvas;
@@ -24,20 +26,27 @@ class DrawingSketcher extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0;
 
-    if (lines.isNotEmpty) {
-      List<SegmentOffset> path = lines.first.path;
-      for (int i = 0; i < lines.first.path.length - 1; ++i) {
-        canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
-      }
+    if (lines2.isNotEmpty) {
+      lines2.forEach((line) {
+        canvas.drawLine(line.start, line.end, paint);
 
-      List<Offset> selectedOffsets = lines.first.path
-          .where((e) => e.isSelected)
-          .toList()
-          .map((e) => e.offset)
-          .toList();
-
-      highlightSelectedOffsets(selectedOffsets, canvas);
+      });
     }
+
+    // if (lines.isNotEmpty) {
+    //   List<SegmentOffset> path = lines.first.path;
+    //   for (int i = 0; i < lines.first.path.length - 1; ++i) {
+    //     canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
+    //   }
+    //
+    //   List<Offset> selectedOffsets = lines.first.path
+    //       .where((e) => e.isSelected)
+    //       .toList()
+    //       .map((e) => e.offset)
+    //       .toList();
+    //
+    //   highlightSelectedOffsets(selectedOffsets, canvas);
+    // }
   }
 
   void highlightSelectedOffsets(List<Offset> offsets, Canvas canvas) {
@@ -104,7 +113,7 @@ class DrawingSketcher extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(DrawingSketcher oldDelegate) {
+  bool shouldRepaint(DrawingWidgetSketcher oldDelegate) {
     return true;
   }
 }

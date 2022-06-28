@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/model/segment_offset.dart';
 
-import '../../bloc /drawing_page/segment_widget/current_segment_event.dart';
-import '../../bloc /drawing_page/segment_widget/current_segment_state.dart';
-import '../../bloc /drawing_page/segment_widget/segment_widget_bloc.dart';
+import '../../bloc /drawing_page/segment_widget/drawing_widget_event.dart';
+import '../../bloc /drawing_page/segment_widget/drawing_widget_state.dart';
+import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
 import '../../services/geometric_calculations_service.dart';
 import '../../model/appmodes.dart';
 
@@ -37,7 +37,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   void initState() {
     super.initState();
     List<SegmentOffset> offsets = context
-        .read<SegmentWidgetBloc>()
+        .read<DrawingWidgetBloc>()
         .state
         .segment
         .first
@@ -70,7 +70,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: 300,
-      child: BlocBuilder<SegmentWidgetBloc, SegmentWidgetBlocState>(
+      child: BlocBuilder<DrawingWidgetBloc, DrawingWidgetState>(
         builder: (context, state) {
           return Column(
             children: [
@@ -80,7 +80,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                   IconButton(
                       onPressed: () {
                         context
-                            .read<SegmentWidgetBloc>()
+                            .read<DrawingWidgetBloc>()
                             .add(SegmentPartDeleted());
                       },
                       icon: Icon(Icons.delete),
@@ -99,7 +99,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                           onChanged: (text) {
                             double length = double.parse(text);
                             if (length != double.nan) {
-                              context.read<SegmentWidgetBloc>().add(
+                              context.read<DrawingWidgetBloc>().add(
                                   SegmentPartLengthChanged(length: length));
                             }
                           }),
@@ -116,7 +116,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                           double? value = double.tryParse(text);
 
                           if (value != null) {
-                            context.read<SegmentWidgetBloc>().add(
+                            context.read<DrawingWidgetBloc>().add(
                                 SegmentPartAngleChanged(
                                     angle: value,
                                     length:

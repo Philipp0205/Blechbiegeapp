@@ -10,7 +10,7 @@ import 'package:open_bsp/pages/shapes_page/shapes_page.dart';
 import 'package:open_bsp/pages/simulation_page/simulation_page.dart';
 import 'package:open_bsp/services/color_service.dart';
 
-import 'bloc /drawing_page/segment_widget/segment_widget_bloc.dart';
+import 'bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => SegmentWidgetBloc(),
+          create: (_) => DrawingWidgetBloc(),
         ),
         BlocProvider(
           create: (_) => DrawingPageBloc(),

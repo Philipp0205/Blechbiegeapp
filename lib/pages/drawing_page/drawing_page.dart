@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/bloc%20/drawing_page/segment_widget/current_segment_event.dart';
+import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
-import '../../bloc /drawing_page/segment_widget/segment_widget_bloc.dart';
+import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
 import '../../model/appmodes.dart';
 import '../../model/segment_widget/segment.dart';
 import 'bottom_sheet.dart';
-import 'segment_widget.dart';
+import 'drawing_widget.dart';
 
 /// On this page the user can draw a single line representing the the profile
 /// of a metal sheet.
@@ -25,6 +25,8 @@ class DrawingPage extends StatefulWidget {
 }
 
 class _DrawingPageState extends State<DrawingPage> {
+  bool editLines = false;
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DrawingPageBloc, DrawingPageState>(
@@ -32,7 +34,7 @@ class _DrawingPageState extends State<DrawingPage> {
       return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-        backgroundColor: Color(0xff009374),
+          backgroundColor: Color(0xff009374),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [Text('Biegeapp'), Text(state.mode.name)],
@@ -40,20 +42,34 @@ class _DrawingPageState extends State<DrawingPage> {
         ),
         backgroundColor: Colors.white,
         body: Container(
-          child: Column(
-            children: [
-              Container(
-               height: 300,
-                width: 500,
-                child: Stack(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SegmentWidget(),
-                  ),
-                  Divider(),
-                ]),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Container(
+                  height: 300,
+                  width: 500,
+                  child: Stack(children: [
+                    DrawingWidget(),
+                  ]),
+                ),
+                Divider(color: Colors.green),
+                Text(
+                  'Einstellungen',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    Checkbox(value: editLines, onChanged: (bool? value) {
+                      setState(() {
+                        editLines = value!;
+                      });
+                    }),
+                    Text('Linien selektieren')
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         floatingActionButton: Stack(
@@ -69,7 +85,8 @@ class _DrawingPageState extends State<DrawingPage> {
                 icon: Icons.add,
                 activeIcon: Icons.close,
                 children: [
-                  SpeedDialChild(child: Icon(Icons.delete), onTap: _clearCanvas),
+                  SpeedDialChild(
+                      child: Icon(Icons.delete), onTap: _clearCanvas),
                   SpeedDialChild(
                       child: Icon(Icons.select_all),
                       onTap: _toggleSelectionMode),
@@ -81,6 +98,7 @@ class _DrawingPageState extends State<DrawingPage> {
                 ],
               ),
             ),
+
             /// Right Button
             Positioned(
               bottom: 20,
@@ -100,7 +118,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   Future<void> _clearCanvas() async {
-    BlocProvider.of<SegmentWidgetBloc>(context).add((SegmentDeleted()));
+    BlocProvider.of<DrawingWidgetBloc>(context).add((SegmentDeleted()));
   }
 
   void _toggleSelectionMode() {
@@ -127,7 +145,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _goToNextPage() {
-    List<Segment> segment = context.read<SegmentWidgetBloc>().state.segment;
+    List<Segment> segment = context.read<DrawingWidgetBloc>().state.segment;
     print('gotonextpage');
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(segment: segment));
