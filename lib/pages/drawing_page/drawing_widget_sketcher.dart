@@ -3,14 +3,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../model/Line2.dart';
-import '../../model/segment_widget/segment.dart';
-import '../../model/segment_offset.dart';
 
 class DrawingWidgetSketcher extends CustomPainter {
-  final List<Segment> lines;
   final List<Line2> lines2;
 
-  DrawingWidgetSketcher({required this.lines, required this.lines2});
+  DrawingWidgetSketcher({required this.lines2});
 
   PictureRecorder pictureRecorder = new PictureRecorder();
   late Canvas recordingCanvas;
@@ -21,32 +18,25 @@ class DrawingWidgetSketcher extends CustomPainter {
     canvas = canvas;
     recordingCanvas = new Canvas(pictureRecorder);
 
-    Paint paint = Paint()
+    Paint blackPaint = Paint()
       ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0;
+
+    Paint redPaint = Paint()
+      ..color = Colors.red
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0;
 
     if (lines2.isNotEmpty) {
       lines2.forEach((line) {
-        canvas.drawLine(line.start, line.end, paint);
-
+        if (line.isSelected) {
+          canvas.drawLine(line.start, line.end, redPaint);
+        } else {
+          canvas.drawLine(line.start, line.end, blackPaint);
+        }
       });
     }
-
-    // if (lines.isNotEmpty) {
-    //   List<SegmentOffset> path = lines.first.path;
-    //   for (int i = 0; i < lines.first.path.length - 1; ++i) {
-    //     canvas.drawLine(path[i].offset, path[i + 1].offset, paint);
-    //   }
-    //
-    //   List<Offset> selectedOffsets = lines.first.path
-    //       .where((e) => e.isSelected)
-    //       .toList()
-    //       .map((e) => e.offset)
-    //       .toList();
-    //
-    //   highlightSelectedOffsets(selectedOffsets, canvas);
-    // }
   }
 
   void highlightSelectedOffsets(List<Offset> offsets, Canvas canvas) {
@@ -83,13 +73,18 @@ class DrawingWidgetSketcher extends CustomPainter {
       String text = '${element.dx.toStringAsFixed(1)} / '
           '${element.dy.toStringAsFixed(1)}';
       Offset offset = new Offset(element.dx - 40, element.dy + 20);
-      drawText(canvas, text, offset, Colors.black, Colors.green[100],);
+      drawText(
+        canvas,
+        text,
+        offset,
+        Colors.black,
+        Colors.green[100],
+      );
     });
-
-
   }
 
-  void drawText(Canvas canvas, String text, Offset offset, Color color, Color? backgroundColor) {
+  void drawText(Canvas canvas, String text, Offset offset, Color color,
+      Color? backgroundColor) {
     TextStyle style = TextStyle(
         color: Colors.black,
         backgroundColor: backgroundColor,
@@ -101,7 +96,8 @@ class DrawingWidgetSketcher extends CustomPainter {
         text: TextSpan(text: text, style: style),
         // TextSpan could be whole TextSpans tree :)
         textAlign: TextAlign.start,
-        //maxLines: 25, // In both TextPainter and Paragraph there is no option to define max height, but there is `maxLines`
+        //maxLines: 25,
+        // In both TextPainter and Paragraph there is no option to define max height, but there is `maxLines`
         textDirection: TextDirection
             .ltr // It is necessary for some weird reason... IMO should be LTR for default since well-known international languages (english, esperanto) are written left to right.
         )

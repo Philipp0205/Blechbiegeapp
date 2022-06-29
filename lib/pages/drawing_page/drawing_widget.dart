@@ -19,19 +19,14 @@ class DrawingWidget extends StatefulWidget {
 class _DrawingWidgetState extends State<DrawingWidget> {
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        /// Listen for mode changes in DrawingPage
-        BlocListener<DrawingPageBloc, DrawingPageState>(
-            listenWhen: (previous, current) => previous.mode != current.mode,
-            listener: (context, state) {
-              context
-                  .read<DrawingWidgetBloc>()
-                  .add(CurrentSegmentModeChanged(mode: state.mode));
-            }),
-      ],
-
-      /// Rebuild when change in state happens.
+    // Listens for if the mode was changed in the parent widget [DrawingPage]
+    return BlocListener<DrawingPageBloc, DrawingPageState>(
+      listenWhen: (prev, current) =>
+          prev.selectionMode != current.selectionMode,
+      listener: (BuildContext context, state) {
+        context.read<DrawingWidgetBloc>().add(LineDrawingSelectionModeSelected(
+            selectionMode: state.selectionMode));
+      },
       child: BlocBuilder<DrawingWidgetBloc, DrawingWidgetState>(
           builder: (context, state) {
         /// Contains the part where the user can draw the line.
@@ -59,7 +54,6 @@ class _DrawingWidgetState extends State<DrawingWidget> {
                 height: 500,
                 child: CustomPaint(
                   painter: DrawingWidgetSketcher(
-                    lines: state.segment,
                     lines2: state.lines,
                   ),
                 ),
@@ -96,14 +90,14 @@ class _DrawingWidgetState extends State<DrawingWidget> {
   }
 
   /// The pointer that previously triggered onPanDown did not complete.
-  void onPanDown(BuildContext context, DragDownDetails details,
-      DrawingWidgetState state) {
-    Mode mode = context.read<DrawingPageBloc>().state.mode;
+  void onPanDown(
+      BuildContext context, DragDownDetails details, DrawingWidgetState state) {
+    RenderBox box = context.findRenderObject() as RenderBox;
+    Offset point = box.globalToLocal(details.globalPosition);
+    Offset point2 = new Offset(point.dx, point.dy - 80);
 
     context
         .read<DrawingWidgetBloc>()
-        .add(CurrentSegmentPanDowned(details: details, mode: mode));
-
-
+        .add(LineDrawingPanDown(panDownOffset: point2));
   }
 }

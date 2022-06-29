@@ -10,5 +10,11 @@ abstract class DrawingPageEvent extends Equatable {
 class DrawingPageModeChanged extends DrawingPageEvent {
   final Mode mode;
   DrawingPageModeChanged({required this.mode});
-
 }
+
+class DrawingPageSelectionModeChanged extends DrawingPageEvent {
+  final bool selectionMode;
+  DrawingPageSelectionModeChanged({required this.selectionMode});
+}
+
+

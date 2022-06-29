@@ -10,9 +10,8 @@ abstract class DrawingWidgetEvent {
 
 class CurrentSegmentPanDowned extends DrawingWidgetEvent {
   final DragDownDetails details;
-  final Mode mode;
 
-  CurrentSegmentPanDowned({required this.details, required this.mode});
+  CurrentSegmentPanDowned({required this.details});
 }
 
 class SegmentDeleted extends DrawingWidgetEvent {
@@ -66,6 +65,14 @@ class LineDrawingUpdated extends DrawingWidgetEvent {
 class LineDrawingPanDown extends DrawingWidgetEvent {
   final Offset panDownOffset;
   const LineDrawingPanDown({required this.panDownOffset});
+}
+
+/// The selection mode was selected by the suer in the [DrawingPage].
+/// Event got handed down from the [DrawingPage] through a listener in the
+/// [DrawingWidget].
+class LineDrawingSelectionModeSelected extends DrawingWidgetEvent {
+  final bool selectionMode;
+  LineDrawingSelectionModeSelected({required this.selectionMode});
 }
 
 

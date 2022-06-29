@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 class Line2 {
   Offset start;
   Offset end;
-  Color? color = Colors.black;
+  bool isSelected;
 
-  Line2({required this.start, required this.end, this.color});
+  Line2({required this.start, required this.end, required this.isSelected});
 
   Line2 copyWith({
     Offset? start,
     Offset? end,
-    Color? color,
+    bool? isSelected,
   }) {
     return Line2(
       start: start ?? this.start,
       end: end ?? this.end,
-      color: color ?? this.color,
+      isSelected: isSelected ?? this.isSelected,
     );
   }
 }

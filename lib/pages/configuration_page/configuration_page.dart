@@ -72,7 +72,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                 ],
               ),
             ),
-
             /// Right Button
             Positioned(
               bottom: 20,

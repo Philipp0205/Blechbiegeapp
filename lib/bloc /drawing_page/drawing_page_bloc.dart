@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
@@ -8,12 +10,11 @@ part 'drawing_page_event.dart';
 part 'drawing_page_state.dart';
 
 class DrawingPageBloc extends Bloc<DrawingPageEvent, DrawingPageState> {
-  DrawingPageBloc() : super(DrawingPageInitial(mode: Mode.defaultMode)) {
-    on<DrawingPageModeChanged>(_onSelectionModePressed);
+  DrawingPageBloc() : super(DrawingPageInitial(mode: Mode.defaultMode, selectionMode: false)) {
+    on<DrawingPageSelectionModeChanged>(_onSelectionModeChanged);
   }
 
-  void _onSelectionModePressed(
-      DrawingPageModeChanged event, Emitter<DrawingPageState> emit) {
-    emit(ModeSelectionSuccess(mode: event.mode));
+  void _onSelectionModeChanged(DrawingPageSelectionModeChanged event, Emitter<DrawingPageState> emit) {
+    emit(state.copyWith(selectionMode: event.selectionMode));
   }
 }
