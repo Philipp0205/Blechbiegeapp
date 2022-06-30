@@ -100,7 +100,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                             double length = double.parse(text);
                             if (length != double.nan) {
                               context.read<DrawingWidgetBloc>().add(
-                                  SegmentPartLengthChanged(length: length));
+                                  LineDrawingLengthChanged(length: length));
                             }
                           }),
                     ),
@@ -117,7 +117,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
 
                           if (value != null) {
                             context.read<DrawingWidgetBloc>().add(
-                                SegmentPartAngleChanged(
+                                LineDrawingAngleChanged(
                                     angle: value,
                                     length:
                                     double.parse(_lengthController.text)));

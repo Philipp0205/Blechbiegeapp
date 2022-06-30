@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import '../../model/Line2.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../model/simulation/shape.dart';
@@ -17,6 +16,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   ConfigPageBloc()
       : super(ConstructingPageInitial(
             segment: [],
+            lines: [],
             shapes: [],
             showCoordinates: false,
             showEdgeLengths: false,
@@ -36,9 +36,8 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   /// When no segment exists an initial segment gets created.
   void _setInitialSegment(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) {
-    List<SegmentOffset> result = _cropSegmentToArea(event.segment.first);
 
-    emit(state.copyWith(segment: [event.segment.first.copyWith(path: result)]));
+    emit(state.copyWith(lines: event.lines));
   }
 
   /// Moves a segment on the y-axis to fit another canvas and not overshoot it.

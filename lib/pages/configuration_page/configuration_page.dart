@@ -39,6 +39,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     super.dispose();
   }
 
+  /// Build the page containing the [ConstructingSegmentWidget] which draw the
+  /// line, a row of [Checkbox]es to show differents details of the line and
+  /// a row of [TextField]s to configure the drawn line.
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConfigPageBloc, ConfigPageState>(
@@ -52,41 +55,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           ),
         ),
         backgroundColor: Colors.white,
-        floatingActionButton: Stack(
-          children: [
-            /// Left Button
-            Positioned(
-              left: 40,
-              bottom: 20,
-              child: SpeedDial(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                icon: Icons.add,
-                activeIcon: Icons.close,
-                children: [
-                  SpeedDialChild(
-                    child: Icon(Icons.add),
-                    onTap: () => _createShape(state.segment.first),
-                  ),
-                ],
-              ),
-            ),
-            /// Right Button
-            Positioned(
-              bottom: 20,
-              right: 10,
-              child: FloatingActionButton(
-                heroTag: "btn2",
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.arrow_right),
-                onPressed: () => Navigator.of(context).pushNamed("/third"),
-              ),
-            ),
-          ],
-        ),
+        floatingActionButton: buildLeftFloatingActionButton(state, context),
         body: Container(
           child: Column(
             children: [
@@ -94,75 +63,14 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                 padding: const EdgeInsets.all(4.0),
                 child: ConstructingPageSegmentWidget(),
               ),
-              Row(
-                children: [
-                  Checkbox(
-                      value: state.showCoordinates,
-                      onChanged: (bool? value) {
-                        context.read<ConfigPageBloc>().add(
-                            ConfigCoordinatesShown(showCoordinates: value!));
-                        print('checkbox');
-                      }),
-                  Text('Koordinaten'),
-                  Checkbox(
-                      value: state.showEdgeLengths,
-                      onChanged: (bool? value) {
-                        context.read<ConfigPageBloc>().add(
-                            ConfigEdgeLengthsShown(showEdgeLengths: value!));
-                      }),
-                  Text('Längen'),
-                  Checkbox(
-                      value: state.showAngles,
-                      onChanged: (bool? value) {
-                        context
-                            .read<ConfigPageBloc>()
-                            .add(ConfigAnglesShown(showAngles: value!));
-                      }),
-                  Text('Winkel')
-                ],
-              ),
+              buildCheckboxRow(state, context),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Divider(
                   color: Colors.black,
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      child: TextField(
-                          controller: _sController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (text) {
-                            context.read<ConfigPageBloc>().add(
-                                ConfigSChanged(
-                                    s: double.parse(_sController.text)));
-                          }),
-                    ),
-                    Text('Bleckdicke (s)   '),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      child: TextField(
-                          controller: _rController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (text) {
-                            double? value = double.tryParse(text);
-                            if (value != null) {
-                              context.read<ConfigPageBloc>().add(
-                                  ConfigRChanged(
-                                      r: double.parse(_rController.text)));
-                            }
-                          }),
-                    ),
-                    Text('Radius (r)'),
-                  ],
-                ),
-              ),
+              buildTextFieldRow(context),
             ],
           ),
         ),
@@ -170,11 +78,127 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     });
   }
 
+  /// [TextField]s where the user can change the metal sheet thickness and
+  /// the radius of the curves.
+  Padding buildTextFieldRow(BuildContext context) {
+    return Padding(
+              padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    child: TextField(
+                        controller: _sController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (text) {
+                          double? angle = double.tryParse(_sController.text);
+                          if (angle != null) {
+                            context
+                                .read<ConfigPageBloc>()
+                                .add(ConfigSChanged(s: angle));
+                          }
+                        }),
+                  ),
+                  Text('Bleckdicke (s)   '),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    child: TextField(
+                        controller: _rController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (text) {
+                          double? value = double.tryParse(text);
+                          if (value != null) {
+                            context.read<ConfigPageBloc>().add(ConfigRChanged(
+                                r: double.parse(_rController.text)));
+                          }
+                        }),
+                  ),
+                  Text('Radius (r)'),
+                ],
+              ),
+            );
+  }
+
+  /// [Row] containing checkboxes for showing different details of the drawn
+  /// [Line]s.
+  Row buildCheckboxRow(ConfigPageState state, BuildContext context) {
+    return Row(
+              children: [
+                Checkbox(
+                    value: state.showCoordinates,
+                    onChanged: (bool? value) {
+                      context.read<ConfigPageBloc>().add(
+                          ConfigCoordinatesShown(showCoordinates: value!));
+                      print('checkbox');
+                    }),
+                Text('Koordinaten'),
+                Checkbox(
+                    value: state.showEdgeLengths,
+                    onChanged: (bool? value) {
+                      context.read<ConfigPageBloc>().add(
+                          ConfigEdgeLengthsShown(showEdgeLengths: value!));
+                    }),
+                Text('Längen'),
+                Checkbox(
+                    value: state.showAngles,
+                    onChanged: (bool? value) {
+                      context
+                          .read<ConfigPageBloc>()
+                          .add(ConfigAnglesShown(showAngles: value!));
+                    }),
+                Text('Winkel')
+              ],
+            );
+  }
+
+  /// Builds the left [FloatingActionButton].
+  Stack buildLeftFloatingActionButton(ConfigPageState state, BuildContext context) {
+    return Stack(
+        children: [
+          /// Left Button
+          Positioned(
+            left: 40,
+            bottom: 20,
+            child: SpeedDial(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              icon: Icons.add,
+              activeIcon: Icons.close,
+              children: [
+                SpeedDialChild(
+                  child: Icon(Icons.add),
+                  onTap: () => _createShape(state.segment.first),
+                ),
+              ],
+            ),
+          ),
+
+          /// Right Button
+          Positioned(
+            bottom: 20,
+            right: 10,
+            child: FloatingActionButton(
+              heroTag: "btn2",
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.arrow_right),
+              onPressed: () => Navigator.of(context).pushNamed("/third"),
+            ),
+          ),
+        ],
+      );
+  }
+
   void _createShape(Segment segment) {
-    showModalBottomSheet(context: context,
-        builder: (BuildContext context) {
-      return AddShapeBottomSheet();
-        },
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return AddShapeBottomSheet();
+      },
     );
   }
 }

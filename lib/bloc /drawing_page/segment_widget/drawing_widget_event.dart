@@ -32,17 +32,20 @@ class CurrentSegmentUnselected extends DrawingWidgetEvent {
   const CurrentSegmentUnselected();
 }
 
-class SegmentPartLengthChanged extends DrawingWidgetEvent {
+
+/// Triggers when [length] of a lines gets changed. 
+class LineDrawingLengthChanged extends DrawingWidgetEvent {
   final double length;
 
-  const SegmentPartLengthChanged({required this.length});
+  const LineDrawingLengthChanged({required this.length});
 }
 
-class SegmentPartAngleChanged extends DrawingWidgetEvent {
+/// Event when the [angle] of a line is changed. 
+class LineDrawingAngleChanged extends DrawingWidgetEvent {
   final double angle;
   final double length;
 
-  const SegmentPartAngleChanged({required this.angle, required this.length});
+  const LineDrawingAngleChanged({required this.angle, required this.length});
 }
 
 /// The user starts to draw a line.

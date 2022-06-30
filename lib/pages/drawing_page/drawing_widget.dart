@@ -94,7 +94,7 @@ class _DrawingWidgetState extends State<DrawingWidget> {
       BuildContext context, DragDownDetails details, DrawingWidgetState state) {
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset point = box.globalToLocal(details.globalPosition);
-    Offset point2 = new Offset(point.dx, point.dy - 80);
+    Offset point2 = new Offset(point.dx, point.dy);
 
     context
         .read<DrawingWidgetBloc>()

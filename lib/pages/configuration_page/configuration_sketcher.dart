@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math.dart' as v;
 
+import '../../model/Line2.dart';
 import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
@@ -29,11 +30,13 @@ class ConfigurationSketcher extends CustomPainter {
   final double s;
   final double r;
 
-  final List<Segment> lines;
+  final List<Segment> segments;
+  final List<Line2> lines;
 
   // Constructor
   ConfigurationSketcher(
-      {required this.lines,
+      {required this.segments,
+      required this.lines,
       required this.coordinatesShown,
       required this.edgeLengthsShown,
       required this.anglesShown,
@@ -50,7 +53,7 @@ class ConfigurationSketcher extends CustomPainter {
   /// The given [Canvas] has its coordinate space configured such that the
   /// origin is at the top left of the box.
   /// The area of the box is the size of the [size] argument.
-  /// 
+  ///
   /// Main method of this class
   @override
   void paint(Canvas canvas, Size size) {
@@ -60,29 +63,43 @@ class ConfigurationSketcher extends CustomPainter {
       ..strokeWidth = s
       ..style = PaintingStyle.stroke;
 
-    List<Line> shortLines =
-        changeLengthsOfSegments(mapSegmentToLines(lines.first.path), -r, false);
-    List<Line> longLines = mapSegmentToLines(lines.first.path);
+    List<Line2> shortLines = changeLengthsOfSegments(lines, -r, false);
 
     if (lines.isNotEmpty) {
-      // Move to the first offset to start drawing.
       Path drawnPath = new Path();
-      Offset firstOffset = lines.first.path.first.offset;
+
+      Offset firstOffset = lines.first.start;
       drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
 
       drawnPath = addLinesToPath(shortLines);
-      drawnPath = addCurvesToPath(canvas, shortLines, longLines, drawnPath);
+      drawnPath = addCurvesToPath(canvas, shortLines, lines, drawnPath);
 
       canvas.drawPath(drawnPath, paint);
-
-      createPicture(canvas, size, drawnPath, paint);
-
-      showSegmentDetails(canvas, shortLines, longLines);
+      //
+      //   createPicture(canvas, size, drawnPath, paint);
+      //
+      showSegmentDetails(canvas, shortLines, lines);
     }
+
+    // if (segments.isNotEmpty) {
+    //   // Move to the first offset to start drawing.
+    //   Path drawnPath = new Path();
+    //   Offset firstOffset = segments.first.path.first.offset;
+    //   drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
+    //
+    //   drawnPath = addLinesToPath(shortLines);
+    //   drawnPath = addCurvesToPath(canvas, shortLines, longLines, drawnPath);
+    //
+    //   canvas.drawPath(drawnPath, paint);
+    //
+    //   createPicture(canvas, size, drawnPath, paint);
+    //
+    //   showSegmentDetails(canvas, shortLines, longLines);
+    // }
   }
 
-  /// Returns all black pixel of the canvas.  
-  Future<List<Offset>> createPicture (
+  /// Returns all black pixel of the canvas.
+  Future<List<Offset>> createPicture(
       Canvas recodingCanvas, Size size, Path path, Paint paint) async {
     ui.PictureRecorder recorder = new ui.PictureRecorder();
     Canvas canvas2 = new Canvas(recorder);
@@ -121,14 +138,13 @@ class ConfigurationSketcher extends CustomPainter {
   ///
   /// Depending on the value of [changeEnds] the very first offset and the very
   /// last offset will not be changed at all.
-  List<Line> changeLengthsOfSegments(
-      List<Line> lines, double length, bool changeEnds) {
-    
-    List<Line> changedLines = [];
+  List<Line2> changeLengthsOfSegments(
+      List<Line2> lines, double length, bool changeEnds) {
+    List<Line2> changedLines = [];
 
     lines.forEach((line) {
       List<Offset> shortOffsets = _calculationsService.changeLengthOfSegment(
-          line.start.offset, line.end.offset, length, true, true);
+          line.start, line.end, length, true, true);
 
       SegmentOffset firstOffset =
           new SegmentOffset(offset: shortOffsets.first, isSelected: false);
@@ -138,12 +154,15 @@ class ConfigurationSketcher extends CustomPainter {
       // If current line ist the first or last line do not change the outer offset.
       if (!changeEnds) {
         if (line == lines.first) {
-          endOffset = firstOffset.copyWith(offset: line.start.offset);
+          endOffset = firstOffset.copyWith(offset: line.start);
         } else if (line == lines.last) {
-          firstOffset = firstOffset.copyWith(offset: line.end.offset);
+          firstOffset = firstOffset.copyWith(offset: line.end);
         }
       }
-      changedLines.add(new Line(start: firstOffset, end: endOffset));
+      changedLines.add(new Line2(
+          start: shortOffsets.first,
+          end: shortOffsets.last,
+          isSelected: false));
     });
 
     return changedLines;
@@ -152,16 +171,16 @@ class ConfigurationSketcher extends CustomPainter {
   /// Maps [SegmentOffset]s created to [Line]s.
   /// The difference is, that one lines contains two offsets. A start offset
   /// and an end offset.
-  List<Line> mapSegmentToLines(List<SegmentOffset> offsets) {
-    List<Line> lines = [];
-    
-    for (int i = 0; i < offsets.length - 1; ++i) {
-      lines.add(new Line(start: offsets[i], end: offsets[i + 1]));
-    }
-    return lines;
-  }
+  // List<Line> mapSegmentToLines(List<Line2> offsets) {
+  //   List<Line> lines = [];
+  //
+  //   for (int i = 0; i < offsets.length - 1; ++i) {
+  //     lines.add(new Line(start: offsets[i], end: offsets[i + 1]));
+  //   }
+  //   return lines;
+  // }
 
-  /// Draws given [text] on an [canvas] at the coordinates of [offset] with the 
+  /// Draws given [text] on an [canvas] at the coordinates of [offset] with the
   /// a [textColor] and [backgroundColor].
   void drawText(Canvas canvas, String text, Offset offset, Color textColor,
       Color? backgroundColor) {
@@ -175,9 +194,7 @@ class ConfigurationSketcher extends CustomPainter {
       text: TextSpan(text: text, style: style),
       textAlign: TextAlign.start,
       textDirection: TextDirection.ltr,
-    )..layout(
-        maxWidth:
-            500); 
+    )..layout(maxWidth: 500);
 
     textPainter.paint(canvas, offset);
   }
@@ -188,27 +205,27 @@ class ConfigurationSketcher extends CustomPainter {
   }
 
   ///  Adds all given [lines] to a [Path].
-  Path addLinesToPath(List<Line> lines) {
+  Path addLinesToPath(List<Line2> lines) {
     Path path = new Path();
 
     lines.forEach((l) {
       path
-        ..moveTo(l.start.offset.dx, l.start.offset.dy)
-        ..lineTo(l.end.offset.dx, l.end.offset.dy);
+        ..moveTo(l.start.dx, l.start.dy)
+        ..lineTo(l.end.dx, l.end.dy);
     });
     return path;
   }
 
   /// Draws curves between all [lines] on a [canvas]. Using dart [path].
   /// The curves drawn between the lines are Bézier curves and therefore need
-  /// [controlPoints]. 
+  /// [controlPoints].
   Path addCurvesToPath(
-      Canvas canvas, List<Line> lines, List<Line> controlPoints, Path path) {
+      Canvas canvas, List<Line2> lines, List<Line2> controlPoints, Path path) {
     for (int i = 0; i < lines.length - 1; ++i) {
-      path.moveTo(lines[i].start.offset.dx, lines[i].start.offset.dy);
+      path.moveTo(lines[i].start.dx, lines[i].start.dy);
 
-      Offset controlPoint = controlPoints[i].end.offset;
-      Offset endPoint = lines[i + 1].end.offset;
+      Offset controlPoint = controlPoints[i].end;
+      Offset endPoint = lines[i + 1].end;
 
       path.quadraticBezierTo(
           controlPoint.dx, controlPoint.dy, endPoint.dx, endPoint.dy);
@@ -217,14 +234,14 @@ class ConfigurationSketcher extends CustomPainter {
     return path;
   }
 
-  /// Shows details of the drawn Lines on the canvas. 
-  /// 
-  /// Details are the coordinates of each line, the inner angles between lines 
-  /// and the lengths of each edge. 
+  /// Shows details of the drawn Lines on the canvas.
+  ///
+  /// Details are the coordinates of each line, the inner angles between lines
+  /// and the lengths of each edge.
   void showSegmentDetails(
-      Canvas canvas, List<Line> shortLines, List<Line> longLines) {
+      Canvas canvas, List<Line2> shortLines, List<Line2> longLines) {
     if (coordinatesShown) {
-      List<SegmentOffset> offsets = [];
+      List<Offset> offsets = [];
       offsets
         ..addAll(shortLines.map((e) => e.start).toList())
         ..addAll(shortLines.map((e) => e.end).toList());
@@ -234,7 +251,7 @@ class ConfigurationSketcher extends CustomPainter {
 
     shortLines.forEach((l) {
       if (edgeLengthsShown) {
-        _drawLineLengths(canvas, l.start.offset, l.end.offset);
+        _drawLineLengths(canvas, l.start, l.end);
       }
 
       // if (anglesShown) {
@@ -242,14 +259,14 @@ class ConfigurationSketcher extends CustomPainter {
       // }
     });
 
-    for (int i = 0; i < longLines.length - 1; ++i) {
+    longLines.forEach((line) {
       if (anglesShown) {
-        _drawAngles(canvas, longLines[i], longLines[i + 1]);
+        // _drawAngles(canvas, line.start, line.end);
       }
-    }
+    });
   }
 
-  /// Draws text on the canvas containing the length of a line. 
+  /// Draws text on the canvas containing the length of a line.
   void _drawLineLengths(Canvas canvas, Offset offsetA, Offset offsetB) {
     String text = '${(offsetA - offsetB).distance.toStringAsFixed(1)} cm';
 
@@ -260,9 +277,9 @@ class ConfigurationSketcher extends CustomPainter {
     drawText(canvas, text, offset, Colors.black, Colors.white);
   }
 
-  /// Draws the coordinates of each [SegmentOffset] in the [path] on an 
+  /// Draws the coordinates of each [SegmentOffset] in the [path] on an
   /// [canvas].
-  void _drawCoordinates(Canvas canvas, List<SegmentOffset> path) {
+  void _drawCoordinates(Canvas canvas, List<Offset> path) {
     Paint paint = Paint()
       ..color = Colors.blue
       ..strokeCap = StrokeCap.round
@@ -270,29 +287,28 @@ class ConfigurationSketcher extends CustomPainter {
 
     // Iterate in separate loops so that circled do not overlay the text.
     path.forEach((o) {
-      canvas.drawCircle(o.offset, 7, paint);
+      canvas.drawCircle(o, 7, paint);
     });
 
     path.forEach((o) {
-      String text =
-          '${o.offset.dx.toStringAsFixed(1)} / ${o.offset.dy.toStringAsFixed(1)}';
+      String text = '${o.dx.toStringAsFixed(1)} / ${o.dy.toStringAsFixed(1)}';
 
-      Offset offset = new Offset(o.offset.dx - 35, o.offset.dy + 30);
+      Offset offset = new Offset(o.dx - 35, o.dy + 30);
       drawText(canvas, text, offset, Colors.black, Colors.white);
     });
   }
 
   /// Draws inner angle between [lineA] and [lineB] on an [canvas].
-  void _drawAngles(Canvas canvas, Line lineA, Line lineB) {
-    v.Vector2 vectorA = _calculationsService.createVectorFromLines(lineA);
-    v.Vector2 vectorB = _calculationsService.createVectorFromLines(lineB);
+  void _drawAngles(Canvas canvas, Line2 lineA, Line2 lineB) {
+    // v.Vector2 vectorA = _calculationsService.createVectorFromLines(lineA);
+    // v.Vector2 vectorB = _calculationsService.createVectorFromLines(lineB);
 
-    double angle = _calculationsService.getAngleFromVectors(vectorA, vectorB);
+    // double angle = _calculationsService.getAngleFromVectors(vectorA, vectorB);
 
-    String text = '${angle.toStringAsFixed(1)}°';
+    // String text = '${angle.toStringAsFixed(1)}°';
 
-    Offset offset = new Offset(lineA.end.offset.dx - 10, lineA.end.offset.dy);
+    // Offset offset = new Offset(lineA.end.offset.dx - 10, lineA.end.offset.dy);
 
-    drawText(canvas, text, offset, Colors.red, Colors.white);
+    // drawText(canvas, text, offset, Colors.red, Colors.white);
   }
 }

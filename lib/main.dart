@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => const DrawingPage(),
-          '/second': (context) => const ConfigurationPage(),
+          '/config': (context) => const ConfigurationPage(),
           '/third': (context) => const SimulationPage(),
           '/shapes': (context) => const ShapesPage()
         },

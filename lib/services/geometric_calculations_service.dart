@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:vector_math/vector_math.dart';
 
+import '../model/Line2.dart';
 import '../model/line.dart';
 import '../model/segment_offset.dart';
 import '../model/segment_widget/segment.dart';
@@ -247,5 +248,10 @@ class GeometricCalculationsService {
     double angleB = getAngle(lineB.start.offset, lineB.end.offset);
 
     return (angleA - angleB).abs();
+  }
+
+  /// Return all selected [lines].
+  List<Line2> getSelectedLines(List<Line2> lines) {
+    return lines.where((line) => line.isSelected).toList();
   }
 }

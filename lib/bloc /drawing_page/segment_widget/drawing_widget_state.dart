@@ -10,7 +10,6 @@ class DrawingWidgetState extends Equatable {
   /// It is easier to handle an empty list.
   final List<Segment> segment;
   final List<Line2> lines;
-  final List<Line2> selectedLines;
   final Mode mode;
   final bool selectionMode;
 
@@ -19,7 +18,6 @@ class DrawingWidgetState extends Equatable {
     required this.mode,
     required this.lines,
     required this.selectionMode,
-    required this.selectedLines,
   });
 
   DrawingWidgetState copyWith({
@@ -32,7 +30,6 @@ class DrawingWidgetState extends Equatable {
     return DrawingWidgetState(
       segment: segment ?? this.segment,
       lines: lines ?? this.lines,
-      selectedLines: selectedLines ?? this.selectedLines,
       mode: mode ?? this.mode,
       selectionMode: selectionMode ?? this.selectionMode,
     );
@@ -45,20 +42,18 @@ class DrawingWidgetState extends Equatable {
 class CurrentSegmentInitial extends DrawingWidgetState {
   final List<Segment> segment;
   final List<Line2> lines;
-  final List<Line2> selectedLines;
   final Mode mode;
   final bool selectionMode;
 
-  CurrentSegmentInitial(
-      {required this.segment,
-      required this.mode,
-      required this.lines,
-      required this.selectedLines,
-      required this.selectionMode})
-      : super(
+  CurrentSegmentInitial({
+    required this.segment,
+    required this.mode,
+    required this.lines,
+    required this.selectionMode,
+  }) : super(
             segment: segment,
             mode: mode,
             lines: lines,
             selectionMode: selectionMode,
-            selectedLines: selectedLines);
+  );
 }

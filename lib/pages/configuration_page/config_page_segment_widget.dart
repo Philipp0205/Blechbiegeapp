@@ -27,12 +27,13 @@ class _ConstructingPageSegmentWidgetState
           builder: (context, state) {
         return CustomPaint(
           painter: ConfigurationSketcher(
-              lines: state.segment,
+              segments: state.segment,
               coordinatesShown: state.showCoordinates,
               edgeLengthsShown: state.showEdgeLengths,
               anglesShown: state.showAngles,
               s: state.s,
-              r: state.r),
+              r: state.r,
+              lines: state.lines),
         );
       }),
     );

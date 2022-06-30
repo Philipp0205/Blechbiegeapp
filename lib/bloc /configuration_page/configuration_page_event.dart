@@ -5,9 +5,9 @@ abstract class ConfigurationPageEvent {
 }
 
 class ConfigPageCreated extends ConfigurationPageEvent {
-  final List<Segment> segment;
+  final List<Line2> lines;
 
-  const ConfigPageCreated({required this.segment});
+  const ConfigPageCreated({required this.lines});
 }
 
 class ConfigCheckboxChanged extends ConfigurationPageEvent {

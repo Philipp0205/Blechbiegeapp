@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
@@ -47,8 +46,12 @@ class _DrawingPageState extends State<DrawingPage> {
   void initState() {
     super.initState();
 
-    List<Line2> selectedLines =
-        context.read<DrawingWidgetBloc>().state.selectedLines;
+    List<Line2> selectedLines = context
+        .read<DrawingWidgetBloc>()
+        .state
+        .lines
+        .where((element) => element.isSelected)
+        .toList();
 
     if (selectedLines.isNotEmpty) {
       _setAngle(selectedLines.first);
@@ -73,13 +76,16 @@ class _DrawingPageState extends State<DrawingPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
-      listenWhen: (prev, current) =>
-          prev.selectedLines != current.selectedLines,
+      listenWhen: (prev, current) {
+        return _calcService.getSelectedLines(prev.lines).length !=
+            _calcService.getSelectedLines(current.lines).length;
+      },
       listener: (context, state) {
-        if (state.selectedLines.isNotEmpty) {
-          _setAngle(state.selectedLines.first);
-          _setLength(state.selectedLines.first);
-        }
+        print('listener');
+        List<Line2> selectedLines = _calcService
+            .getSelectedLines(context.read<DrawingWidgetBloc>().state.lines);
+        _setAngle(selectedLines.first);
+        _setLength(selectedLines.first);
       },
       child: BlocBuilder<DrawingPageBloc, DrawingPageState>(
           builder: (context, state) {
@@ -107,57 +113,14 @@ class _DrawingPageState extends State<DrawingPage> {
                   ),
                   Divider(color: Colors.green),
                   Text(
-                    'Einstellungen',
+                    'Modi',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Row(
-                    children: [
-                      Checkbox(
-                          value: state.selectionMode,
-                          onChanged: (bool? value) {
-                            _toggleSelectionMode(value!);
-                          }),
-                      Text('Linien selektieren'),
-                      Container(
-                        width: 10,
-                      ),
-                    ],
-                  ),
+                  buildConfigRow(state),
                   Divider(),
                   Text('Selektiere Linie',
                       style: TextStyle(fontWeight: FontWeight.bold)),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 30,
-                          child: TextField(
-                              controller: _angleController,
-                              keyboardType: TextInputType.number),
-                        ),
-                        Container(
-                          width: 10,
-                        ),
-                        Text('Winkel'),
-                        Container(
-                          width: 10,
-                        ),
-                        Container(
-                          width: 50,
-                          height: 30,
-                          child: TextField(
-                              controller: _lengthController,
-                              keyboardType: TextInputType.number),
-                        ),
-                        Container(
-                          width: 10,
-                        ),
-                        Text('Länge'),
-                      ],
-                    ),
-                  ),
+                  buildLineConfigRow(),
                 ],
               ),
             ),
@@ -208,6 +171,75 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  Row buildConfigRow(DrawingPageState state) {
+    return Row(
+      children: [
+        Checkbox(
+            value: state.selectionMode,
+            onChanged: (bool? value) {
+              _toggleSelectionMode(value!);
+            }),
+        Text('Linien selektieren'),
+        Container(
+          width: 10,
+        ),
+      ],
+    );
+  }
+
+  Padding buildLineConfigRow() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 30,
+            child: TextField(
+                onChanged: (text) {
+                  double? value = double.tryParse(text);
+
+                  if (value != null) {
+                    context.read<DrawingWidgetBloc>().add(
+                        LineDrawingAngleChanged(
+                            angle: value,
+                            length: double.parse(_angleController.text)));
+                  }
+                },
+                controller: _angleController,
+                keyboardType: TextInputType.number),
+          ),
+          Container(
+            width: 10,
+          ),
+          Text('Winkel'),
+          Container(
+            width: 10,
+          ),
+          Container(
+            width: 50,
+            height: 30,
+            child: TextField(
+                onChanged: (text) {
+                  double? value = double.tryParse(text);
+                  if (value != null) {
+                    context.read<DrawingWidgetBloc>().add(
+                        LineDrawingLengthChanged(
+                            length: double.parse(_lengthController.text)));
+                  }
+                },
+                controller: _lengthController,
+                keyboardType: TextInputType.number),
+          ),
+          Container(
+            width: 10,
+          ),
+          Text('Länge'),
+        ],
+      ),
+    );
+  }
+
   Future<void> _clearCanvas() async {
     BlocProvider.of<DrawingWidgetBloc>(context).add((SegmentDeleted()));
   }
@@ -235,17 +267,11 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _goToNextPage() {
-    List<Segment> segment = context.read<DrawingWidgetBloc>().state.segment;
     print('gotonextpage');
-    BlocProvider.of<ConfigPageBloc>(context)
-        .add(ConfigPageCreated(segment: segment));
+    List<Line2> lines = context.read<DrawingWidgetBloc>().state.lines;
+    BlocProvider.of<ConfigPageBloc>(context).add(ConfigPageCreated(
+        lines: lines));
 
-    Navigator.of(context).pushNamed('/second');
+    Navigator.of(context).pushNamed('/config');
   }
 }
-
-
-
-
-
-

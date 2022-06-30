@@ -2,6 +2,7 @@ part of 'configuration_page_bloc.dart';
 
 class ConfigPageState extends Equatable {
   final List<Segment> segment;
+  final List<Line2> lines;
   final List<Shape> shapes;
   final bool showCoordinates;
   final bool showEdgeLengths;
@@ -11,6 +12,7 @@ class ConfigPageState extends Equatable {
 
   const ConfigPageState(
       {required this.segment,
+      required this.lines,
       required this.shapes,
       required this.showEdgeLengths,
       required this.showCoordinates,
@@ -18,18 +20,24 @@ class ConfigPageState extends Equatable {
       required this.s,
       required this.r});
 
-  ConfigPageState copyWith(
-      {List<Segment>? segment,
-      List<Shape>? shapes,
-      bool? showCoordinates,
-      bool? showEdgeLengths,
-      bool? showAngles,
-      Color? color,
-      double? s,
-      double? r}) {
+  @override
+  List<Object?> get props =>
+      [segment, showCoordinates, showEdgeLengths, showAngles, s, r];
+
+  ConfigPageState copyWith({
+    List<Segment>? segment,
+    List<Line2>? lines,
+    List<Shape>? shapes,
+    bool? showCoordinates,
+    bool? showEdgeLengths,
+    bool? showAngles,
+    double? s,
+    double? r,
+  }) {
     return ConfigPageState(
-      shapes: shapes ?? this.shapes,
       segment: segment ?? this.segment,
+      lines: lines ?? this.lines,
+      shapes: shapes ?? this.shapes,
       showCoordinates: showCoordinates ?? this.showCoordinates,
       showEdgeLengths: showEdgeLengths ?? this.showEdgeLengths,
       showAngles: showAngles ?? this.showAngles,
@@ -37,14 +45,11 @@ class ConfigPageState extends Equatable {
       r: r ?? this.r,
     );
   }
-
-  @override
-  List<Object?> get props =>
-      [segment, showCoordinates, showEdgeLengths, showAngles, s, r];
 }
 
 class ConstructingPageInitial extends ConfigPageState {
   final List<Segment> segment;
+  final List<Line2> lines;
   final List<Shape> shapes;
   final bool showCoordinates;
   final bool showEdgeLengths;
@@ -54,6 +59,7 @@ class ConstructingPageInitial extends ConfigPageState {
 
   const ConstructingPageInitial({
     required this.segment,
+    required this.lines,
     required this.shapes,
     required this.showCoordinates,
     required this.showEdgeLengths,
@@ -62,6 +68,7 @@ class ConstructingPageInitial extends ConfigPageState {
     required this.r,
   }) : super(
             segment: segment,
+            lines: lines,
             shapes: shapes,
             showEdgeLengths: showEdgeLengths,
             showCoordinates: showCoordinates,
