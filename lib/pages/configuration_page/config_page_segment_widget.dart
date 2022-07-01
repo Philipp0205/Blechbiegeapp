@@ -20,9 +20,14 @@ class _ConstructingPageSegmentWidgetState
       height: 300,
       width: 500,
       decoration: BoxDecoration(
-          border: Border.all(
-        width: 2,
-      )),
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10)),
+      ),
       child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
         return CustomPaint(

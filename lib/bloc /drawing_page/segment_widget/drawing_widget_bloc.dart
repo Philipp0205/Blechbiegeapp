@@ -20,14 +20,11 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
   DrawingWidgetBloc()
       : super(CurrentSegmentInitial(
-          segment: [],
           lines: [],
+          selectedLines: [],
           mode: Mode.defaultMode,
           selectionMode: false,
         )) {
-    /// Pan Events
-    on<CurrentSegmentPanDowned>(_onPanDown);
-
     /// New Pan Events
     on<LineDrawingStarted>(_createNewLine);
     on<LineDrawingUpdated>(_updateLine);
@@ -35,7 +32,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     on<SegmentDeleted>(_deleteLines);
 
     /// Selected line changes
-    on<LineDrawingAngleChanged>(_changeSegmentAngle);
+    on<LineDrawingAngleChanged>(_changeLineAngle);
     on<LineDrawingLengthChanged>(_changeLineLength);
 
     on<LineDrawingSelectionModeSelected>(_toggleSelectionMode);
@@ -48,67 +45,17 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   void _deleteLines(SegmentDeleted event, Emitter<DrawingWidgetState> emit) {
     print('delete lines');
     emit(state.copyWith(lines: []));
-    // emit(CurrentSegmentDelete());
   }
 
   /// Deletes a part of a [Segment]. To make a delete happen at least two
   /// offsets in a segment have to be selected.
   void _deleteSegmentPart(
       SegmentPartDeleted event, Emitter<DrawingWidgetState> emit) {
-    List<SegmentOffset> offsets = state.segment.first.path;
-    offsets.removeLast();
+    // List<SegmentOffset> offsets = state.segment.first.path;
+    // offsets.removeLast();
 
     // emit(CurrentSegmentUpdate(
     //     segment: [state.segment.first.copyWith(path: offsets)],
-    //     mode: Mode.selectionMode));
-  }
-
-  /// Different actions on pan down depending on the mode.
-  /// If the selection mode is selected the user can select one ore more
-  /// offsets of the segment.
-  void _onPanDown(
-      CurrentSegmentPanDowned event, Emitter<DrawingWidgetState> emit) {
-    // switch (event.mode) {
-    //   case Mode.defaultMode:
-    //     // TODO: Handle this case.
-    //     break;
-    //   case Mode.pointMode:
-    //     _onPanDownPointMode(event, emit);
-    //     break;
-    //   case Mode.selectionMode:
-    //     _onPanDownSelectionMode(event, emit);
-    //     break;
-    //   case Mode.editSegmentMode:
-    //     // TODO: Handle this case.
-    //     break;
-    // }
-  }
-
-  /// Similar to onPanDown in [GestureDetector]: 'A pointer has contacted the
-  /// screen with a primary button and might begin to move.'
-  ///
-  /// In selection mode the nearest point of the segment gets added (or removed)
-  /// from the selectedOffsets of a [Segment].
-  void _onPanDownSelectionMode(
-      CurrentSegmentPanDowned event, Emitter<DrawingWidgetState> emit) {
-    Offset panDownOffset = new Offset(
-        event.details.globalPosition.dx, event.details.globalPosition.dy - 100);
-
-    List<SegmentOffset> path = state.segment.first.path;
-    List<Offset> offsets = path.map((e) => e.offset).toList();
-    Offset nearestOffset =
-        _calculationService.getNNearestOffsets(panDownOffset, offsets, 1).first;
-
-    path.forEach((segmentOffset) {
-      if (segmentOffset.offset == nearestOffset) {
-        segmentOffset.isSelected
-            ? segmentOffset.isSelected = false
-            : segmentOffset.isSelected = true;
-      }
-    });
-
-    // emit(CurrentSegmentUpdate(
-    //     segment: [state.segment.first.copyWith(path: path)],
     //     mode: Mode.selectionMode));
   }
 
@@ -137,9 +84,21 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     Line2 newSelectedLine = selectedLine.copyWith(end: offset2);
 
+    int index = lines.indexOf(selectedLine);
+
     lines
-      ..insert(lines.indexOf(selectedLine), newSelectedLine)
+      ..insert(index, newSelectedLine)
       ..remove(selectedLine);
+
+
+    if (lines.length > index+1) {
+      Line2 nextLine = lines[index + 1];
+      Line2 newNextLine = nextLine.copyWith(start: offset2);
+
+      lines
+        ..insert(index + 1, newNextLine)
+        ..remove(nextLine);
+    }
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
@@ -148,20 +107,40 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// Changes the angle of a part of a [Segment].
   /// The segment has to have at least two [selectedOffsets] to
   /// change the angle.
-  void _changeSegmentAngle(
+  void _changeLineAngle(
       LineDrawingAngleChanged event, Emitter<DrawingWidgetState> emit) {
     Line2 selectedLine =
         state.lines.where((line) => line.isSelected).toList().first;
 
+    List<Line2> selectedLines = state.selectedLines;
+
     Offset newOffset = _calculationService.calculatePointWithAngle(
         selectedLine.start, event.length, event.angle);
+
+    print('changed angle length: ${event.length}');
 
     List<Line2> lines = state.lines;
     Line2 newLine = selectedLine.copyWith(end: newOffset);
 
+    int index = lines.indexOf(selectedLine);
+
+    selectedLines
+      ..remove(selectedLines)
+      ..add(newLine);
+
     lines
-      ..insert(lines.indexOf(selectedLine), newLine)
+      ..insert(index, newLine)
       ..remove(selectedLine);
+
+    if (lines.length > index+1) {
+      Line2 nextLine = lines[index + 1];
+      Line2 newNextLine = nextLine.copyWith(start: newOffset);
+
+      lines
+        ..insert(lines.indexOf(nextLine), newNextLine)
+        ..remove(nextLine);
+    }
+
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
@@ -213,6 +192,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   void _selectLine(LineDrawingPanDown event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == true) {
       List<Line2> lines = state.lines;
+      List<Line2> selectedLines = state.selectedLines;
 
       List<Offset> offsets = lines.map((e) => e.start).toList();
       List<Offset> ends = lines.map((e) => e.end).toList();
@@ -221,9 +201,9 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
       List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
           event.panDownOffset, offsets, 2);
-      
-      Line2 selectedLine = lines.firstWhere((line) =>
-          line.start == nearestOffsets.first);
+
+      Line2 selectedLine =
+          lines.firstWhere((line) => line.start == nearestOffsets.first);
 
       int index = lines.indexOf(selectedLine);
 
@@ -233,11 +213,13 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
         selectedLine = selectedLine.copyWith(isSelected: true);
       }
 
+      print('selectedLines length ${selectedLines.length}');
+
       lines
         ..removeAt(index)
         ..insert(index, selectedLine);
 
-      List<Line2> selectedLines = state.lines.where((line) => line.isSelected).toList();
+      selectedLines = lines.where((line) => line.isSelected).toList();
 
       emit(state.copyWith(lines: [], selectedLines: []));
       emit(state.copyWith(lines: lines, selectedLines: selectedLines));

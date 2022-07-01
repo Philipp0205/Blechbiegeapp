@@ -21,7 +21,6 @@ class DrawingPageState extends Equatable {
   List<Object> get props => [selectionMode];
 }
 
-
 class DrawingPageInitial extends DrawingPageState {
   final Mode mode;
   final bool selectionMode;

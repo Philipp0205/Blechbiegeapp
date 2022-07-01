@@ -36,17 +36,17 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   @override
   void initState() {
     super.initState();
-    List<SegmentOffset> offsets = context
-        .read<DrawingWidgetBloc>()
-        .state
-        .segment
-        .first
-        .path
-        .where((e) => e.isSelected)
-        .toList();
-
-    setInitialLength(offsets);
-    setInitialAngle(offsets);
+    // List<SegmentOffset> offsets = context
+    //     .read<DrawingWidgetBloc>()
+    //     .state
+    //     .segment
+    //     .first
+    //     .path
+    //     .where((e) => e.isSelected)
+    //     .toList();
+    //
+    // setInitialLength(offsets);
+    // setInitialAngle(offsets);
   }
 
   void setInitialLength(List<SegmentOffset> offsets) {

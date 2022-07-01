@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_state.dart';
@@ -11,9 +10,6 @@ import 'package:open_bsp/services/geometric_calculations_service.dart';
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
 import '../../model/Line2.dart';
-import '../../model/appmodes.dart';
-import '../../model/segment_widget/segment.dart';
-import 'bottom_sheet.dart';
 import 'drawing_widget.dart';
 
 /// On this page the user can draw a single line representing the the profile
@@ -34,15 +30,6 @@ class _DrawingPageState extends State<DrawingPage> {
   final _calcService = new GeometricCalculationsService();
 
   @override
-  void dispose() {
-    super.dispose();
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
-    _angleController.dispose();
-    _lengthController.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
 
@@ -58,11 +45,21 @@ class _DrawingPageState extends State<DrawingPage> {
     }
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _angleController.dispose();
+    _lengthController.dispose();
+  }
+
   /// Sets the initial angle in the angle text field.
   ///
   /// When there are multiple [Line2]s selected it show only the angle of
   /// the first Line.
   void _setAngle(Line2 line) {
+    print('setAngle ${_calcService.getAngle(line.start, line.end)}');
     _angleController.text =
         _calcService.getAngle(line.start, line.end).toStringAsFixed(1);
   }
@@ -73,20 +70,23 @@ class _DrawingPageState extends State<DrawingPage> {
     _lengthController.text = distance.toStringAsFixed(1);
   }
 
+  /// Building a widget containing a [DrawingWidget], one row where the eiditing
+  /// Mode can be changed and one row where the angle and the length of the
+  /// line can be changed.
   @override
   Widget build(BuildContext context) {
+    /// Triggers when a new line is selected and there the [TextField]s get new
+    /// values.
     return BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
-      listenWhen: (prev, current) {
-        return _calcService.getSelectedLines(prev.lines).length !=
-            _calcService.getSelectedLines(current.lines).length;
-      },
+      listenWhen: (prev, current) =>
+          prev.selectedLines != current.selectedLines &&
+          current.selectedLines.isNotEmpty,
       listener: (context, state) {
-        print('listener');
-        List<Line2> selectedLines = _calcService
-            .getSelectedLines(context.read<DrawingWidgetBloc>().state.lines);
-        _setAngle(selectedLines.first);
-        _setLength(selectedLines.first);
+        _setAngle(state.selectedLines.first);
+        _setLength(state.selectedLines.first);
       },
+
+      /// Rebuild the Widget if [DrawingPageState] changes.
       child: BlocBuilder<DrawingPageBloc, DrawingPageState>(
           builder: (context, state) {
         return Scaffold(
@@ -104,20 +104,20 @@ class _DrawingPageState extends State<DrawingPage> {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
-                  Container(
-                    height: 300,
-                    width: 500,
-                    child: Stack(children: [
-                      DrawingWidget(),
-                    ]),
-                  ),
+                  /// DrawingWidget
+                  buildDrawingWidget(),
                   Divider(color: Colors.green),
+
+                  /// SelectionMode
                   Text(
                     'Modi',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
+
                   buildConfigRow(state),
                   Divider(),
+
+                  /// Line configuration
                   Text('Selektiere Linie',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   buildLineConfigRow(),
@@ -127,31 +127,6 @@ class _DrawingPageState extends State<DrawingPage> {
           ),
           floatingActionButton: Stack(
             children: [
-              /// Left Button
-              Positioned(
-                left: 40,
-                bottom: 20,
-                child: SpeedDial(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  icon: Icons.add,
-                  activeIcon: Icons.close,
-                  children: [
-                    SpeedDialChild(
-                        child: Icon(Icons.delete), onTap: _clearCanvas),
-                    // SpeedDialChild(
-                    //     child: Icon(Icons.select_all),
-                    //     onTap: _toggleSelectionMode()),
-                    SpeedDialChild(
-                        child: Icon(Icons.circle), onTap: _toggleDefaultMode),
-                    SpeedDialChild(
-                        child: Icon(Icons.circle_notifications),
-                        onTap: _bottomSheet),
-                  ],
-                ),
-              ),
-
               /// Right Button
               Positioned(
                 bottom: 20,
@@ -171,6 +146,16 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  Container buildDrawingWidget() {
+    return Container(
+      height: 300,
+      width: 500,
+      child: Stack(children: [
+        DrawingWidget(),
+      ]),
+    );
+  }
+
   Row buildConfigRow(DrawingPageState state) {
     return Row(
       children: [
@@ -183,6 +168,11 @@ class _DrawingPageState extends State<DrawingPage> {
         Container(
           width: 10,
         ),
+        Container(
+          width: 130,
+        ),
+        ElevatedButton(
+            onPressed: () => _clearCanvas(), child: Icon(Icons.delete))
       ],
     );
   }
@@ -198,12 +188,11 @@ class _DrawingPageState extends State<DrawingPage> {
             child: TextField(
                 onChanged: (text) {
                   double? value = double.tryParse(text);
-
                   if (value != null) {
                     context.read<DrawingWidgetBloc>().add(
                         LineDrawingAngleChanged(
                             angle: value,
-                            length: double.parse(_angleController.text)));
+                            length: double.parse(_lengthController.text)));
                   }
                 },
                 controller: _angleController,
@@ -250,27 +239,10 @@ class _DrawingPageState extends State<DrawingPage> {
         .add(DrawingPageSelectionModeChanged(selectionMode: value));
   }
 
-  void _toggleDefaultMode() {
-    context
-        .read<DrawingPageBloc>()
-        .add(DrawingPageModeChanged(mode: Mode.defaultMode));
-  }
-
-  void _bottomSheet() {
-    showModalBottomSheet(
-      enableDrag: true,
-      context: context,
-      builder: (BuildContext context) {
-        return AppBottomSheet();
-      },
-    );
-  }
-
   void _goToNextPage() {
-    print('gotonextpage');
     List<Line2> lines = context.read<DrawingWidgetBloc>().state.lines;
-    BlocProvider.of<ConfigPageBloc>(context).add(ConfigPageCreated(
-        lines: lines));
+    BlocProvider.of<ConfigPageBloc>(context)
+        .add(ConfigPageCreated(lines: lines));
 
     Navigator.of(context).pushNamed('/config');
   }

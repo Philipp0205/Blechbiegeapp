@@ -4,6 +4,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../../model/Line2.dart';
 import '../../model/segment_widget/segment.dart';
 import 'config_page_segment_widget.dart';
 
@@ -15,9 +16,7 @@ class ConfigurationPage extends StatefulWidget {
 }
 
 class _ConfigurationPageState extends State<ConfigurationPage> {
-  bool showCoordinates = true;
-  bool showEdgeLengths = false;
-
+  /// TextField controllers
   final _sController = TextEditingController();
   final _rController = TextEditingController();
 
@@ -25,10 +24,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   void initState() {
     super.initState();
 
+    /// When the page gets' created the TextFields get an initial value.
     double s = context.read<ConfigPageBloc>().state.s;
     double r = context.read<ConfigPageBloc>().state.r;
     _sController.text = s.toStringAsFixed(0);
-
     _rController.text = r.toStringAsFixed(0);
   }
 
@@ -51,18 +50,20 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         appBar: AppBar(
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Text('Biegeapp')],
+            children: [Text('Konfiguration')],
           ),
         ),
         backgroundColor: Colors.white,
-        floatingActionButton: buildLeftFloatingActionButton(state, context),
+        floatingActionButton: buildFloatingActionButton(state, context),
         body: Container(
           child: Column(
             children: [
+              /// Sketcher
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: ConstructingPageSegmentWidget(),
               ),
+              /// Checkboxes
               buildCheckboxRow(state, context),
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -70,7 +71,8 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   color: Colors.black,
                 ),
               ),
-              buildTextFieldRow(context),
+              ///TextFields
+              buildTextFieldRow(state, context),
             ],
           ),
         ),
@@ -80,7 +82,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   /// [TextField]s where the user can change the metal sheet thickness and
   /// the radius of the curves.
-  Padding buildTextFieldRow(BuildContext context) {
+  Padding buildTextFieldRow(ConfigPageState state, BuildContext context) {
     return Padding(
               padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
               child: Row(
@@ -116,6 +118,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                         }),
                   ),
                   Text('Radius (r)'),
+                  Container(
+                    width: 30,
+                  ),
+                  ElevatedButton(onPressed: () => _createShape(state.lines),
+                      child: Text('+ Werkzeug'))
                 ],
               ),
             );
@@ -154,28 +161,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   /// Builds the left [FloatingActionButton].
-  Stack buildLeftFloatingActionButton(ConfigPageState state, BuildContext context) {
+  Stack buildFloatingActionButton(ConfigPageState state, BuildContext context) {
     return Stack(
         children: [
-          /// Left Button
-          Positioned(
-            left: 40,
-            bottom: 20,
-            child: SpeedDial(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              icon: Icons.add,
-              activeIcon: Icons.close,
-              children: [
-                SpeedDialChild(
-                  child: Icon(Icons.add),
-                  onTap: () => _createShape(state.segment.first),
-                ),
-              ],
-            ),
-          ),
-
           /// Right Button
           Positioned(
             bottom: 20,
@@ -193,7 +181,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       );
   }
 
-  void _createShape(Segment segment) {
+  void _createShape(List<Line2> lines) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
