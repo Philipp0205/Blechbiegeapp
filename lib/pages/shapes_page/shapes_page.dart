@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
 
@@ -18,14 +19,19 @@ class _ShapesPageState extends State<ShapesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Werkzeuge')),
-      body: BlocBuilder<ShapesPageBloc, ShapesPageState>(
+      body: BlocBuilder<ConfigPageBloc, ConfigPageState>(
+        buildWhen: (prev, current) {
+          List<String> prevNames = prev.shapes.map((shape) => shape.name).toList();
+          List<String> currentNames = current.shapes.map((shape) => shape.name).toList();
+          return prevNames != currentNames;
+        },
         builder: (context, state) {
+          print('shape name: ${state.shapes[0].name}');
           return state.shapes.isNotEmpty
               ? ListView.builder(
                   itemCount: state.shapes.length,
                   itemBuilder: (context, index) {
                     /// List with [Shape]s.
-                    ///
                     return Slidable(
                         // Specify a key if the Slidable is dismissible.
                         key: const ValueKey(0),
@@ -38,8 +44,9 @@ class _ShapesPageState extends State<ShapesPage> {
                           // A pane can dismiss the Slidable.
                           dismissible: DismissiblePane(onDismissed: () {
                             print('${state.shapes.length} remaining shapes');
-                            context.read<ShapesPageBloc>().add(
-                                ShapeDeleted(shape: state.shapes[index]));
+                            context
+                                .read<ShapesPageBloc>()
+                                .add(ShapeDeleted(shape: state.shapes[index]));
                           }),
 
                           // All actions are defined in the children parameter.
@@ -47,7 +54,8 @@ class _ShapesPageState extends State<ShapesPage> {
                             // A SlidableAction can have an icon and/or a label.
                             SlidableAction(
                               onPressed: (_) {
-                                print('${state.shapes.length} remaining shapes');
+                                print(
+                                    '${state.shapes.length} remaining shapes');
                                 context.read<ShapesPageBloc>().add(
                                     ShapeDeleted(shape: state.shapes[index]));
                               },
@@ -67,7 +75,7 @@ class _ShapesPageState extends State<ShapesPage> {
                               // An action can be bigger than the others.
                               flex: 2,
                               onPressed: (_) {
-                                _editShape(state.shapes[index]);
+                                _addShape(state.shapes[index]);
                               },
                               backgroundColor: Color(0xFF7BC043),
                               foregroundColor: Colors.white,
@@ -92,11 +100,11 @@ class _ShapesPageState extends State<ShapesPage> {
     );
   }
 
-  void _editShape(Shape shape) {
+  void _addShape(Shape shape) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
-          return AddShapeBottomSheet();
+          return AddShapeBottomSheet(selectedShape: shape);
         });
   }
 }

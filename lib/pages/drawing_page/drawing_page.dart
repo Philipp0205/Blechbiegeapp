@@ -95,7 +95,20 @@ class _DrawingPageState extends State<DrawingPage> {
             backgroundColor: Color(0xff009374),
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [Text('Biegeapp'), Text(state.mode.name)],
+              children: [
+                Text('Biegeapp'),
+                Container(width: 100),
+                IconButton(
+                    onPressed: () {
+                      _undo();
+                    },
+                    icon: Icon(Icons.arrow_circle_left)),
+                IconButton(
+                    onPressed: () {
+                      _redo();
+                    },
+                    icon: Icon(Icons.arrow_circle_right)),
+              ],
             ),
           ),
           backgroundColor: Colors.white,
@@ -245,5 +258,13 @@ class _DrawingPageState extends State<DrawingPage> {
         .add(ConfigPageCreated(lines: lines));
 
     Navigator.of(context).pushNamed('/config');
+  }
+
+  void _undo() {
+    context.read<DrawingWidgetBloc>().add(LineDrawingUndo());
+  }
+
+  void _redo() {
+    context.read<DrawingWidgetBloc>().add(LineDrawingRedo());
   }
 }

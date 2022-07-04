@@ -22,7 +22,7 @@ class ConfigPageState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [segment, showCoordinates, showEdgeLengths, showAngles, s, r];
+      [lines, segment, showCoordinates, showEdgeLengths, showAngles, s, r, shapes];
 
   ConfigPageState copyWith({
     List<Segment>? segment,

@@ -18,24 +18,28 @@ class SimulationSketcher extends CustomPainter{
     ..style = PaintingStyle.fill;
 
     Path path = new Path();
-    shapes.forEach((shape) {
+    // shapes.forEach((shape) {
       // Move to first offset to start drawing
-      path.moveTo(shape.path.first.dx, shape.path.first.dy);
+      // path.moveTo(shape.path.first.dx, shape.path.first.dy);
+      //
+      // shape.path.removeAt(0);
+      //
+      // shape.path.forEach((offset) {
+      //   path.lineTo(offset.dx, offset.dy);
+      // });
+    // });
+    //
+    // canvas.drawPath(path, paint);
+  // }
 
-      shape.path.removeAt(0);
 
-      shape.path.forEach((offset) {
-        path.lineTo(offset.dx, offset.dy);
-      });
-    });
 
-    canvas.drawPath(path, paint);
-  }
 
+}
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+    // TODO: implement shouldRepaint
+    throw UnimplementedError();
   }
-
 }

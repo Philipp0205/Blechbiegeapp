@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:open_bsp/model/segment_widget/segment.dart';
 
 import '../../../model/appmodes.dart';
 
@@ -76,6 +75,16 @@ class LineDrawingPanDown extends DrawingWidgetEvent {
 class LineDrawingSelectionModeSelected extends DrawingWidgetEvent {
   final bool selectionMode;
   LineDrawingSelectionModeSelected({required this.selectionMode});
+}
+
+/// Undo (delete) the last drawn line.
+class LineDrawingUndo extends DrawingWidgetEvent {
+  LineDrawingUndo();
+}
+
+/// Redo (recover) the last drawn line. Is possible with multiple lines as well.
+class LineDrawingRedo extends DrawingWidgetEvent {
+  LineDrawingRedo();
 }
 
 

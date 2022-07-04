@@ -1,5 +1,4 @@
-import 'dart:ffi';
-import 'dart:math';
+import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,6 @@ import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_stat
 import 'package:open_bsp/model/Line2.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/model/appmodes.dart';
-import 'package:open_bsp/model/segment_offset.dart';
 
 import '../../../model/segment_widget/segment.dart';
 import '../../../services/geometric_calculations_service.dart';
@@ -22,11 +20,12 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       : super(CurrentSegmentInitial(
           lines: [],
           selectedLines: [],
+          linesBeforeUndo: [],
           mode: Mode.defaultMode,
           selectionMode: false,
         )) {
     /// New Pan Events
-    on<LineDrawingStarted>(_createNewLine);
+    on<LineDrawingStarted>(_addNewLine);
     on<LineDrawingUpdated>(_updateLine);
     on<LineDrawingPanDown>(_selectLine);
     on<SegmentDeleted>(_deleteLines);
@@ -40,6 +39,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     /// Events for mode editing the segment
     on<CurrentSegmentModeChanged>(_changeMode);
     on<SegmentPartDeleted>(_deleteSegmentPart);
+    on<LineDrawingUndo>(_undo);
+    on<LineDrawingRedo>(_redo);
   }
 
   void _deleteLines(SegmentDeleted event, Emitter<DrawingWidgetState> emit) {
@@ -90,8 +91,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       ..insert(index, newSelectedLine)
       ..remove(selectedLine);
 
-
-    if (lines.length > index+1) {
+    if (lines.length > index + 1) {
       Line2 nextLine = lines[index + 1];
       Line2 newNextLine = nextLine.copyWith(start: offset2);
 
@@ -132,7 +132,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       ..insert(index, newLine)
       ..remove(selectedLine);
 
-    if (lines.length > index+1) {
+    if (lines.length > index + 1) {
       Line2 nextLine = lines[index + 1];
       Line2 newNextLine = nextLine.copyWith(start: newOffset);
 
@@ -140,7 +140,6 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
         ..insert(lines.indexOf(nextLine), newNextLine)
         ..remove(nextLine);
     }
-
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
@@ -151,7 +150,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   ///
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
   /// screen with a primary button and has begun to move.'
-  void _createNewLine(
+  void _addNewLine(
       LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
       List<Line2> lines = state.lines;
@@ -166,8 +165,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       print('${lines.length} lines before');
       lines.add(line);
       print('${lines.length} lines after');
-      emit(state.copyWith(lines: lines));
-      // emit(LineUpdate(lines: lines));
+      emit(state.copyWith(lines: lines, linesBeforeUndo: lines));
     }
   }
 
@@ -230,5 +228,35 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   void _toggleSelectionMode(LineDrawingSelectionModeSelected event,
       Emitter<DrawingWidgetState> emit) {
     emit(state.copyWith(selectionMode: event.selectionMode));
+  }
+
+  /// Undo option.
+  /// Removes the last drawn line.
+  void _undo(LineDrawingUndo event, Emitter<DrawingWidgetState> emit) {
+    print('undo');
+    List<Line2> lines = state.lines;
+    List<Line2> linesBeforeUndo = state.lines;
+    lines.removeLast();
+
+    print('linesbrefore undo ${linesBeforeUndo.length}');
+
+    emit(state.copyWith(lines: [], linesBeforeUndo: []));
+    emit(state.copyWith(lines: lines, linesBeforeUndo: linesBeforeUndo));
+  }
+
+  void _redo(LineDrawingRedo event, Emitter<DrawingWidgetState> emit) {
+    List<Line2> history = state.linesBeforeUndo;
+    List<Line2> lines = state.lines;
+
+    int index = lines.indexOf(lines.last);
+
+    if (history.length > index) {
+      print('redo possible history: ${history.length}, liens: ${lines.length}');
+      print('index $index');
+      lines.add(history[index+1]);
+    }
+
+    emit(state.copyWith(lines: []));
+    emit(state.copyWith(lines: lines));
   }
 }

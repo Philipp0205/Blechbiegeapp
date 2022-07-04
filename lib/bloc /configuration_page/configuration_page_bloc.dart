@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../model/Line2.dart';
+import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../model/simulation/shape.dart';
@@ -36,7 +37,6 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   /// When no segment exists an initial segment gets created.
   void _setInitialSegment(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) {
-
     emit(state.copyWith(lines: event.lines));
   }
 
@@ -125,11 +125,29 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
 
   /// Saves a to the state (no DB involved here).
   void _saveShape(ConfigShapeAdded event, Emitter<ConfigPageState> emit) {
+    List<List<Line2>> lines = state.shapes.map((shape) => shape.lines).toList();
+    int index = lines.indexOf(event.shape.lines);
     List<Shape> shapes = state.shapes;
-    shapes.add(event.shape);
+
+    if (_shapeAlreadyExists(event.shape, shapes)) {
+
+      shapes
+        ..removeAt(index)
+        ..insert(index, event.shape);
+    } else {
+      print('shape does not exist');
+      shapes.add(event.shape);
+    }
+
+    print('emitted state ${shapes[0].name}');
+    emit(state.copyWith(shapes: []));
     emit(state.copyWith(shapes: shapes));
   }
 
+  bool _shapeAlreadyExists(Shape shape, List<Shape> shapes) {
+    List<List<Line2>> lines = shapes.map((shape) => shape.lines).toList();
+    return lines.contains(shape.lines);
+  }
 }
 
 enum CheckBoxEnum { coordinates, lengths, angles }

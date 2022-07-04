@@ -13,6 +13,7 @@ class ShapesPageBloc extends Bloc<ShapesPageEvent, ShapesPageState> {
   ShapesPageBloc() : super(ShapesPageInitial(shapes: [])) {
     on<ShapeAdded>(_addShape);
     on<ShapeDeleted>(_deleteShape);
+    on<ShapeEdited>(_editshape);
   }
 
   void _addShape(ShapeAdded event, Emitter<ShapesPageState> emit) {
@@ -22,9 +23,15 @@ class ShapesPageBloc extends Bloc<ShapesPageEvent, ShapesPageState> {
   }
 
   void _deleteShape(ShapeDeleted event, Emitter<ShapesPageState> emit) {
-    print('delete shape');
     List<Shape> shapes = state.shapes;
     shapes.remove(event.shape);
     emit(ShapesChangeSuccess(shapes: shapes));
+  }
+
+  void _editshape(ShapeEdited event, Emitter<ShapesPageState> emit) {
+    List<Shape> shapes = state.shapes;
+    int index = shapes.indexOf(event.shape);
+    shapes.replaceRange(index, index, [event.shape]);
+    
   }
 }

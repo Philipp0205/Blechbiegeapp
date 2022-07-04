@@ -181,11 +181,13 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       );
   }
 
+  /// configpage event ->
   void _createShape(List<Line2> lines) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return AddShapeBottomSheet();
+        // No selected shape because new Shapes created.
+        return AddShapeBottomSheet(selectedShape: null);
       },
     );
   }
