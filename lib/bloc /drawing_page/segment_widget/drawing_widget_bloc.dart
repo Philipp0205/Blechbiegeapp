@@ -26,7 +26,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     on<LineDrawingStarted>(_addNewLine);
     on<LineDrawingUpdated>(_updateLine);
     on<LineDrawingPanDown>(_selectLine);
-    on<SegmentDeleted>(_deleteLines);
+    on<LinesDeleted>(_deleteLines);
 
     /// Selected line changes
     on<LineDrawingInnerAngleChanged>(_changeLineInnerAngle);
@@ -37,26 +37,13 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     /// Events for mode editing the segment
     on<CurrentSegmentModeChanged>(_changeMode);
-    on<SegmentPartDeleted>(_deleteSegmentPart);
     on<LineDrawingUndo>(_undo);
     on<LineDrawingRedo>(_redo);
   }
 
-  void _deleteLines(SegmentDeleted event, Emitter<DrawingWidgetState> emit) {
+  void _deleteLines(LinesDeleted event, Emitter<DrawingWidgetState> emit) {
     print('delete lines');
     emit(state.copyWith(lines: []));
-  }
-
-  /// Deletes a part of a [Segment]. To make a delete happen at least two
-  /// offsets in a segment have to be selected.
-  void _deleteSegmentPart(
-      SegmentPartDeleted event, Emitter<DrawingWidgetState> emit) {
-    // List<SegmentOffset> offsets = state.segment.first.path;
-    // offsets.removeLast();
-
-    // emit(CurrentSegmentUpdate(
-    //     segment: [state.segment.first.copyWith(path: offsets)],
-    //     mode: Mode.selectionMode));
   }
 
   void _changeMode(
