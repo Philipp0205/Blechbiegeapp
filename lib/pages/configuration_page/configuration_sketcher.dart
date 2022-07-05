@@ -74,27 +74,9 @@ class ConfigurationSketcher extends CustomPainter {
       drawnPath = addCurvesToPath(canvas, shortLines, lines, drawnPath);
 
       canvas.drawPath(drawnPath, paint);
-      //
       //   createPicture(canvas, size, drawnPath, paint);
-      //
       showSegmentDetails(canvas, shortLines, lines);
     }
-
-    // if (segments.isNotEmpty) {
-    //   // Move to the first offset to start drawing.
-    //   Path drawnPath = new Path();
-    //   Offset firstOffset = segments.first.path.first.offset;
-    //   drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
-    //
-    //   drawnPath = addLinesToPath(shortLines);
-    //   drawnPath = addCurvesToPath(canvas, shortLines, longLines, drawnPath);
-    //
-    //   canvas.drawPath(drawnPath, paint);
-    //
-    //   createPicture(canvas, size, drawnPath, paint);
-    //
-    //   showSegmentDetails(canvas, shortLines, longLines);
-    // }
   }
 
   /// Returns all black pixel of the canvas.
@@ -166,18 +148,6 @@ class ConfigurationSketcher extends CustomPainter {
 
     return changedLines;
   }
-
-  /// Maps [SegmentOffset]s created to [Line]s.
-  /// The difference is, that one lines contains two offsets. A start offset
-  /// and an end offset.
-  // List<Line> mapSegmentToLines(List<Line2> offsets) {
-  //   List<Line> lines = [];
-  //
-  //   for (int i = 0; i < offsets.length - 1; ++i) {
-  //     lines.add(new Line(start: offsets[i], end: offsets[i + 1]));
-  //   }
-  //   return lines;
-  // }
 
   /// Draws given [text] on an [canvas] at the coordinates of [offset] with the
   /// a [textColor] and [backgroundColor].
@@ -252,15 +222,14 @@ class ConfigurationSketcher extends CustomPainter {
       if (edgeLengthsShown) {
         _drawLineLengths(canvas, l.start, l.end);
       }
-
-      // if (anglesShown) {
-      //   _showAngles(canvas, l.start.offset, l.end.offset);
-      // }
     });
 
     longLines.forEach((line) {
       if (anglesShown) {
-        // _drawAngles(canvas, line.start, line.end);
+        int index = lines.indexOf(line);
+        if (lines.length > index + 1) {
+          _drawAngles(canvas, line, lines[index + 1]);
+        }
       }
     });
   }
@@ -299,15 +268,11 @@ class ConfigurationSketcher extends CustomPainter {
 
   /// Draws inner angle between [lineA] and [lineB] on an [canvas].
   void _drawAngles(Canvas canvas, Line lineA, Line lineB) {
-    // v.Vector2 vectorA = _calculationsService.createVectorFromLines(lineA);
-    // v.Vector2 vectorB = _calculationsService.createVectorFromLines(lineB);
+    String angle =
+        _calculationsService.getInnerAngle(lineA, lineB).toStringAsFixed(1);
 
-    // double angle = _calculationsService.getAngleFromVectors(vectorA, vectorB);
+    Offset position = new Offset(lineA.end.dx - 20, lineA.end.dy);
 
-    // String text = '${angle.toStringAsFixed(1)}°';
-
-    // Offset offset = new Offset(lineA.end.offset.dx - 10, lineA.end.offset.dy);
-
-    // drawText(canvas, text, offset, Colors.red, Colors.white);
+    drawText(canvas, angle, position, Colors.black, Colors.white);
   }
 }
