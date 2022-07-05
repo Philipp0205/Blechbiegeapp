@@ -117,7 +117,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
 
                           if (value != null) {
                             context.read<DrawingWidgetBloc>().add(
-                                LineDrawingAngleChanged(
+                                LineDrawingInnerAngleChanged(
                                     angle: value,
                                     length:
                                     double.parse(_lengthController.text)));

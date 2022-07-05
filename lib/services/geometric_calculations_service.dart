@@ -10,6 +10,7 @@ import '../model/segment_widget/segment.dart';
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
 class GeometricCalculationsService {
+
   /// Returns sorted Map according to distance of [offset] to each element
   /// in [offsets].
   Map<Offset, double> _getOffsetsByDistance(
@@ -130,7 +131,6 @@ class GeometricCalculationsService {
     return angle;
   }
 
-
   double getMagnitude(Offset centre, Offset offset) {
     double x = offset.dx - centre.dx;
     double y = offset.dy - centre.dy;
@@ -207,7 +207,7 @@ class GeometricCalculationsService {
 
   /// Returns the inner angle between two [Line]s.
   double getInnerAngle(Line lineA, Line lineB) {
-    double angleA = getAngle(lineA.start, lineB.end);
+    double angleA = getAngle(lineA.start, lineA.end);
     double angleB = getAngle(lineB.start, lineB.end);
 
     return (angleA - angleB).abs();

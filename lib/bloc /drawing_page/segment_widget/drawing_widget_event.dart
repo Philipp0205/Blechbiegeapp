@@ -39,7 +39,17 @@ class LineDrawingLengthChanged extends DrawingWidgetEvent {
   const LineDrawingLengthChanged({required this.length});
 }
 
-/// Event when the [angle] of a line is changed. 
+/// Event when the [angle] of a line is changed.
+/// Takes two [Lines]s into accounts.
+class LineDrawingInnerAngleChanged extends DrawingWidgetEvent {
+  final double angle;
+  final double length;
+
+  const LineDrawingInnerAngleChanged({required this.angle, required this.length});
+}
+
+/// Event when the [angle] of a line is changed.
+/// Takes one [Lines]s into accounts.
 class LineDrawingAngleChanged extends DrawingWidgetEvent {
   final double angle;
   final double length;
