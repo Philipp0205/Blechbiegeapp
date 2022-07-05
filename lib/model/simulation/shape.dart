@@ -3,7 +3,7 @@ import 'dart:ui';
 import '../../pages/configuration_page/add_shape_bottom_sheet.dart';
 import '../Line2.dart';
 
-/// Represents a shape. For example different tools for bending metal
+/// Represents a simple shape. For example different tools for bending metal
 /// sheets.
 class Shape {
   final String name;

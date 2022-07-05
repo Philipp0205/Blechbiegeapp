@@ -150,8 +150,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   ///
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
   /// screen with a primary button and has begun to move.'
-  void _addNewLine(
-      LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
+  void _addNewLine(LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
       List<Line> lines = state.lines;
 
@@ -192,18 +191,20 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       List<Line> lines = state.lines;
       List<Line> selectedLines = state.selectedLines;
 
+      List<Offset> middlePoints = lines
+          .map((line) => _calculationService.getMiddle(line.start, line.end))
+          .toList();
+
       List<Offset> offsets = lines.map((e) => e.start).toList();
       List<Offset> ends = lines.map((e) => e.end).toList();
 
       offsets.addAll(ends);
 
-      List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
-          event.panDownOffset, offsets, 2);
+      List<Offset> nearestMiddlePoint = _calculationService.getNNearestOffsets(
+          event.panDownOffset, middlePoints, 1);
 
-      Line selectedLine =
-          lines.firstWhere((line) => line.start == nearestOffsets.first);
-
-      int index = lines.indexOf(selectedLine);
+      int index = middlePoints.indexOf(nearestMiddlePoint.first);
+      Line selectedLine = lines[index];
 
       if (selectedLine.isSelected) {
         selectedLine = selectedLine.copyWith(isSelected: false);
@@ -249,7 +250,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     if (history.length > index) {
       print('redo possible history: ${history.length}, liens: ${lines.length}');
       print('index $index');
-      lines.add(history[index+1]);
+      lines.add(history[index + 1]);
     }
 
     emit(state.copyWith(lines: []));
