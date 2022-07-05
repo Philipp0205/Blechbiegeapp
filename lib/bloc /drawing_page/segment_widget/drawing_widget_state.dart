@@ -7,9 +7,9 @@ class DrawingWidgetState extends Equatable {
   /// This list should always contains only 1 value but is a List to prevent an
   /// initial null value and the need to handle null values in general.
   /// It is easier to handle an empty list.
-  final List<Line2> lines;
-  final List<Line2> linesBeforeUndo;
-  final List<Line2> selectedLines;
+  final List<Line> lines;
+  final List<Line> linesBeforeUndo;
+  final List<Line> selectedLines;
   final Mode mode;
   final bool selectionMode;
 
@@ -22,9 +22,9 @@ class DrawingWidgetState extends Equatable {
   });
 
   DrawingWidgetState copyWith({
-    List<Line2>? lines,
-    List<Line2>? selectedLines,
-    List<Line2>? linesBeforeUndo,
+    List<Line>? lines,
+    List<Line>? selectedLines,
+    List<Line>? linesBeforeUndo,
     Mode? mode,
     bool? selectionMode,
   }) {
@@ -42,9 +42,9 @@ class DrawingWidgetState extends Equatable {
 }
 
 class CurrentSegmentInitial extends DrawingWidgetState {
-  final List<Line2> lines;
-  final List<Line2> selectedLines;
-  final List<Line2> linesBeforeUndo;
+  final List<Line> lines;
+  final List<Line> selectedLines;
+  final List<Line> linesBeforeUndo;
   final Mode mode;
   final bool selectionMode;
 

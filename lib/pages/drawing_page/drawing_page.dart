@@ -33,7 +33,7 @@ class _DrawingPageState extends State<DrawingPage> {
   void initState() {
     super.initState();
 
-    List<Line2> selectedLines = context
+    List<Line> selectedLines = context
         .read<DrawingWidgetBloc>()
         .state
         .lines
@@ -41,7 +41,7 @@ class _DrawingPageState extends State<DrawingPage> {
         .toList();
 
     if (selectedLines.isNotEmpty) {
-      _setAngle(selectedLines.first);
+      _setAngle(selectedLines);
     }
   }
 
@@ -56,15 +56,22 @@ class _DrawingPageState extends State<DrawingPage> {
 
   /// Sets the initial angle in the angle text field.
   ///
-  /// When there are multiple [Line2]s selected it show only the angle of
+  /// When there are multiple [Line]s selected it show only the angle of
   /// the first Line.
-  void _setAngle(Line2 line) {
-    print('setAngle ${_calcService.getAngle(line.start, line.end)}');
-    _angleController.text =
-        _calcService.getAngle(line.start, line.end).toStringAsFixed(1);
+  void _setAngle(List<Line> lines) {
+    if (lines.length == 1) {
+      _angleController.text = _calcService
+          .getAngle(lines.first.start, lines.first.end)
+          .toStringAsFixed(1);
+    } else {
+      print('angle controller inner angle ${_calcService.getInnerAngle(lines.first, lines.last)}');
+      _angleController.text = _calcService
+          .getInnerAngle(lines.first, lines.last)
+          .toStringAsFixed(1);
+    }
   }
 
-  void _setLength(Line2 line) {
+  void _setLength(Line line) {
     double distance = (line.start - line.end).distance;
 
     _lengthController.text = distance.toStringAsFixed(1);
@@ -82,7 +89,7 @@ class _DrawingPageState extends State<DrawingPage> {
           prev.selectedLines != current.selectedLines &&
           current.selectedLines.isNotEmpty,
       listener: (context, state) {
-        _setAngle(state.selectedLines.first);
+        _setAngle(state.selectedLines);
         _setLength(state.selectedLines.first);
       },
 
@@ -202,10 +209,7 @@ class _DrawingPageState extends State<DrawingPage> {
                 onChanged: (text) {
                   double? value = double.tryParse(text);
                   if (value != null) {
-                    context.read<DrawingWidgetBloc>().add(
-                        LineDrawingAngleChanged(
-                            angle: value,
-                            length: double.parse(_lengthController.text)));
+                    _changeAngle(value);
                   }
                 },
                 controller: _angleController,
@@ -253,7 +257,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _goToNextPage() {
-    List<Line2> lines = context.read<DrawingWidgetBloc>().state.lines;
+    List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(lines: lines));
 
@@ -266,5 +270,18 @@ class _DrawingPageState extends State<DrawingPage> {
 
   void _redo() {
     context.read<DrawingWidgetBloc>().add(LineDrawingRedo());
+  }
+
+  void _changeAngle(double value) {
+    List<Line> selectedLines =
+        context.read<DrawingWidgetBloc>().state.selectedLines;
+
+    if (selectedLines.length == 1) {
+      context.read<DrawingWidgetBloc>().add(LineDrawingAngleChanged(
+          angle: value, length: double.parse(_lengthController.text)));
+    } else {
+      context.read<DrawingWidgetBloc>().add(LineDrawingInnerAngleChanged(
+          angle: value, length: double.parse(_lengthController.text)));
+    }
   }
 }

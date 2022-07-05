@@ -195,7 +195,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   /// Creates a new [Shape] using a [ModalBottomSheet]
-  void _createShape(List<Line2> lines) {
+  void _createShape(List<Line> lines) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -219,10 +219,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Offset bottom4 = new Offset(width, 270);
 
     // create 4 [Line2] consisting of the 4 points above
-    Line2 line1 = Line2(start: bottom1, end: bottom2, isSelected: false);
-    Line2 line2 = Line2(start: bottom2, end: bottom3, isSelected: false);
-    Line2 line3 = Line2(start: bottom3, end: bottom4, isSelected: false);
-    Line2 line4 = Line2(start: bottom4, end: bottom1, isSelected: false);
+    Line line1 = Line(start: bottom1, end: bottom2, isSelected: false);
+    Line line2 = Line(start: bottom2, end: bottom3, isSelected: false);
+    Line line3 = Line(start: bottom3, end: bottom4, isSelected: false);
+    Line line4 = Line(start: bottom4, end: bottom1, isSelected: false);
 
     // create [Shape] consisting of the 4 [Line2] above.
     Shape lowerBeam = Shape(
@@ -237,10 +237,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Offset top4 = new Offset(width, 230);
 
     // create 4 [Line2] consisting of the 4 points above
-    Line2 line5 = Line2(start: top1, end: top2, isSelected: false);
-    Line2 line6 = Line2(start: top2, end: top3, isSelected: false);
-    Line2 line7 = Line2(start: top3, end: top4, isSelected: false);
-    Line2 line8 = Line2(start: top4, end: top1, isSelected: false);
+    Line line5 = Line(start: top1, end: top2, isSelected: false);
+    Line line6 = Line(start: top2, end: top3, isSelected: false);
+    Line line7 = Line(start: top3, end: top4, isSelected: false);
+    Line line8 = Line(start: top4, end: top1, isSelected: false);
 
     Shape upperBeam = new Shape(
         name: "Oberwange",
@@ -253,14 +253,14 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Offset bending4 = new Offset(0, 230);
 
     // Create 4 [Line2] consisting of the 4 points above
-    Line2 bendingLine1 =
-        Line2(start: bending1, end: bending2, isSelected: false);
-    Line2 bendingLine2 =
-        Line2(start: bending2, end: beinding3, isSelected: false);
-    Line2 bendingLine3 =
-        Line2(start: beinding3, end: bending4, isSelected: false);
-    Line2 bendingLine4 =
-        Line2(start: bending4, end: bending1, isSelected: false);
+    Line bendingLine1 =
+        Line(start: bending1, end: bending2, isSelected: false);
+    Line bendingLine2 =
+        Line(start: bending2, end: beinding3, isSelected: false);
+    Line bendingLine3 =
+        Line(start: beinding3, end: bending4, isSelected: false);
+    Line bendingLine4 =
+        Line(start: bending4, end: bending1, isSelected: false);
 
     Shape bendingBeam = new Shape(
         name: "Biegewange",

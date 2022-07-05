@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
@@ -31,7 +29,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     on<SegmentDeleted>(_deleteLines);
 
     /// Selected line changes
-    on<LineDrawingAngleChanged>(_changeLineAngle);
+    on<LineDrawingInnerAngleChanged>(_changeLineInnerAngle);
+    on<LineDrawingAngleChanged>(_changeAngle);
     on<LineDrawingLengthChanged>(_changeLineLength);
 
     on<LineDrawingSelectionModeSelected>(_toggleSelectionMode);
@@ -73,8 +72,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       LineDrawingLengthChanged event, Emitter<DrawingWidgetState> emit) {
     print('changeSegmentPartLength');
 
-    List<Line2> lines = state.lines;
-    Line2 selectedLine = lines.where((line) => line.isSelected).toList().first;
+    List<Line> lines = state.lines;
+    Line selectedLine = lines.where((line) => line.isSelected).toList().first;
 
     double currentLength = (selectedLine.start - selectedLine.end).distance;
 
@@ -83,7 +82,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
             event.length - currentLength, true, false)
         .first;
 
-    Line2 newSelectedLine = selectedLine.copyWith(end: offset2);
+    Line newSelectedLine = selectedLine.copyWith(end: offset2);
 
     int index = lines.indexOf(selectedLine);
 
@@ -92,8 +91,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       ..remove(selectedLine);
 
     if (lines.length > index + 1) {
-      Line2 nextLine = lines[index + 1];
-      Line2 newNextLine = nextLine.copyWith(start: offset2);
+      Line nextLine = lines[index + 1];
+      Line newNextLine = nextLine.copyWith(start: offset2);
 
       lines
         ..insert(index + 1, newNextLine)
@@ -107,64 +106,53 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// Changes the angle of a part of a [Segment].
   /// The segment has to have at least two [selectedOffsets] to
   /// change the angle.
-  void _changeLineAngle(
-      LineDrawingAngleChanged event, Emitter<DrawingWidgetState> emit) {
-    Line2 selectedLine =
-        state.lines.where((line) => line.isSelected).toList().first;
+  void _changeLineInnerAngle(
+      LineDrawingInnerAngleChanged event, Emitter<DrawingWidgetState> emit) {
+    List<Line> lines = state.lines;
+    List<Line> selectedLines = state.selectedLines;
 
-    List<Line2> selectedLines = state.selectedLines;
+    int index = lines.indexOf(selectedLines.last);
+
+    double angleOfFirstLine = _calculationService.getAngle(
+        selectedLines.first.start, selectedLines.first.end);
+
+    double newAngle = angleOfFirstLine + event.angle;
+    print('newAngle: $newAngle');
 
     Offset newOffset = _calculationService.calculatePointWithAngle(
-        selectedLine.start, event.length, event.angle);
+        selectedLines.last.start, event.length, newAngle);
 
-    print('changed angle length: ${event.length}');
-
-    List<Line2> lines = state.lines;
-    Line2 newLine = selectedLine.copyWith(end: newOffset);
-
-    int index = lines.indexOf(selectedLine);
+    Line newLine = selectedLines.last.copyWith(end: newOffset);
 
     selectedLines
-      ..remove(selectedLines)
+      ..remove(selectedLines.last)
       ..add(newLine);
 
     lines
-      ..insert(index, newLine)
-      ..remove(selectedLine);
-
-    if (lines.length > index + 1) {
-      Line2 nextLine = lines[index + 1];
-      Line2 newNextLine = nextLine.copyWith(start: newOffset);
-
-      lines
-        ..insert(lines.indexOf(nextLine), newNextLine)
-        ..remove(nextLine);
-    }
+      ..removeAt(index)
+      ..insert(index, newLine);
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
   }
 
-  /// When the user start dragging the finger over the screen a new [Line2]
+  /// When the user start dragging the finger over the screen a new [Line]
   /// gets created.
   ///
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
   /// screen with a primary button and has begun to move.'
-  void _addNewLine(
-      LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
+  void _addNewLine(LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
-      List<Line2> lines = state.lines;
+      List<Line> lines = state.lines;
 
-      Line2 line = new Line2(
+      Line line = new Line(
           start: event.firstDrawnOffset,
           end: event.firstDrawnOffset,
           isSelected: false);
 
       if (lines.isNotEmpty) line = line.copyWith(start: lines.last.end);
 
-      print('${lines.length} lines before');
       lines.add(line);
-      print('${lines.length} lines after');
       emit(state.copyWith(lines: lines, linesBeforeUndo: lines));
     }
   }
@@ -176,7 +164,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// screen with a primary button and moving has moved again.'
   void _updateLine(LineDrawingUpdated event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
-      List<Line2> lines = state.lines;
+      List<Line> lines = state.lines;
       lines.last = lines.last.copyWith(end: event.updatedOffset);
 
       /// A bit of  a work around. For some reason no state update is registered
@@ -186,42 +174,40 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     }
   }
 
-  /// Selects the line nearest to the tabbed offset.
+  /// Selects the line nearest to the selected offset.
   void _selectLine(LineDrawingPanDown event, Emitter<DrawingWidgetState> emit) {
-    if (state.selectionMode == true) {
-      List<Line2> lines = state.lines;
-      List<Line2> selectedLines = state.selectedLines;
-
-      List<Offset> offsets = lines.map((e) => e.start).toList();
-      List<Offset> ends = lines.map((e) => e.end).toList();
-
-      offsets.addAll(ends);
-
-      List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
-          event.panDownOffset, offsets, 2);
-
-      Line2 selectedLine =
-          lines.firstWhere((line) => line.start == nearestOffsets.first);
-
-      int index = lines.indexOf(selectedLine);
-
-      if (selectedLine.isSelected) {
-        selectedLine = selectedLine.copyWith(isSelected: false);
-      } else {
-        selectedLine = selectedLine.copyWith(isSelected: true);
-      }
-
-      print('selectedLines length ${selectedLines.length}');
-
-      lines
-        ..removeAt(index)
-        ..insert(index, selectedLine);
-
-      selectedLines = lines.where((line) => line.isSelected).toList();
-
-      emit(state.copyWith(lines: [], selectedLines: []));
-      emit(state.copyWith(lines: lines, selectedLines: selectedLines));
+    // Check if selection Mode (Checkbox) is active.
+    if (state.selectionMode == false) {
+      return;
     }
+
+    List<Line> lines = state.lines;
+    List<Line> selectedLines = state.selectedLines;
+
+    List<Offset> middlePoints = lines
+        .map((line) => _calculationService.getMiddle(line.start, line.end))
+        .toList();
+
+    List<Offset> nearestMiddlePoint = _calculationService.getNNearestOffsets(
+        event.panDownOffset, middlePoints, 1);
+
+    int index = middlePoints.indexOf(nearestMiddlePoint.first);
+    Line selectedLine = lines[index];
+
+    selectedLine = _toggleLineSelection(selectedLine);
+
+    lines
+      ..removeAt(index)
+      ..insert(index, selectedLine);
+
+    selectedLines = lines.where((line) => line.isSelected).toList();
+
+    emit(state.copyWith(lines: [], selectedLines: []));
+    emit(state.copyWith(lines: lines, selectedLines: selectedLines));
+  }
+
+  Line _toggleLineSelection(Line line) {
+    return line.copyWith(isSelected: !line.isSelected);
   }
 
   /// Changes the selection mode
@@ -234,24 +220,57 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// Removes the last drawn line.
   void _undo(LineDrawingUndo event, Emitter<DrawingWidgetState> emit) {
     print('undo');
-    List<Line2> lines = state.lines;
-    List<Line2> linesBeforeUndo = state.lines;
+    List<Line> lines = state.lines;
+    List<Line> linesBeforeUndo = state.lines;
     lines.removeLast();
 
     emit(state.copyWith(lines: [], linesBeforeUndo: []));
     emit(state.copyWith(lines: lines, linesBeforeUndo: linesBeforeUndo));
   }
 
+  /// Redo option.
+  /// Adds the last removed line again.
   void _redo(LineDrawingRedo event, Emitter<DrawingWidgetState> emit) {
-    List<Line2> history = state.linesBeforeUndo;
-    List<Line2> lines = state.lines;
+    List<Line> history = state.linesBeforeUndo;
+    List<Line> lines = state.lines;
 
     int index = lines.indexOf(lines.last);
 
     if (history.length > index) {
       print('redo possible history: ${history.length}, liens: ${lines.length}');
       print('index $index');
-      lines.add(history[index+1]);
+      lines.add(history[index + 1]);
+    }
+
+    emit(state.copyWith(lines: []));
+    emit(state.copyWith(lines: lines));
+  }
+
+  /// Changes the angle of a single line.
+  /// This means the angle is changed without looking at other lines.
+  void _changeAngle(
+      LineDrawingAngleChanged event, Emitter<DrawingWidgetState> emit) {
+    List<Line> lines = state.lines;
+
+    Line selectedLine =
+        state.lines.where((line) => line.isSelected).toList().first;
+
+    Offset newOffset = _calculationService.calculatePointWithAngle(
+        selectedLine.start, event.length, event.angle);
+
+    Line newLine = selectedLine.copyWith(end: newOffset);
+
+    int index = lines.indexOf(selectedLine);
+
+    lines
+      ..insert(index, newLine)
+      ..remove(selectedLine);
+
+    if (lines.length > index + 1) {
+      Line nextLine = lines[index + 1];
+      lines
+        ..removeAt(index + 1)
+        ..insert(index + 1, nextLine.copyWith(start: newOffset));
     }
 
     emit(state.copyWith(lines: []));

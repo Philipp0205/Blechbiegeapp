@@ -5,7 +5,7 @@ abstract class ConfigurationPageEvent {
 }
 
 class ConfigPageCreated extends ConfigurationPageEvent {
-  final List<Line2> lines;
+  final List<Line> lines;
 
   const ConfigPageCreated({required this.lines});
 }

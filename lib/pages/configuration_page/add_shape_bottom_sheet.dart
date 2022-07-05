@@ -72,7 +72,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
       children: [
         ElevatedButton(
           onPressed: () {
-            List<Line2> lines = context.read<ConfigPageBloc>().state.lines;
+            List<Line> lines = context.read<ConfigPageBloc>().state.lines;
             _saveShape(_nameController.text, lines);
           },
           child: Text('Speichern'),
@@ -141,7 +141,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
-  void _saveShape(String name, List<Line2> lines) {
+  void _saveShape(String name, List<Line> lines) {
     ShapeType type = ShapeType.upperBeam;
 
     print('DropDownvalue ${dropdownValue}');

@@ -2,19 +2,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-class Line2 {
+class Line {
   Offset start;
   Offset end;
   bool isSelected;
 
-  Line2({required this.start, required this.end, required this.isSelected});
+  Line({required this.start, required this.end, required this.isSelected});
 
-  Line2 copyWith({
+  Line copyWith({
     Offset? start,
     Offset? end,
     bool? isSelected,
   }) {
-    return Line2(
+    return Line(
       start: start ?? this.start,
       end: end ?? this.end,
       isSelected: isSelected ?? this.isSelected,

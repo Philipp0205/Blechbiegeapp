@@ -4,13 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:vector_math/vector_math.dart';
 
 import '../model/Line2.dart';
-import '../model/line.dart';
 import '../model/segment_offset.dart';
 import '../model/segment_widget/segment.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
 class GeometricCalculationsService {
+
   /// Returns sorted Map according to distance of [offset] to each element
   /// in [offsets].
   Map<Offset, double> _getOffsetsByDistance(
@@ -73,23 +73,6 @@ class GeometricCalculationsService {
     return result;
   }
 
-  Line changeLengthOfSegment2(
-      Offset start, Offset end, double length, bool shortStart, bool shortEnd) {
-    SegmentOffset newStart = new SegmentOffset(
-        offset: _changeLengthOfOffset(start, end, length), isSelected: false);
-    SegmentOffset newEnd = new SegmentOffset(
-        offset: _changeLengthOfOffset(end, start, length), isSelected: false);
-
-    Line result = Line(start: newStart, end: newEnd);
-    if (shortStart) {
-      result.copyWith(end: new SegmentOffset(offset: end, isSelected: false));
-    } else if (shortEnd) {
-      result.copyWith(
-          start: new SegmentOffset(offset: start, isSelected: false));
-    }
-    return result;
-  }
-
   /*
        Distance(point1, currPoint)
      + Distance(currPoint, point2)
@@ -148,7 +131,6 @@ class GeometricCalculationsService {
     return angle;
   }
 
-
   double getMagnitude(Offset centre, Offset offset) {
     double x = offset.dx - centre.dx;
     double y = offset.dy - centre.dy;
@@ -191,16 +173,7 @@ class GeometricCalculationsService {
 
     return new Offset(x, y);
   }
-
-  /// Changes the angle of one [Line] to another. The orientation of the first
-  /// line stays the same but the second line changes.
-  void _changeSegmentAngle2(Line lineA, Line lineB, double angle) {
-    double angleA = getAngle(lineA.start.offset, lineB.end.offset);
-    double angleB = getAngle(lineA.start.offset, lineB.end.offset);
-
-    double currentAngle = getAngleBetweenTwoLines(angleA, angleB);
-  }
-
+  
   double getAngleBetweenTwoLines(double angleA, double angleB) {
     double angle;
     if (angleA > angleB) {
@@ -216,18 +189,7 @@ class GeometricCalculationsService {
     }
     return angle;
   }
-
-  /// Calculates a Vector from given [line].
-  Vector2 createVectorFromLines(Line lineA) {
-    Offset a = new Offset(lineA.start.offset.dx, lineA.start.offset.dy);
-    Offset b = new Offset(lineA.end.offset.dx, lineA.end.offset.dy);
-
-    // Offset c = new Offset(lineB.start.offset.dx, lineB.start.offset.dy);
-    // Offset d = new Offset(lineB.end.offset.dx, lineB.end.offset.dy);
-
-    return new Vector2((a.dx - b.dx).abs(), (a.dy - b.dy).abs());
-  }
-
+  
   /// atan2(vector1.y - vector2.y, vector1.x - vector2.x)
   /// angle = arccos[(xa * xb + ya * yb) / (√(xa2 + ya2) * √(xb2 + yb2))]
   double getAngleFromVectors(Vector2 vector1, Vector2 vector2) {
@@ -243,15 +205,16 @@ class GeometricCalculationsService {
     return (angle * radians2Degrees).abs();
   }
 
+  /// Returns the inner angle between two [Line]s.
   double getInnerAngle(Line lineA, Line lineB) {
-    double angleA = getAngle(lineA.start.offset, lineB.end.offset);
-    double angleB = getAngle(lineB.start.offset, lineB.end.offset);
+    double angleA = getAngle(lineA.start, lineA.end);
+    double angleB = getAngle(lineB.start, lineB.end);
 
     return (angleA - angleB).abs();
   }
 
   /// Return all selected [lines].
-  List<Line2> getSelectedLines(List<Line2> lines) {
+  List<Line> getSelectedLines(List<Line> lines) {
     return lines.where((line) => line.isSelected).toList();
   }
 }
