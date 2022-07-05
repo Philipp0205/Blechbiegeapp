@@ -73,8 +73,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       LineDrawingLengthChanged event, Emitter<DrawingWidgetState> emit) {
     print('changeSegmentPartLength');
 
-    List<Line2> lines = state.lines;
-    Line2 selectedLine = lines.where((line) => line.isSelected).toList().first;
+    List<Line> lines = state.lines;
+    Line selectedLine = lines.where((line) => line.isSelected).toList().first;
 
     double currentLength = (selectedLine.start - selectedLine.end).distance;
 
@@ -83,7 +83,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
             event.length - currentLength, true, false)
         .first;
 
-    Line2 newSelectedLine = selectedLine.copyWith(end: offset2);
+    Line newSelectedLine = selectedLine.copyWith(end: offset2);
 
     int index = lines.indexOf(selectedLine);
 
@@ -92,8 +92,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       ..remove(selectedLine);
 
     if (lines.length > index + 1) {
-      Line2 nextLine = lines[index + 1];
-      Line2 newNextLine = nextLine.copyWith(start: offset2);
+      Line nextLine = lines[index + 1];
+      Line newNextLine = nextLine.copyWith(start: offset2);
 
       lines
         ..insert(index + 1, newNextLine)
@@ -109,18 +109,18 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// change the angle.
   void _changeLineAngle(
       LineDrawingAngleChanged event, Emitter<DrawingWidgetState> emit) {
-    Line2 selectedLine =
+    Line selectedLine =
         state.lines.where((line) => line.isSelected).toList().first;
 
-    List<Line2> selectedLines = state.selectedLines;
+    List<Line> selectedLines = state.selectedLines;
 
     Offset newOffset = _calculationService.calculatePointWithAngle(
         selectedLine.start, event.length, event.angle);
 
     print('changed angle length: ${event.length}');
 
-    List<Line2> lines = state.lines;
-    Line2 newLine = selectedLine.copyWith(end: newOffset);
+    List<Line> lines = state.lines;
+    Line newLine = selectedLine.copyWith(end: newOffset);
 
     int index = lines.indexOf(selectedLine);
 
@@ -133,8 +133,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       ..remove(selectedLine);
 
     if (lines.length > index + 1) {
-      Line2 nextLine = lines[index + 1];
-      Line2 newNextLine = nextLine.copyWith(start: newOffset);
+      Line nextLine = lines[index + 1];
+      Line newNextLine = nextLine.copyWith(start: newOffset);
 
       lines
         ..insert(lines.indexOf(nextLine), newNextLine)
@@ -145,7 +145,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     emit(state.copyWith(lines: lines));
   }
 
-  /// When the user start dragging the finger over the screen a new [Line2]
+  /// When the user start dragging the finger over the screen a new [Line]
   /// gets created.
   ///
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
@@ -153,9 +153,9 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   void _addNewLine(
       LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
-      List<Line2> lines = state.lines;
+      List<Line> lines = state.lines;
 
-      Line2 line = new Line2(
+      Line line = new Line(
           start: event.firstDrawnOffset,
           end: event.firstDrawnOffset,
           isSelected: false);
@@ -176,7 +176,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// screen with a primary button and moving has moved again.'
   void _updateLine(LineDrawingUpdated event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
-      List<Line2> lines = state.lines;
+      List<Line> lines = state.lines;
       lines.last = lines.last.copyWith(end: event.updatedOffset);
 
       /// A bit of  a work around. For some reason no state update is registered
@@ -186,11 +186,11 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     }
   }
 
-  /// Selects the line nearest to the tabbed offset.
+  /// Selects the line nearest to the selected offset.
   void _selectLine(LineDrawingPanDown event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == true) {
-      List<Line2> lines = state.lines;
-      List<Line2> selectedLines = state.selectedLines;
+      List<Line> lines = state.lines;
+      List<Line> selectedLines = state.selectedLines;
 
       List<Offset> offsets = lines.map((e) => e.start).toList();
       List<Offset> ends = lines.map((e) => e.end).toList();
@@ -200,7 +200,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       List<Offset> nearestOffsets = _calculationService.getNNearestOffsets(
           event.panDownOffset, offsets, 2);
 
-      Line2 selectedLine =
+      Line selectedLine =
           lines.firstWhere((line) => line.start == nearestOffsets.first);
 
       int index = lines.indexOf(selectedLine);
@@ -210,8 +210,6 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       } else {
         selectedLine = selectedLine.copyWith(isSelected: true);
       }
-
-      print('selectedLines length ${selectedLines.length}');
 
       lines
         ..removeAt(index)
@@ -234,8 +232,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// Removes the last drawn line.
   void _undo(LineDrawingUndo event, Emitter<DrawingWidgetState> emit) {
     print('undo');
-    List<Line2> lines = state.lines;
-    List<Line2> linesBeforeUndo = state.lines;
+    List<Line> lines = state.lines;
+    List<Line> linesBeforeUndo = state.lines;
     lines.removeLast();
 
     emit(state.copyWith(lines: [], linesBeforeUndo: []));
@@ -243,8 +241,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   }
 
   void _redo(LineDrawingRedo event, Emitter<DrawingWidgetState> emit) {
-    List<Line2> history = state.linesBeforeUndo;
-    List<Line2> lines = state.lines;
+    List<Line> history = state.linesBeforeUndo;
+    List<Line> lines = state.lines;
 
     int index = lines.indexOf(lines.last);
 

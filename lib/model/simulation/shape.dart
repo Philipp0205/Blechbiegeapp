@@ -7,7 +7,7 @@ import '../Line2.dart';
 /// sheets.
 class Shape {
   final String name;
-  final List<Line2> lines;
+  final List<Line> lines;
   final ShapeType type;
 
   const Shape({required this.name, required this.lines, required this.type});
@@ -15,7 +15,7 @@ class Shape {
   Shape copyWith({
     String? name,
     List<Offset>? path,
-    List<Line2>? lines,
+    List<Line>? lines,
     ShapeType? type,
   }) {
     return Shape(

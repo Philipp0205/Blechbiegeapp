@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math.dart' as v;
 
 import '../../model/Line2.dart';
-import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../services/geometric_calculations_service.dart';
@@ -31,7 +30,7 @@ class ConfigurationSketcher extends CustomPainter {
   final double r;
 
   final List<Segment> segments;
-  final List<Line2> lines;
+  final List<Line> lines;
 
   // Constructor
   ConfigurationSketcher(
@@ -63,7 +62,7 @@ class ConfigurationSketcher extends CustomPainter {
       ..strokeWidth = s
       ..style = PaintingStyle.stroke;
 
-    List<Line2> shortLines = changeLengthsOfSegments(lines, -r, false);
+    List<Line> shortLines = changeLengthsOfSegments(lines, -r, false);
 
     if (lines.isNotEmpty) {
       Path drawnPath = new Path();
@@ -138,9 +137,9 @@ class ConfigurationSketcher extends CustomPainter {
   ///
   /// Depending on the value of [changeEnds] the very first offset and the very
   /// last offset will not be changed at all.
-  List<Line2> changeLengthsOfSegments(
-      List<Line2> lines, double length, bool changeEnds) {
-    List<Line2> changedLines = [];
+  List<Line> changeLengthsOfSegments(
+      List<Line> lines, double length, bool changeEnds) {
+    List<Line> changedLines = [];
 
     lines.forEach((line) {
       List<Offset> shortOffsets = _calculationsService.changeLengthOfSegment(
@@ -159,7 +158,7 @@ class ConfigurationSketcher extends CustomPainter {
           firstOffset = firstOffset.copyWith(offset: line.end);
         }
       }
-      changedLines.add(new Line2(
+      changedLines.add(new Line(
           start: shortOffsets.first,
           end: shortOffsets.last,
           isSelected: false));
@@ -205,7 +204,7 @@ class ConfigurationSketcher extends CustomPainter {
   }
 
   ///  Adds all given [lines] to a [Path].
-  Path addLinesToPath(List<Line2> lines) {
+  Path addLinesToPath(List<Line> lines) {
     Path path = new Path();
 
     lines.forEach((l) {
@@ -220,7 +219,7 @@ class ConfigurationSketcher extends CustomPainter {
   /// The curves drawn between the lines are Bézier curves and therefore need
   /// [controlPoints].
   Path addCurvesToPath(
-      Canvas canvas, List<Line2> lines, List<Line2> controlPoints, Path path) {
+      Canvas canvas, List<Line> lines, List<Line> controlPoints, Path path) {
     for (int i = 0; i < lines.length - 1; ++i) {
       path.moveTo(lines[i].start.dx, lines[i].start.dy);
 
@@ -239,7 +238,7 @@ class ConfigurationSketcher extends CustomPainter {
   /// Details are the coordinates of each line, the inner angles between lines
   /// and the lengths of each edge.
   void showSegmentDetails(
-      Canvas canvas, List<Line2> shortLines, List<Line2> longLines) {
+      Canvas canvas, List<Line> shortLines, List<Line> longLines) {
     if (coordinatesShown) {
       List<Offset> offsets = [];
       offsets
@@ -299,7 +298,7 @@ class ConfigurationSketcher extends CustomPainter {
   }
 
   /// Draws inner angle between [lineA] and [lineB] on an [canvas].
-  void _drawAngles(Canvas canvas, Line2 lineA, Line2 lineB) {
+  void _drawAngles(Canvas canvas, Line lineA, Line lineB) {
     // v.Vector2 vectorA = _calculationsService.createVectorFromLines(lineA);
     // v.Vector2 vectorB = _calculationsService.createVectorFromLines(lineB);
 

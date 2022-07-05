@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../model/Line2.dart';
 
 class DrawingWidgetSketcher extends CustomPainter {
-  final List<Line2> lines2;
+  final List<Line> lines2;
 
   DrawingWidgetSketcher({required this.lines2});
 

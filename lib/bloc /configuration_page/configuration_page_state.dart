@@ -2,7 +2,7 @@ part of 'configuration_page_bloc.dart';
 
 class ConfigPageState extends Equatable {
   final List<Segment> segment;
-  final List<Line2> lines;
+  final List<Line> lines;
   final List<Shape> shapes;
   final bool showCoordinates;
   final bool showEdgeLengths;
@@ -26,7 +26,7 @@ class ConfigPageState extends Equatable {
 
   ConfigPageState copyWith({
     List<Segment>? segment,
-    List<Line2>? lines,
+    List<Line>? lines,
     List<Shape>? shapes,
     bool? showCoordinates,
     bool? showEdgeLengths,
@@ -49,7 +49,7 @@ class ConfigPageState extends Equatable {
 
 class ConstructingPageInitial extends ConfigPageState {
   final List<Segment> segment;
-  final List<Line2> lines;
+  final List<Line> lines;
   final List<Shape> shapes;
   final bool showCoordinates;
   final bool showEdgeLengths;

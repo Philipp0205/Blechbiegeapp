@@ -33,7 +33,7 @@ class _DrawingPageState extends State<DrawingPage> {
   void initState() {
     super.initState();
 
-    List<Line2> selectedLines = context
+    List<Line> selectedLines = context
         .read<DrawingWidgetBloc>()
         .state
         .lines
@@ -56,15 +56,15 @@ class _DrawingPageState extends State<DrawingPage> {
 
   /// Sets the initial angle in the angle text field.
   ///
-  /// When there are multiple [Line2]s selected it show only the angle of
+  /// When there are multiple [Line]s selected it show only the angle of
   /// the first Line.
-  void _setAngle(Line2 line) {
+  void _setAngle(Line line) {
     print('setAngle ${_calcService.getAngle(line.start, line.end)}');
     _angleController.text =
         _calcService.getAngle(line.start, line.end).toStringAsFixed(1);
   }
 
-  void _setLength(Line2 line) {
+  void _setLength(Line line) {
     double distance = (line.start - line.end).distance;
 
     _lengthController.text = distance.toStringAsFixed(1);
@@ -253,7 +253,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   void _goToNextPage() {
-    List<Line2> lines = context.read<DrawingWidgetBloc>().state.lines;
+    List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(lines: lines));
 

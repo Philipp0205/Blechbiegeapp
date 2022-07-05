@@ -2,13 +2,13 @@ part of 'simulation_page_bloc.dart';
 
 class SimulationPageState extends Equatable {
   final List<Shape> shapes;
-  final List<Line2> lines;
+  final List<Line> lines;
 
   const SimulationPageState({required this.shapes, required this.lines});
 
   SimulationPageState copyWith({
     List<Shape>? shapes,
-    List<Line2>? lines,
+    List<Line>? lines,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -24,6 +24,6 @@ class SimulationPageState extends Equatable {
 class SimulationPageInitial extends SimulationPageState {
   SimulationPageInitial({
     required List<Shape> shapes,
-    required List<Line2> lines,
+    required List<Line> lines,
   }) : super(shapes: shapes, lines: lines);
 }
