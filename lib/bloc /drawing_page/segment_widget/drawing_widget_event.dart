@@ -13,12 +13,9 @@ class CurrentSegmentPanDowned extends DrawingWidgetEvent {
   CurrentSegmentPanDowned({required this.details});
 }
 
-class SegmentDeleted extends DrawingWidgetEvent {
-  SegmentDeleted();
-}
-
-class SegmentPartDeleted extends DrawingWidgetEvent {
-  SegmentPartDeleted();
+/// Deletes all lines of the [SegmentWidget].
+class LinesDeleted extends DrawingWidgetEvent {
+  LinesDeleted();
 }
 
 class CurrentSegmentModeChanged extends DrawingWidgetEvent {

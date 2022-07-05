@@ -64,7 +64,8 @@ class _DrawingPageState extends State<DrawingPage> {
           .getAngle(lines.first.start, lines.first.end)
           .toStringAsFixed(1);
     } else {
-      print('angle controller inner angle ${_calcService.getInnerAngle(lines.first, lines.last)}');
+      print(
+          'angle controller inner angle ${_calcService.getInnerAngle(lines.first, lines.last)}');
       _angleController.text = _calcService
           .getInnerAngle(lines.first, lines.last)
           .toStringAsFixed(1);
@@ -246,16 +247,20 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  /// Deletes all drawn lines.
   Future<void> _clearCanvas() async {
-    BlocProvider.of<DrawingWidgetBloc>(context).add((SegmentDeleted()));
+    BlocProvider.of<DrawingWidgetBloc>(context).add((LinesDeleted()));
   }
 
+  /// Toggles the selection mode in which the user can select one ore multiple 
+  /// [Line]s.
   void _toggleSelectionMode(bool value) {
     context
         .read<DrawingPageBloc>()
         .add(DrawingPageSelectionModeChanged(selectionMode: value));
   }
 
+  /// Navigates to the next Page and passes the selected lines to the next Page.
   void _goToNextPage() {
     List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
     BlocProvider.of<ConfigPageBloc>(context)
@@ -264,14 +269,19 @@ class _DrawingPageState extends State<DrawingPage> {
     Navigator.of(context).pushNamed('/config');
   }
 
+  /// Undo the last action.
   void _undo() {
     context.read<DrawingWidgetBloc>().add(LineDrawingUndo());
   }
 
+  /// Redo the last action.
   void _redo() {
     context.read<DrawingWidgetBloc>().add(LineDrawingRedo());
   }
 
+  /// Changes the angle of the selected [Line]s.
+  /// Note that different events are triggered depending on the number of 
+  /// selected [Line]s.
   void _changeAngle(double value) {
     List<Line> selectedLines =
         context.read<DrawingWidgetBloc>().state.selectedLines;
