@@ -238,8 +238,6 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     List<Line2> linesBeforeUndo = state.lines;
     lines.removeLast();
 
-    print('linesbrefore undo ${linesBeforeUndo.length}');
-
     emit(state.copyWith(lines: [], linesBeforeUndo: []));
     emit(state.copyWith(lines: lines, linesBeforeUndo: linesBeforeUndo));
   }
