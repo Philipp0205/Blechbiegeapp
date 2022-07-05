@@ -205,6 +205,7 @@ class GeometricCalculationsService {
     return (angle * radians2Degrees).abs();
   }
 
+  /// Returns the inner angle between two [Line]s.
   double getInnerAngle(Line lineA, Line lineB) {
     double angleA = getAngle(lineA.start, lineB.end);
     double angleB = getAngle(lineB.start, lineB.end);

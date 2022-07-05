@@ -117,8 +117,6 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     Offset newOffset = _calculationService.calculatePointWithAngle(
         selectedLine.start, event.length, event.angle);
 
-    print('changed angle length: ${event.length}');
-
     List<Line> lines = state.lines;
     Line newLine = selectedLine.copyWith(end: newOffset);
 
@@ -187,41 +185,42 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
   /// Selects the line nearest to the selected offset.
   void _selectLine(LineDrawingPanDown event, Emitter<DrawingWidgetState> emit) {
-    if (state.selectionMode == true) {
-      List<Line> lines = state.lines;
-      List<Line> selectedLines = state.selectedLines;
 
-      List<Offset> middlePoints = lines
-          .map((line) => _calculationService.getMiddle(line.start, line.end))
-          .toList();
-
-      List<Offset> offsets = lines.map((e) => e.start).toList();
-      List<Offset> ends = lines.map((e) => e.end).toList();
-
-      offsets.addAll(ends);
-
-      List<Offset> nearestMiddlePoint = _calculationService.getNNearestOffsets(
-          event.panDownOffset, middlePoints, 1);
-
-      int index = middlePoints.indexOf(nearestMiddlePoint.first);
-      Line selectedLine = lines[index];
-
-      if (selectedLine.isSelected) {
-        selectedLine = selectedLine.copyWith(isSelected: false);
-      } else {
-        selectedLine = selectedLine.copyWith(isSelected: true);
-      }
-
-      lines
-        ..removeAt(index)
-        ..insert(index, selectedLine);
-
-      selectedLines = lines.where((line) => line.isSelected).toList();
-
-      emit(state.copyWith(lines: [], selectedLines: []));
-      emit(state.copyWith(lines: lines, selectedLines: selectedLines));
+    // Check if selection Mode (Checkbox) is active.
+    if (state.selectionMode == false) {
+      return;
     }
+
+    List<Line> lines = state.lines;
+    List<Line> selectedLines = state.selectedLines;
+
+    List<Offset> middlePoints = lines
+        .map((line) => _calculationService.getMiddle(line.start, line.end))
+        .toList();
+
+    List<Offset> nearestMiddlePoint = _calculationService.getNNearestOffsets(
+        event.panDownOffset, middlePoints, 1);
+
+    int index = middlePoints.indexOf(nearestMiddlePoint.first);
+    Line selectedLine = lines[index];
+
+    selectedLine = _toggleLineSelection(selectedLine);
+
+    lines
+      ..removeAt(index)
+      ..insert(index, selectedLine);
+
+    selectedLines = lines.where((line) => line.isSelected).toList();
+
+    emit(state.copyWith(lines: [], selectedLines: []));
+    emit(state.copyWith(lines: lines, selectedLines: selectedLines));
   }
+
+  Line _toggleLineSelection(Line line) {
+    return line.copyWith(isSelected: !line.isSelected);
+  }
+
+
 
   /// Changes the selection mode
   void _toggleSelectionMode(LineDrawingSelectionModeSelected event,
