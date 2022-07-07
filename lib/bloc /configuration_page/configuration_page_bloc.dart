@@ -1,11 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../model/Line2.dart';
+import '../../model/OffsetAdapter.dart';
+import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../model/simulation/shape.dart';
+import '../../model/simulation/shape_type.dart';
 
 part 'configuration_page_event.dart';
 
@@ -23,7 +27,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
             showAngles: false,
             s: 5,
             r: 20)) {
-    on<ConfigPageCreated>(_setInitialSegment);
+    on<ConfigPageCreated>(_setInitialValues);
     on<ConfigCoordinatesShown>(_showCoordinates);
     on<ConfigEdgeLengthsShown>(_showEdgeLengths);
     on<ConfigAnglesShown>(_showAngles);
@@ -34,49 +38,27 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   }
 
   /// When no segment exists an initial segment gets created.
-  void _setInitialSegment(
-      ConfigPageCreated event, Emitter<ConfigPageState> emit) {
-    emit(state.copyWith(lines: event.lines));
+  Future<void> _setInitialValues(
+      ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
+    _openShapesBox();
   }
 
-  /// Moves a segment on the y-axis to fit another canvas and not overshoot it.
-  List<SegmentOffset> _cropSegmentToArea(Segment segment) {
-    Map<int, double> xValues = {};
-    Map<int, double> yValues = {};
+  /// Registers all adapters needed to save shape objects in the database.
+  Future<Box> _openShapesBox() async {
+    await Hive.initFlutter();
+    Hive.registerAdapter(ShapeAdapter());
+    Hive.registerAdapter(LineAdapter());
+    Hive.registerAdapter(OffsetAdapter());
+    Hive.registerAdapter(ShapeTypeAdapter());
+    return await Hive.openBox('shapes');
+  }
 
-    List<SegmentOffset> path = segment.path;
-
-    path.forEach((o) {
-      xValues.addEntries([MapEntry(path.indexOf(o), o.offset.dx)]);
-      yValues.addEntries([MapEntry(path.indexOf(o), o.offset.dy)]);
-    });
-
-    var xEntries = xValues.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-    var yEntries = yValues.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    xValues
-      ..clear()
-      ..addEntries(xEntries);
-    yValues
-      ..clear()
-      ..addEntries(yEntries);
-
-    print('');
-
-    SegmentOffset highestY = segment.path[yValues.entries.first.key];
-
-    List<SegmentOffset> result = [];
-
-    path.forEach((o) {
-      Offset offset =
-          new Offset(o.offset.dx, o.offset.dy - (highestY.offset.dy - 40));
-
-      result.add(o.copyWith(offset: offset));
-    });
-
-    return result;
+  /// Save [Shape] to hive database.
+  void _saveShapeToDatabase(Shape shape) {
+    print('save shape');
+    Box box = Hive.box('shapes');
+    box.add(shape);
+    // emit(state.copyWith(shapes: event.shapes));
   }
 
   /// Decides depending on the [CheckBoxEnum] what should be shown.
@@ -123,13 +105,12 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   }
 
   /// Saves a to the state (no DB involved here).
-  void _saveShape(ConfigShapeAdded event, Emitter<ConfigPageState> emit) {
+  Future<void> _saveShape(ConfigShapeAdded event, Emitter<ConfigPageState> emit) async {
     List<List<Line>> lines = state.shapes.map((shape) => shape.lines).toList();
     int index = lines.indexOf(event.shape.lines);
     List<Shape> shapes = state.shapes;
 
     if (_shapeAlreadyExists(event.shape, shapes)) {
-
       shapes
         ..removeAt(index)
         ..insert(index, event.shape);
@@ -138,9 +119,10 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
       shapes.add(event.shape);
     }
 
+    _saveShapeToDatabase(event.shape);
+
     print('emitted state ${shapes[0].name}');
     emit(state.copyWith(shapes: []));
-    emit(state.copyWith(shapes: shapes));
   }
 
   bool _shapeAlreadyExists(Shape shape, List<Shape> shapes) {

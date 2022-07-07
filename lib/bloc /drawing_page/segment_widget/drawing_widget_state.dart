@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../model/Line2.dart';
+import '../../../model/line.dart';
 import '../../../model/appmodes.dart';
 
 class DrawingWidgetState extends Equatable {

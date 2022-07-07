@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
+import 'package:open_bsp/model/OffsetAdapter.dart';
 import 'package:open_bsp/model/simulation/shape.dart';
+import 'package:open_bsp/persistence/database_service.dart';
 
-import '../../model/Line2.dart';
+import '../../model/line.dart';
+import '../../model/offset.dart';
+import '../../model/simulation/shape_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.
 class AddShapeBottomSheet extends StatefulWidget {
@@ -27,6 +33,8 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
   String? dropdownValue = 'Unterwange';
 
   _AddShapeBottomSheetState({required this.selectedShape});
+
+  DatabaseService _service = DatabaseService();
 
   @override
   void initState() {
@@ -163,10 +171,10 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     Shape shape =
         new Shape(name: _nameController.text, lines: lines, type: type);
 
-    context.read<ConfigPageBloc>().add(ConfigShapeAdded(shape: shape));
-
+    context.read<ShapesPageBloc>().add(ShapeAdded(shape: shape));
 
     if (selectedShape == null) {
+
       Navigator.of(context).pushNamed("/shapes");
     } else {
       Navigator.pop(context);
@@ -185,4 +193,3 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
   }
 }
 
-enum ShapeType { lowerBeam, upperBeam, bendingBeam }

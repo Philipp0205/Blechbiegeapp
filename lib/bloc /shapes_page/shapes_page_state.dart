@@ -1,12 +1,20 @@
 part of 'shapes_page_bloc.dart';
 
-abstract class ShapesPageState extends Equatable {
+class ShapesPageState extends Equatable {
   final List<Shape> shapes;
 
   const ShapesPageState({required this.shapes});
 
   @override
   List<Object> get props => [shapes];
+
+  ShapesPageState copyWith({
+    List<Shape>? shapes,
+  }) {
+    return ShapesPageState(
+      shapes: shapes ?? this.shapes,
+    );
+  }
 }
 
 class ShapesPageInitial extends ShapesPageState {

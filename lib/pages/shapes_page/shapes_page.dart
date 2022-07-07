@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
+import 'package:open_bsp/persistence/database_service.dart';
 
 import '../../model/simulation/shape.dart';
 
@@ -12,21 +13,48 @@ class ShapesPage extends StatefulWidget {
 
   @override
   State<ShapesPage> createState() => _ShapesPageState();
+
 }
 
 class _ShapesPageState extends State<ShapesPage> {
+  DatabaseService _service = DatabaseService();
+
+  /// Open the shape box and get all shapes.
+  @override
+   initState() {
+    super.initState();
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    // List<Shape> shapes = context.read<ShapesPageBloc>().state.shapes;
+    // context.read<ShapesPageBloc>().add(ShapesSavedToDisk(shapes: shapes));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Werkzeuge')),
-      body: BlocBuilder<ConfigPageBloc, ConfigPageState>(
+      appBar: AppBar(
+          title: Row(
+            children: [
+              Text('Werkzeuge'),
+              Spacer(),
+              ElevatedButton(
+                  onPressed: () => Hive.close(),
+                  child: Text('Speichern')),
+            ],
+          )),
+      body: BlocBuilder<ShapesPageBloc, ShapesPageState>(
         buildWhen: (prev, current) {
-          List<String> prevNames = prev.shapes.map((shape) => shape.name).toList();
-          List<String> currentNames = current.shapes.map((shape) => shape.name).toList();
+          List<String> prevNames =
+              prev.shapes.map((shape) => shape.name).toList();
+          List<String> currentNames =
+              current.shapes.map((shape) => shape.name).toList();
           return prevNames != currentNames;
         },
         builder: (context, state) {
-          print('shape name: ${state.shapes[0].name}');
           return state.shapes.isNotEmpty
               ? ListView.builder(
                   itemCount: state.shapes.length,
@@ -42,7 +70,8 @@ class _ShapesPageState extends State<ShapesPage> {
                           motion: const ScrollMotion(),
 
                           // A pane can dismiss the Slidable.
-                          dismissible: DismissiblePane(onDismissed: () {
+                          dismissible: DismissiblePane(
+                              onDismissed: () {
                             print('${state.shapes.length} remaining shapes');
                             context
                                 .read<ShapesPageBloc>()
@@ -106,5 +135,6 @@ class _ShapesPageState extends State<ShapesPage> {
         builder: (BuildContext context) {
           return AddShapeBottomSheet(selectedShape: shape);
         });
+
   }
 }

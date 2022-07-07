@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:vector_math/vector_math.dart';
 
-import '../model/Line2.dart';
+import '../model/line.dart';
 import '../model/segment_offset.dart';
 import '../model/segment_widget/segment.dart';
 

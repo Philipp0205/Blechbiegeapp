@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../model/Line2.dart';
+import '../../model/line.dart';
 import '../../model/simulation/shape.dart';
 
 part 'simulation_page_event.dart';
