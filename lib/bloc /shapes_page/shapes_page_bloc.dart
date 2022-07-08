@@ -20,7 +20,6 @@ class ShapesPageBloc extends Bloc<ShapesPageEvent, ShapesPageState> {
     on<ShapeAdded>(_addShape);
     on<ShapeDeleted>(_deleteShape);
     on<ShapeEdited>(_editShape);
-    on<ShapesSavedToDisk>(_saveShapesToDisk);
   }
 
   Future<void> _addShape(
@@ -50,6 +49,7 @@ class ShapesPageBloc extends Bloc<ShapesPageEvent, ShapesPageState> {
 
   List<Shape> shapes2 = box.toMap().values.toList().cast<Shape>();
 
+    emit(state.copyWith(shapes: []));
     emit(state.copyWith(shapes: shapes2));
   }
 
@@ -61,18 +61,12 @@ class ShapesPageBloc extends Bloc<ShapesPageEvent, ShapesPageState> {
 
   /// Called initially one time when the shapes page is created.
   FutureOr<void> _shapesPageCreated(
-      ShapesPageCreated event, Emitter<ShapesPageState> emit) {
-    print('shapes page created');
+      ShapesPageCreated event, Emitter<ShapesPageState> emit) async {
+    Box box = await _service.createBox('shapes');
     List<Shape> shapes = box.toMap().values.toList().cast<Shape>();
     print('loaded {${shapes.length}} shapes');
 
-    emit(state.copyWith(shapes: []));
     emit(state.copyWith(shapes: shapes));
-
   }
 
-  void _saveShapesToDisk(ShapesSavedToDisk event, Emitter<ShapesPageState> emit) {
-    print('save shapes to disk');
-    box.close();
-  }
 }

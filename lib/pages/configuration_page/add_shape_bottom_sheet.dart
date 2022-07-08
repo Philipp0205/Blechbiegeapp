@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
-import 'package:open_bsp/model/OffsetAdapter.dart';
 import 'package:open_bsp/model/simulation/shape.dart';
 import 'package:open_bsp/persistence/database_service.dart';
 
 import '../../model/line.dart';
-import '../../model/offset.dart';
 import '../../model/simulation/shape_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.
@@ -36,24 +32,27 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
 
   DatabaseService _service = DatabaseService();
 
+  /// Fills in the TextField and dropdown with initial values of the selected
+  /// shape if present.
   @override
   void initState() {
     super.initState();
     if (selectedShape != null) {
       _nameController.text = selectedShape!.name;
-      print('initial type ${_getNameOfType(selectedShape!.type)}');
       setState(() {
         dropdownValue = _getNameOfType(selectedShape!.type);
       });
     }
   }
 
+  /// Disposes the TextField controller when page is not needed anymore.
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
   }
 
+  /// Builds the bottom sheet.
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -67,7 +66,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
               buildTitleRow(),
               Divider(),
               buildNameRow(),
-              buildButtonRow(context),
+              buildButtonRow(state, context),
             ],
           ),
         );
@@ -75,7 +74,8 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
-  Row buildButtonRow(BuildContext context) {
+  /// Builds the row containing two buttons.
+  Row buildButtonRow(ConfigPageState state, BuildContext context) {
     return Row(
       children: [
         ElevatedButton(
@@ -90,6 +90,9 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
         ),
         ElevatedButton(
           onPressed: () {
+            context
+                .read<ShapesPageBloc>()
+                .add(ShapesPageCreated(shapes: state.shapes));
             Navigator.of(context).pushNamed("/shapes");
           },
           child: Text('Übersicht Werkzeuge'),
@@ -98,6 +101,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
+  /// Builds the row where the suer can set the name and the type of the shape.
   Row buildNameRow() {
     return Row(
       children: [
@@ -138,6 +142,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
+  /// Builds the row containing the title of the bottom sheet.
   Row buildTitleRow() {
     return Row(
       children: [
@@ -149,10 +154,9 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
+  /// Saves the shape to the database and notified the [ShapesPageBloc].j
   void _saveShape(String name, List<Line> lines) {
     ShapeType type = ShapeType.upperBeam;
-
-    print('DropDownvalue ${dropdownValue}');
 
     switch (dropdownValue) {
       case 'Oberwange':
@@ -174,13 +178,13 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     context.read<ShapesPageBloc>().add(ShapeAdded(shape: shape));
 
     if (selectedShape == null) {
-
       Navigator.of(context).pushNamed("/shapes");
     } else {
       Navigator.pop(context);
     }
   }
 
+  /// Returns the name of the type of the shape.
   String _getNameOfType(ShapeType type) {
     switch (type) {
       case ShapeType.lowerBeam:
@@ -192,4 +196,3 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     }
   }
 }
-
