@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../model/line.dart';
-import '../../model/simulation/shape.dart';
+import '../../model/simulation/tool.dart';
 
 part 'simulation_page_event.dart';
 

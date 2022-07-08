@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../model/line.dart';
-import '../../model/simulation/shape.dart';
+import '../../model/simulation/tool.dart';
 
 class SimulationSketcher extends CustomPainter {
-  final List<Shape> shapes;
+  final List<Tool> shapes;
 
   SimulationSketcher({required this.shapes});
   @override

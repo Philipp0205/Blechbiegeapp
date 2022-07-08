@@ -6,8 +6,8 @@ import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/configuration_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
-import 'package:open_bsp/pages/shapes_page/shapes_page.dart';
 import 'package:open_bsp/pages/simulation_page/simulation_page.dart';
+import 'package:open_bsp/pages/tool_page/tool_page.dart';
 import 'package:open_bsp/services/color_service.dart';
 
 import 'bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const DrawingPage(),
           '/config': (context) => const ConfigurationPage(),
           '/third': (context) => const SimulationPage(),
-          '/shapes': (context) => const ShapesPage()
+          '/shapes': (context) => const ToolPage()
         },
         // ),
       ),

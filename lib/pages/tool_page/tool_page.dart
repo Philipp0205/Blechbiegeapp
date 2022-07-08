@@ -6,17 +6,17 @@ import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
 import 'package:open_bsp/persistence/database_service.dart';
 
-import '../../model/simulation/shape.dart';
+import '../../model/simulation/tool.dart';
 
-class ShapesPage extends StatefulWidget {
-  const ShapesPage({Key? key}) : super(key: key);
+class ToolPage extends StatefulWidget {
+  const ToolPage({Key? key}) : super(key: key);
 
   @override
-  State<ShapesPage> createState() => _ShapesPageState();
+  State<ToolPage> createState() => _ToolPageState();
 
 }
 
-class _ShapesPageState extends State<ShapesPage> {
+class _ToolPageState extends State<ToolPage> {
   DatabaseService _service = DatabaseService();
 
   /// Open the shape box and get all shapes.
@@ -104,7 +104,7 @@ class _ShapesPageState extends State<ShapesPage> {
                               // An action can be bigger than the others.
                               flex: 2,
                               onPressed: (_) {
-                                _addShape(state.shapes[index]);
+                                _editShape(state.shapes[index]);
                               },
                               backgroundColor: Color(0xFF7BC043),
                               foregroundColor: Colors.white,
@@ -117,6 +117,9 @@ class _ShapesPageState extends State<ShapesPage> {
                         // The child of the Slidable is what the user sees when the
                         // component is not dragged.
                         child: ListTile(
+                          onTap: () {
+                            
+                          },
                           title: Text(state.shapes[index].name),
                           // child: const ListTile(title: Text('Slide me')),
                         ));
@@ -129,7 +132,9 @@ class _ShapesPageState extends State<ShapesPage> {
     );
   }
 
-  void _addShape(Shape shape) {
+  
+  /// Opens a modal bottom sheet where the shape can be edited.
+  void _editShape(Tool shape) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
