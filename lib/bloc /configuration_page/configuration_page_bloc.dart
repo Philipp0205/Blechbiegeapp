@@ -38,6 +38,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   /// When no segment exists an initial segment gets created.
   Future<void> _setInitialValues(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
+    emit(state.copyWith(lines: event.lines));
     _openShapesBox();
   }
 

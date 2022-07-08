@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
-import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
+import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
@@ -200,14 +200,14 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   /// Creates a new [Tool] using a [ModalBottomSheet]
   void _createShape(ConfigPageState state) {
-    ShapesPageBloc().add(ShapesPageCreated(shapes: state.shapes));
+    ToolPageBloc().add(ShapesPageCreated(shapes: state.shapes));
 
 
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         // No selected shape because new Shapes created.
-        return AddShapeBottomSheet(selectedShape: null);
+        return AddToolBottomSheet(selectedShape: null);
       },
     );
   }

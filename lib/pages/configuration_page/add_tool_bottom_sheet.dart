@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
 import 'package:open_bsp/persistence/database_service.dart';
 
@@ -9,18 +9,18 @@ import '../../model/line.dart';
 import '../../model/simulation/tool_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.
-class AddShapeBottomSheet extends StatefulWidget {
+class AddToolBottomSheet extends StatefulWidget {
   final Tool? selectedShape;
 
-  const AddShapeBottomSheet({Key? key, required this.selectedShape})
+  const AddToolBottomSheet({Key? key, required this.selectedShape})
       : super(key: key);
 
   @override
-  State<AddShapeBottomSheet> createState() =>
-      _AddShapeBottomSheetState(selectedShape: selectedShape);
+  State<AddToolBottomSheet> createState() =>
+      _AddToolBottomSheetState(selectedShape: selectedShape);
 }
 
-class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
+class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   final _nameController = TextEditingController();
   bool lowerCheek = false;
   bool upperCheek = false;
@@ -28,9 +28,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
 
   String? dropdownValue = 'Unterwange';
 
-  _AddShapeBottomSheetState({required this.selectedShape});
-
-  DatabaseService _service = DatabaseService();
+  _AddToolBottomSheetState({required this.selectedShape});
 
   /// Fills in the TextField and dropdown with initial values of the selected
   /// shape if present.
@@ -91,8 +89,12 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
         ElevatedButton(
           onPressed: () {
             context
-                .read<ShapesPageBloc>()
+                .read<ToolPageBloc>()
                 .add(ShapesPageCreated(shapes: state.shapes));
+
+            // Close bottom sheet
+            Navigator.pop(context);
+
             Navigator.of(context).pushNamed("/shapes");
           },
           child: Text('Übersicht Werkzeuge'),
@@ -154,7 +156,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
-  /// Saves the shape to the database and notified the [ShapesPageBloc].j
+  /// Saves the shape to the database and notified the [ToolPageBloc].j
   void _saveShape(String name, List<Line> lines) {
     ToolType type = ToolType.upperBeam;
 
@@ -175,7 +177,7 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     Tool shape =
         new Tool(name: _nameController.text, lines: lines, type: type);
 
-    context.read<ShapesPageBloc>().add(ShapeAdded(shape: shape));
+    context.read<ToolPageBloc>().add(ShapeAdded(shape: shape));
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");

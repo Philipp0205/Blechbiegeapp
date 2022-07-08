@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/configuration_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
           create: (_) => SimulationPageBloc(),
         ),
         BlocProvider(
-          create: (_) => ShapesPageBloc(),
+          create: (_) => ToolPageBloc(),
         )
       ],
 
