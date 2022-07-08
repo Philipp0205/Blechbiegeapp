@@ -9,7 +9,7 @@ import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
-import '../../model/Line2.dart';
+import '../../model/line.dart';
 import 'drawing_widget.dart';
 
 /// On this page the user can draw a single line representing the the profile

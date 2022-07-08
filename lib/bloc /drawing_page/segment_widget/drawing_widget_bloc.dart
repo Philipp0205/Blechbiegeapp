@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_state.dart';
-import 'package:open_bsp/model/Line2.dart';
+import 'package:open_bsp/model/line.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/model/appmodes.dart';
 

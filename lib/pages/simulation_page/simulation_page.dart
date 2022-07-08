@@ -4,8 +4,9 @@ import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
 import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
 
-import '../../model/Line2.dart';
+import '../../model/line.dart';
 import '../../model/simulation/shape.dart';
+import '../../model/simulation/shape_type.dart';
 
 class SimulationPage extends StatefulWidget {
   const SimulationPage({Key? key}) : super(key: key);

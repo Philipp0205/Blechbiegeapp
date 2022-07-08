@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
-import '../../model/Line2.dart';
+import '../../model/line.dart';
 import '../../model/simulation/shape.dart';
+import '../../model/simulation/shape_type.dart';
 import 'config_page_segment_widget.dart';
 
 class ConfigurationPage extends StatefulWidget {
@@ -126,7 +128,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             width: 30,
           ),
           ElevatedButton(
-              onPressed: () => _createShape(state.lines),
+              onPressed: () => _createShape(state),
               child: Text('+ Werkzeug'))
         ],
       ),
@@ -186,6 +188,8 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   .read<SimulationPageBloc>()
                   .add(SimulationPageCreated(lines: state.lines));
 
+
+
               Navigator.of(context).pushNamed("/third");
             },
           ),
@@ -195,7 +199,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   /// Creates a new [Shape] using a [ModalBottomSheet]
-  void _createShape(List<Line> lines) {
+  void _createShape(ConfigPageState state) {
+    ShapesPageBloc().add(ShapesPageCreated(shapes: state.shapes));
+
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {

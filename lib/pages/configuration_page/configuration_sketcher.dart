@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math.dart' as v;
 
-import '../../model/Line2.dart';
+import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/segment_offset.dart';
 import '../../services/geometric_calculations_service.dart';

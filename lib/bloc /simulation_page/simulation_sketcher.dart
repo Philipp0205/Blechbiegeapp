@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../model/Line2.dart';
+import '../../model/line.dart';
 import '../../model/simulation/shape.dart';
 
 class SimulationSketcher extends CustomPainter {

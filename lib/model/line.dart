@@ -1,10 +1,17 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
+part 'line.g.dart';
+
+@HiveType(typeId: 2)
 class Line {
+  @HiveField(1)
   Offset start;
+  @HiveField(2)
   Offset end;
+  @HiveField(3)
   bool isSelected;
 
   Line({required this.start, required this.end, required this.isSelected});
