@@ -1,36 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
-import 'package:open_bsp/model/simulation/shape.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
+import 'package:open_bsp/model/simulation/tool.dart';
 import 'package:open_bsp/persistence/database_service.dart';
 
 import '../../model/line.dart';
-import '../../model/simulation/shape_type.dart';
+import '../../model/simulation/tool_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.
-class AddShapeBottomSheet extends StatefulWidget {
-  final Shape? selectedShape;
+class AddToolBottomSheet extends StatefulWidget {
+  final Tool? selectedShape;
 
-  const AddShapeBottomSheet({Key? key, required this.selectedShape})
+  const AddToolBottomSheet({Key? key, required this.selectedShape})
       : super(key: key);
 
   @override
-  State<AddShapeBottomSheet> createState() =>
-      _AddShapeBottomSheetState(selectedShape: selectedShape);
+  State<AddToolBottomSheet> createState() =>
+      _AddToolBottomSheetState(selectedShape: selectedShape);
 }
 
-class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
+class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   final _nameController = TextEditingController();
   bool lowerCheek = false;
   bool upperCheek = false;
-  final Shape? selectedShape;
+  final Tool? selectedShape;
 
   String? dropdownValue = 'Unterwange';
 
-  _AddShapeBottomSheetState({required this.selectedShape});
-
-  DatabaseService _service = DatabaseService();
+  _AddToolBottomSheetState({required this.selectedShape});
 
   /// Fills in the TextField and dropdown with initial values of the selected
   /// shape if present.
@@ -91,8 +89,12 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
         ElevatedButton(
           onPressed: () {
             context
-                .read<ShapesPageBloc>()
+                .read<ToolPageBloc>()
                 .add(ShapesPageCreated(shapes: state.shapes));
+
+            // Close bottom sheet
+            Navigator.pop(context);
+
             Navigator.of(context).pushNamed("/shapes");
           },
           child: Text('Übersicht Werkzeuge'),
@@ -154,28 +156,28 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
     );
   }
 
-  /// Saves the shape to the database and notified the [ShapesPageBloc].j
+  /// Saves the shape to the database and notified the [ToolPageBloc].j
   void _saveShape(String name, List<Line> lines) {
-    ShapeType type = ShapeType.upperBeam;
+    ToolType type = ToolType.upperBeam;
 
     switch (dropdownValue) {
       case 'Oberwange':
-        type = ShapeType.upperBeam;
+        type = ToolType.upperBeam;
         print('saved shape type: ${type}');
         break;
       case 'Unterwange':
-        type = ShapeType.lowerBeam;
+        type = ToolType.lowerBeam;
         print('saved shape type: ${type}');
         break;
       case 'Biegewange':
-        type = ShapeType.bendingBeam;
+        type = ToolType.bendingBeam;
         print('saved shape type: ${type}');
     }
 
-    Shape shape =
-        new Shape(name: _nameController.text, lines: lines, type: type);
+    Tool shape =
+        new Tool(name: _nameController.text, lines: lines, type: type);
 
-    context.read<ShapesPageBloc>().add(ShapeAdded(shape: shape));
+    context.read<ToolPageBloc>().add(ShapeAdded(shape: shape));
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
@@ -185,13 +187,13 @@ class _AddShapeBottomSheetState extends State<AddShapeBottomSheet> {
   }
 
   /// Returns the name of the type of the shape.
-  String _getNameOfType(ShapeType type) {
+  String _getNameOfType(ToolType type) {
     switch (type) {
-      case ShapeType.lowerBeam:
+      case ToolType.lowerBeam:
         return 'Unterwange';
-      case ShapeType.upperBeam:
+      case ToolType.upperBeam:
         return 'Oberwange';
-      case ShapeType.bendingBeam:
+      case ToolType.bendingBeam:
         return 'Biegewange';
     }
   }

@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hive/hive.dart';
-import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
-import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
+import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
 import 'package:open_bsp/persistence/database_service.dart';
 
-import '../../model/simulation/shape.dart';
+import '../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../../model/line.dart';
+import '../../model/simulation/tool.dart';
 
-class ShapesPage extends StatefulWidget {
-  const ShapesPage({Key? key}) : super(key: key);
+class ToolPage extends StatefulWidget {
+  const ToolPage({Key? key}) : super(key: key);
 
   @override
-  State<ShapesPage> createState() => _ShapesPageState();
-
+  State<ToolPage> createState() => _ToolPageState();
 }
 
-class _ShapesPageState extends State<ShapesPage> {
+class _ToolPageState extends State<ToolPage> {
   DatabaseService _service = DatabaseService();
 
   /// Open the shape box and get all shapes.
   @override
-   initState() {
+  initState() {
     super.initState();
   }
-
 
   @override
   void dispose() {
@@ -38,26 +38,25 @@ class _ShapesPageState extends State<ShapesPage> {
     return Scaffold(
       appBar: AppBar(
           title: Row(
-            children: [
-              Text('Werkzeuge'),
-              Spacer(),
-              ElevatedButton(
-                  onPressed: () => Hive.close(),
-                  child: Text('Speichern')),
-            ],
-          )),
-      body: BlocBuilder<ShapesPageBloc, ShapesPageState>(
+        children: [
+          Text('Werkzeuge'),
+          Spacer(),
+          ElevatedButton(
+              onPressed: () => Hive.close(), child: Text('Speichern')),
+        ],
+      )),
+      body: BlocBuilder<ToolPageBloc, ToolPageState>(
         buildWhen: (prev, current) {
           List<String> prevNames =
-              prev.shapes.map((shape) => shape.name).toList();
+              prev.tools.map((shape) => shape.name).toList();
           List<String> currentNames =
-              current.shapes.map((shape) => shape.name).toList();
+              current.tools.map((shape) => shape.name).toList();
           return prevNames != currentNames;
         },
         builder: (context, state) {
-          return state.shapes.isNotEmpty
+          return state.tools.isNotEmpty
               ? ListView.builder(
-                  itemCount: state.shapes.length,
+                  itemCount: state.tools.length,
                   itemBuilder: (context, index) {
                     /// List with [Shape]s.
                     return Slidable(
@@ -70,12 +69,11 @@ class _ShapesPageState extends State<ShapesPage> {
                           motion: const ScrollMotion(),
 
                           // A pane can dismiss the Slidable.
-                          dismissible: DismissiblePane(
-                              onDismissed: () {
-                            print('${state.shapes.length} remaining shapes');
+                          dismissible: DismissiblePane(onDismissed: () {
+                            print('${state.tools.length} remaining shapes');
                             context
-                                .read<ShapesPageBloc>()
-                                .add(ShapeDeleted(shape: state.shapes[index]));
+                                .read<ToolPageBloc>()
+                                .add(ShapeDeleted(shape: state.tools[index]));
                           }),
 
                           // All actions are defined in the children parameter.
@@ -84,9 +82,9 @@ class _ShapesPageState extends State<ShapesPage> {
                             SlidableAction(
                               onPressed: (_) {
                                 print(
-                                    '${state.shapes.length} remaining shapes');
-                                context.read<ShapesPageBloc>().add(
-                                    ShapeDeleted(shape: state.shapes[index]));
+                                    '${state.tools.length} remaining shapes');
+                                context.read<ToolPageBloc>().add(
+                                    ShapeDeleted(shape: state.tools[index]));
                               },
                               backgroundColor: Color(0xFFFE4A49),
                               foregroundColor: Colors.white,
@@ -104,7 +102,7 @@ class _ShapesPageState extends State<ShapesPage> {
                               // An action can be bigger than the others.
                               flex: 2,
                               onPressed: (_) {
-                                _addShape(state.shapes[index]);
+                                _editShape(state.tools[index]);
                               },
                               backgroundColor: Color(0xFF7BC043),
                               foregroundColor: Colors.white,
@@ -117,7 +115,8 @@ class _ShapesPageState extends State<ShapesPage> {
                         // The child of the Slidable is what the user sees when the
                         // component is not dragged.
                         child: ListTile(
-                          title: Text(state.shapes[index].name),
+                          onTap: () => _loadTool(context, state.tools[index]),
+                          title: Text(state.tools[index].name),
                           // child: const ListTile(title: Text('Slide me')),
                         ));
                   })
@@ -129,12 +128,21 @@ class _ShapesPageState extends State<ShapesPage> {
     );
   }
 
-  void _addShape(Shape shape) {
+  /// Opens a modal bottom sheet where the shape can be edited.
+  void _editShape(Tool shape) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
-          return AddShapeBottomSheet(selectedShape: shape);
+          return AddToolBottomSheet(selectedShape: shape);
         });
+  }
+
+  /// Load the [Line]s for the given [tool] and pushes them into the
+  /// [ConfigPageBloc].
+  void _loadTool(BuildContext context, Tool tool) {
+    List<Line> lines = tool.lines;
+    context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines));
+    Navigator.of(context).pop();
 
   }
 }

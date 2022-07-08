@@ -1,39 +1,39 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'shape_type.dart';
+part of 'tool_type.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ShapeTypeAdapter extends TypeAdapter<ShapeType> {
+class ToolTypeAdapter extends TypeAdapter<ToolType> {
   @override
   final int typeId = 4;
 
   @override
-  ShapeType read(BinaryReader reader) {
+  ToolType read(BinaryReader reader) {
     switch (reader.readByte()) {
       case 1:
-        return ShapeType.lowerBeam;
+        return ToolType.lowerBeam;
       case 2:
-        return ShapeType.upperBeam;
+        return ToolType.upperBeam;
       case 3:
-        return ShapeType.bendingBeam;
+        return ToolType.bendingBeam;
       default:
-        return ShapeType.lowerBeam;
+        return ToolType.lowerBeam;
     }
   }
 
   @override
-  void write(BinaryWriter writer, ShapeType obj) {
+  void write(BinaryWriter writer, ToolType obj) {
     switch (obj) {
-      case ShapeType.lowerBeam:
+      case ToolType.lowerBeam:
         writer.writeByte(1);
         break;
-      case ShapeType.upperBeam:
+      case ToolType.upperBeam:
         writer.writeByte(2);
         break;
-      case ShapeType.bendingBeam:
+      case ToolType.bendingBeam:
         writer.writeByte(3);
         break;
     }
@@ -45,7 +45,7 @@ class ShapeTypeAdapter extends TypeAdapter<ShapeType> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ShapeTypeAdapter &&
+      other is ToolTypeAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

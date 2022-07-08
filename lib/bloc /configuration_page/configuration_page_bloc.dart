@@ -1,15 +1,13 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../model/OffsetAdapter.dart';
 import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
-import '../../model/segment_offset.dart';
-import '../../model/simulation/shape.dart';
-import '../../model/simulation/shape_type.dart';
+import '../../model/simulation/tool.dart';
+import '../../model/simulation/tool_type.dart';
 
 part 'configuration_page_event.dart';
 
@@ -40,21 +38,22 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   /// When no segment exists an initial segment gets created.
   Future<void> _setInitialValues(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
+    emit(state.copyWith(lines: event.lines));
     _openShapesBox();
   }
 
   /// Registers all adapters needed to save shape objects in the database.
   Future<Box> _openShapesBox() async {
     await Hive.initFlutter();
-    Hive.registerAdapter(ShapeAdapter());
+    Hive.registerAdapter(ToolAdapter());
     Hive.registerAdapter(LineAdapter());
     Hive.registerAdapter(OffsetAdapter());
-    Hive.registerAdapter(ShapeTypeAdapter());
+    Hive.registerAdapter(ToolTypeAdapter());
     return await Hive.openBox('shapes');
   }
 
-  /// Save [Shape] to hive database.
-  void _saveShapeToDatabase(Shape shape) {
+  /// Save [Tool] to hive database.
+  void _saveShapeToDatabase(Tool shape) {
     print('save shape');
     Box box = Hive.box('shapes');
     box.add(shape);
@@ -108,7 +107,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   Future<void> _saveShape(ConfigShapeAdded event, Emitter<ConfigPageState> emit) async {
     List<List<Line>> lines = state.shapes.map((shape) => shape.lines).toList();
     int index = lines.indexOf(event.shape.lines);
-    List<Shape> shapes = state.shapes;
+    List<Tool> shapes = state.shapes;
 
     if (_shapeAlreadyExists(event.shape, shapes)) {
       shapes
@@ -125,7 +124,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
     emit(state.copyWith(shapes: []));
   }
 
-  bool _shapeAlreadyExists(Shape shape, List<Shape> shapes) {
+  bool _shapeAlreadyExists(Tool shape, List<Tool> shapes) {
     List<List<Line>> lines = shapes.map((shape) => shape.lines).toList();
     return lines.contains(shape.lines);
   }

@@ -44,7 +44,7 @@ class ConfigRChanged extends ConfigurationPageEvent {
 }
 
 class ConfigShapeAdded extends ConfigurationPageEvent {
-  final Shape shape;
+  final Tool shape;
   const ConfigShapeAdded({required this.shape});
 }
 

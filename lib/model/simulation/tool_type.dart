@@ -1,10 +1,10 @@
 
 import 'package:hive/hive.dart';
 
-part 'shape_type.g.dart';
+part 'tool_type.g.dart';
 
 @HiveType(typeId: 4)
-enum ShapeType {
+enum ToolType {
   @HiveField(1)
   lowerBeam,
   @HiveField(2)

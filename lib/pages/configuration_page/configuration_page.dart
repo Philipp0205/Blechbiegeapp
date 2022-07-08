@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/shapes_page_bloc.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
-import 'package:open_bsp/pages/configuration_page/add_shape_bottom_sheet.dart';
+import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
-import '../../model/simulation/shape.dart';
-import '../../model/simulation/shape_type.dart';
+import '../../model/simulation/tool.dart';
+import '../../model/simulation/tool_type.dart';
 import 'config_page_segment_widget.dart';
 
 class ConfigurationPage extends StatefulWidget {
@@ -198,23 +198,23 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
-  /// Creates a new [Shape] using a [ModalBottomSheet]
+  /// Creates a new [Tool] using a [ModalBottomSheet]
   void _createShape(ConfigPageState state) {
-    ShapesPageBloc().add(ShapesPageCreated(shapes: state.shapes));
+    ToolPageBloc().add(ShapesPageCreated(shapes: state.shapes));
 
 
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         // No selected shape because new Shapes created.
-        return AddShapeBottomSheet(selectedShape: null);
+        return AddToolBottomSheet(selectedShape: null);
       },
     );
   }
 
   /// Will be removed later
-  List<Shape> createDebuggingShapes() {
-    List<Shape> shapes = [];
+  List<Tool> createDebuggingShapes() {
+    List<Tool> shapes = [];
 
     Size screenSize = MediaQuery.of(context).size;
     double width = screenSize.width - 13;
@@ -232,9 +232,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Line line4 = Line(start: bottom4, end: bottom1, isSelected: false);
 
     // create [Shape] consisting of the 4 [Line2] above.
-    Shape lowerBeam = Shape(
+    Tool lowerBeam = Tool(
       name: 'Unterwange',
-      type: ShapeType.lowerBeam,
+      type: ToolType.lowerBeam,
       lines: [line1, line2, line3, line4],
     );
 
@@ -249,10 +249,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Line line7 = Line(start: top3, end: top4, isSelected: false);
     Line line8 = Line(start: top4, end: top1, isSelected: false);
 
-    Shape upperBeam = new Shape(
+    Tool upperBeam = new Tool(
         name: "Oberwange",
         lines: [line5, line6, line7, line8],
-        type: ShapeType.lowerBeam);
+        type: ToolType.lowerBeam);
 
     Offset bending1 = new Offset(0, 260);
     Offset bending2 = new Offset(170, 260);
@@ -269,10 +269,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Line bendingLine4 =
         Line(start: bending4, end: bending1, isSelected: false);
 
-    Shape bendingBeam = new Shape(
+    Tool bendingBeam = new Tool(
         name: "Biegewange",
         lines: [bendingLine1, bendingLine2, bendingLine3, bendingLine4],
-        type: ShapeType.bendingBeam);
+        type: ToolType.bendingBeam);
 
     shapes.addAll([lowerBeam, upperBeam, bendingBeam]);
 
