@@ -1,7 +1,7 @@
-part of 'shapes_page_bloc.dart';
+part of 'tool_page_bloc.dart';
 
-abstract class ShapesPageEvent extends Equatable {
-  const ShapesPageEvent();
+abstract class ToolPageEvent extends Equatable {
+  const ToolPageEvent();
 
   @override
   List<Object> get props => [];
@@ -9,30 +9,30 @@ abstract class ShapesPageEvent extends Equatable {
 
 
 /// Event which is called when the shape page is created.
-class ShapesPageCreated extends ShapesPageEvent {
+class ShapesPageCreated extends ToolPageEvent {
   final List<Tool> shapes;
 
   ShapesPageCreated({required this.shapes});
 }
 
 /// A new [Tool] gets added to the list
-class ShapeAdded extends ShapesPageEvent {
+class ShapeAdded extends ToolPageEvent {
   final Tool shape;
   ShapeAdded({required this.shape});
 }
 /// A [Tool] gets removed from the list
-class ShapeDeleted extends ShapesPageEvent {
+class ShapeDeleted extends ToolPageEvent {
   final Tool shape;
   ShapeDeleted({required this.shape});
 }
 
 /// A [Tool] gets edited
-class ShapeEdited extends ShapesPageEvent {
+class ShapeEdited extends ToolPageEvent {
   final Tool shape;
   ShapeEdited({required this.shape});
 }
 
-class ShapesSavedToDisk extends ShapesPageEvent {
+class ShapesSavedToDisk extends ToolPageEvent {
   final List<Tool> shapes;
   ShapesSavedToDisk({required this.shapes});
 }
