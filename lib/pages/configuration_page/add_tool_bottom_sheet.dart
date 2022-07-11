@@ -176,7 +176,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         print('saved shape type: ${type}');
     }
 
-
     Tool tool =
     new Tool(name: _nameController.text, lines: lines, type: type);
 

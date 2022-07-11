@@ -82,10 +82,10 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
             children: [
               IconButton(
                   icon: Icon(Icons.delete),
-                  onPressed: () => _deleteTool(context, state.selectedList)),
+                  onPressed: () => _deleteTool(context, state.selectedTools)),
               IconButton(
                   onPressed: () =>
-                      _editTool(context, state.tools, state.selectedList),
+                      _editTool(context, state.tools, state.selectedTools),
                   icon: Icon(Icons.edit)),
             ],
           ),
@@ -122,18 +122,19 @@ ListView buildListView(
                 context,
                 false,
               );
-              _selectedListChanged(context, state, index, false);
+              _selectedToolsChanged(context, state, state.tools[index], true);
             } else {
               _toggleSelectionMode(context, true);
-              _selectedListChanged(context, state, index, true);
+              // _selectedToolsChanged(context, state, state.tools[index], true);
             }
           },
           title: Text('${tools[index].name}'),
           trailing: state.isSelectionMode
               ? Checkbox(
-                  value: state.selectedList[index],
+                  value: state.selectedTools.values.toList()[0],
                   onChanged: (bool? x) => {
-                    _selectedListChanged(context, state, index, x!),
+                    _selectedToolsChanged(
+                        context, state, state.tools[index], x!),
                   },
                 )
               : const SizedBox.shrink(),
@@ -141,37 +142,38 @@ ListView buildListView(
       });
 }
 
+/// Toggle the selection mode.
 void _toggleSelectionMode(BuildContext context, bool value) {
   context
       .read<ToolPageBloc>()
       .add(SelectionModeChanged(isSelectionMode: value));
 }
 
-void _selectedListChanged(
-    BuildContext context, ToolPageState state, int index, bool value) {
+/// Triggered when a [Tool] is selected or deselected in the [ListView].
+/// If the [Tool] is selected, it is added to the [selectedTools] map.
+/// If the [Tool] is deselected, it is removed from the [selectedTools] map.
+void _selectedToolsChanged(
+    BuildContext context, ToolPageState state, Tool tool, bool value) {
   if (state.isSelectionMode) {
-    print('selectedListChanged');
     context
         .read<ToolPageBloc>()
-        .add(SelectedListChanged(index: index, value: value));
+        .add(SelectedToolsChanged(tool: tool, value: value));
   }
 }
 
 /// Trigger event that deletes the selected [Tool]s.
-void _deleteTool(BuildContext context, List<bool> selectedList) {
-  context.read<ToolPageBloc>().add(ShapeDeleted(selectedList: selectedList));
+/// Delete the selected [Tool]s and update the [ToolPageState].
+void _deleteTool(BuildContext context, Map<Tool, bool> selectedTools) {
+  context.read<ToolPageBloc>().add(ToolDeleted(selectedTools: selectedTools));
 }
 
 /// Trigger event that edits the selected [Tool]s.
 /// Opens a modal bottom sheet where the shape can be edited.
 void _editTool(
-    BuildContext context, List<Tool> tools, List<bool> selectedList) {
-  int index = selectedList
-      .indexOf(selectedList.firstWhere((element) => element == true));
-
+    BuildContext context, List<Tool> tools, Map<Tool, bool> selectedTools) {
   showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return AddToolBottomSheet(selectedShape: tools[index]);
+        return AddToolBottomSheet(selectedShape: selectedTools.keys.first);
       });
 }

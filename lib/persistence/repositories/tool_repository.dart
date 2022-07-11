@@ -17,25 +17,32 @@ class ToolRepository {
   // Add given [tool] to the database.
   Future<void> addTool(Tool tool) async {
     Box box = await databaseProvider.createBox('tools');
-    box.add(tool);
+    String key =  _getKey(tool);
+    box.put(key, tool);
   }
 
   /// Delete the tool with the given [index].
-  Future<void> deleteTool(int index) async {
+  Future<void> deleteTool(Tool tool) async {
     Box box = await databaseProvider.createBox('tools');
-    box.deleteAt(index);
+    String key = _getKey(tool);
+    box.delete(key);
   }
 
   /// Update given [tool] in the database.
-  Future<void> updateTool(int index, Tool tool) async {
+  Future<void> updateTool(Tool tool) async {
     Box box = await databaseProvider.createBox('tools');
-    box.put(index, tool);
+    String key = _getKey(tool);
+    box.put(key, tool);
   }
 
   /// Delete all tools from the database.
   Future<void> deleteAllTools() async {
     Box box = await databaseProvider.createBox('tools');
     box.clear();
+  }
+
+  String _getKey(Tool tool) {
+    return tool.name.toLowerCase().replaceAll(' ', '-');
   }
 
 }
