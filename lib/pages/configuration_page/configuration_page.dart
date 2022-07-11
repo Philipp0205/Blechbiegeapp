@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
+import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
@@ -51,12 +52,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         builder: (context, state) {
       return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Text('Konfiguration')],
-          ),
-        ),
+        appBar: buildAppBar(),
         backgroundColor: Colors.white,
         floatingActionButton: buildFloatingActionButton(state, context),
         body: Container(
@@ -84,6 +80,16 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         ),
       );
     });
+  }
+
+  /// Builds the app bar of the page.
+  AppBar buildAppBar() {
+    return AppBar(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Text('Konfiguration')],
+      ),
+    );
   }
 
   /// [TextField]s where the user can change the metal sheet thickness and
@@ -128,8 +134,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             width: 30,
           ),
           ElevatedButton(
-              onPressed: () => _createShape(state),
-              child: Text('+ Werkzeug'))
+              onPressed: () => _createShape(state), child: Text('+ Werkzeug'))
         ],
       ),
     );
@@ -188,8 +193,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   .read<SimulationPageBloc>()
                   .add(SimulationPageCreated(lines: state.lines));
 
-
-
               Navigator.of(context).pushNamed("/third");
             },
           ),
@@ -200,8 +203,8 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   /// Creates a new [Tool] using a [ModalBottomSheet]
   void _createShape(ConfigPageState state) {
-    ToolPageBloc().add(ShapesPageCreated(shapes: state.shapes));
-
+    ToolPageBloc(context.read<ToolRepository>())
+        .add(ShapesPageCreated(shapes: state.shapes));
 
     showModalBottomSheet(
       context: context,
@@ -260,14 +263,12 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     Offset bending4 = new Offset(0, 230);
 
     // Create 4 [Line2] consisting of the 4 points above
-    Line bendingLine1 =
-        Line(start: bending1, end: bending2, isSelected: false);
+    Line bendingLine1 = Line(start: bending1, end: bending2, isSelected: false);
     Line bendingLine2 =
         Line(start: bending2, end: beinding3, isSelected: false);
     Line bendingLine3 =
         Line(start: beinding3, end: bending4, isSelected: false);
-    Line bendingLine4 =
-        Line(start: bending4, end: bending1, isSelected: false);
+    Line bendingLine4 = Line(start: bending4, end: bending1, isSelected: false);
 
     Tool bendingBeam = new Tool(
         name: "Biegewange",

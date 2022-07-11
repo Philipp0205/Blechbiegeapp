@@ -8,6 +8,8 @@ import 'package:open_bsp/pages/configuration_page/configuration_page.dart';
 import 'package:open_bsp/pages/drawing_page/drawing_page.dart';
 import 'package:open_bsp/pages/simulation_page/simulation_page.dart';
 import 'package:open_bsp/pages/tool_page/tool_page.dart';
+import 'package:open_bsp/persistence/database_provider.dart';
+import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 import 'package:open_bsp/services/color_service.dart';
 
 import 'bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
@@ -22,40 +24,47 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorService colorService = new ColorService();
-    return MultiBlocProvider(
+    return MultiRepositoryProvider(
       providers: [
-        BlocProvider(
-          create: (_) => DrawingWidgetBloc(),
+        RepositoryProvider<ToolRepository>(
+          create: (context) => ToolRepository(DatabaseProvider()),
         ),
-        BlocProvider(
-          create: (_) => DrawingPageBloc(),
-        ),
-        BlocProvider(
-          create: (_) => ConfigPageBloc(),
-        ),
-        BlocProvider(
-          create: (_) => SimulationPageBloc(),
-        ),
-        BlocProvider(
-          create: (_) => ToolPageBloc(),
-        )
       ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => DrawingWidgetBloc(),
+          ),
+          BlocProvider(
+            create: (_) => DrawingPageBloc(),
+          ),
+          BlocProvider(
+            create: (_) => ConfigPageBloc(),
+          ),
+          BlocProvider(
+            create: (_) => SimulationPageBloc(),
+          ),
+          BlocProvider(
+            create: (context) => ToolPageBloc(context.read<ToolRepository>()),
+          )
+        ],
 
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        // home: DrawingPage(),
-        theme: ThemeData(
-            primaryColor: Color(0xff009374),
-            primarySwatch:
-                colorService.buildMaterialColor(Color(0xff009374))),
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const DrawingPage(),
-          '/config': (context) => const ConfigurationPage(),
-          '/third': (context) => const SimulationPage(),
-          '/shapes': (context) => const ToolPage()
-        },
-        // ),
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          // home: DrawingPage(),
+          theme: ThemeData(
+              primaryColor: Color(0xff009374),
+              primarySwatch:
+                  colorService.buildMaterialColor(Color(0xff009374))),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const DrawingPage(),
+            '/config': (context) => const ConfigurationPage(),
+            '/third': (context) => const SimulationPage(),
+            '/shapes': (context) => const ToolPage()
+          },
+          // ),
+        ),
       ),
     );
   }

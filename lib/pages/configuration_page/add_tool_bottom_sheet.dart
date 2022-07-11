@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
-import 'package:open_bsp/persistence/database_service.dart';
+import 'package:open_bsp/persistence/database_provider.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool_type.dart';
@@ -145,6 +145,8 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   }
 
   /// Builds the row containing the title of the bottom sheet.
+  /// The title is either "Neues Werkzeug" or "Werkzeug bearbeiten".
+  /// The title is determined by the selected shape.
   Row buildTitleRow() {
     return Row(
       children: [
@@ -174,15 +176,17 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         print('saved shape type: ${type}');
     }
 
-    Tool shape =
-        new Tool(name: _nameController.text, lines: lines, type: type);
 
-    context.read<ToolPageBloc>().add(ShapeAdded(shape: shape));
+    Tool tool =
+    new Tool(name: _nameController.text, lines: lines, type: type);
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
+      context.read<ToolPageBloc>().add(ToolAdded(tool: tool));
     } else {
       Navigator.pop(context);
+      context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
+
     }
   }
 

@@ -8,23 +8,34 @@ class ToolRepository {
 
   ToolRepository(this.databaseProvider);
 
+  /// get all tools from the database.
   Future<List<Tool>> getTools() async {
     Box box = await databaseProvider.createBox('tools');
     return box.toMap().values.toList().cast<Tool>();
   }
-  
+
+  // Add given [tool] to the database.
   Future<void> addTool(Tool tool) async {
     Box box = await databaseProvider.createBox('tools');
     box.add(tool);
   }
 
-  Future<void> deleteTool(Tool tool) async {
+  /// Delete the tool with the given [index].
+  Future<void> deleteTool(int index) async {
     Box box = await databaseProvider.createBox('tools');
-    box.delete(tool);
+    box.deleteAt(index);
   }
 
-  Future<void> updateTool(Tool tool) async {
+  /// Update given [tool] in the database.
+  Future<void> updateTool(int index, Tool tool) async {
     Box box = await databaseProvider.createBox('tools');
-    box.put(tool, tool);
+    box.put(index, tool);
   }
+
+  /// Delete all tools from the database.
+  Future<void> deleteAllTools() async {
+    Box box = await databaseProvider.createBox('tools');
+    box.clear();
+  }
+
 }

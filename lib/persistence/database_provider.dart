@@ -1,6 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
-class DatabaseService {
+class DatabaseProvider {
 
   /// Create a new box for the given [boxName]
   /// If the box already exists, it will be opened.

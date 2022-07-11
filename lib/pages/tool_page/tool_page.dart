@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:hive/hive.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
+import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
-import 'package:open_bsp/persistence/database_service.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
@@ -18,8 +16,6 @@ class ToolPage extends StatefulWidget {
 }
 
 class _ToolPageState extends State<ToolPage> {
-  DatabaseService _service = DatabaseService();
-
   /// Open the shape box and get all shapes.
   @override
   initState() {
@@ -29,120 +25,153 @@ class _ToolPageState extends State<ToolPage> {
   @override
   void dispose() {
     super.dispose();
-    // List<Shape> shapes = context.read<ShapesPageBloc>().state.shapes;
-    // context.read<ShapesPageBloc>().add(ShapesSavedToDisk(shapes: shapes));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: Row(
-        children: [
-          Text('Werkzeuge'),
-          Spacer(),
-          ElevatedButton(
-              onPressed: () => Hive.close(), child: Text('Speichern')),
-        ],
-      )),
-      body: BlocBuilder<ToolPageBloc, ToolPageState>(
-        buildWhen: (prev, current) {
-          List<String> prevNames =
-              prev.tools.map((shape) => shape.name).toList();
-          List<String> currentNames =
-              current.tools.map((shape) => shape.name).toList();
-          return prevNames != currentNames;
-        },
-        builder: (context, state) {
-          return state.tools.isNotEmpty
-              ? ListView.builder(
-                  itemCount: state.tools.length,
-                  itemBuilder: (context, index) {
-                    /// List with [Shape]s.
-                    return Slidable(
-                        // Specify a key if the Slidable is dismissible.
-                        key: const ValueKey(0),
+    return BlocBuilder<ToolPageBloc, ToolPageState>(builder: (context, state) {
+      return DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: buildAppBar(context, state),
+          body: buildTabBarViews(state, context),
+        ),
+      );
+    });
+  }
+}
 
-                        // The start action pane is the one at the left or the top side.
-                        startActionPane: ActionPane(
-                          // A motion is a widget used to control how the pane animates.
-                          motion: const ScrollMotion(),
-
-                          // A pane can dismiss the Slidable.
-                          dismissible: DismissiblePane(onDismissed: () {
-                            print('${state.tools.length} remaining shapes');
-                            context
-                                .read<ToolPageBloc>()
-                                .add(ShapeDeleted(shape: state.tools[index]));
-                          }),
-
-                          // All actions are defined in the children parameter.
-                          children: [
-                            // A SlidableAction can have an icon and/or a label.
-                            SlidableAction(
-                              onPressed: (_) {
-                                print(
-                                    '${state.tools.length} remaining shapes');
-                                context.read<ToolPageBloc>().add(
-                                    ShapeDeleted(shape: state.tools[index]));
-                              },
-                              backgroundColor: Color(0xFFFE4A49),
-                              foregroundColor: Colors.white,
-                              icon: Icons.delete,
-                              label: 'Löschen',
-                            ),
-                          ],
-                        ),
-
-                        // The end action pane is the one at the right or the bottom side.
-                        endActionPane: ActionPane(
-                          motion: ScrollMotion(),
-                          children: [
-                            SlidableAction(
-                              // An action can be bigger than the others.
-                              flex: 2,
-                              onPressed: (_) {
-                                _editShape(state.tools[index]);
-                              },
-                              backgroundColor: Color(0xFF7BC043),
-                              foregroundColor: Colors.white,
-                              icon: Icons.drive_file_rename_outline,
-                              label: 'Ändern',
-                            ),
-                          ],
-                        ),
-
-                        // The child of the Slidable is what the user sees when the
-                        // component is not dragged.
-                        child: ListTile(
-                          onTap: () => _loadTool(context, state.tools[index]),
-                          title: Text(state.tools[index].name),
-                          // child: const ListTile(title: Text('Slide me')),
-                        ));
-                  })
-              : const Center(
-                  child: Text('List empty'),
-                );
-        },
+/// Build the pages of the [TabBarView].
+/// Build the [TarbBarView] with the containing three [Tab]s with
+/// lower beams, upper beams and bending beams.
+TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
+  return TabBarView(
+    children: [
+      buildListView(
+        state,
+        context,
+        state.tools.where((tool) => tool.type == ToolType.lowerBeam).toList(),
       ),
-    );
-  }
+      buildListView(
+        state,
+        context,
+        state.tools.where((tool) => tool.type == ToolType.upperBeam).toList(),
+      ),
+      buildListView(
+        state,
+        context,
+        state.tools.where((tool) => tool.type == ToolType.bendingBeam).toList(),
+      ),
+    ],
+  );
+}
 
-  /// Opens a modal bottom sheet where the shape can be edited.
-  void _editShape(Tool shape) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return AddToolBottomSheet(selectedShape: shape);
-        });
-  }
+/// Build the [AppBar] of the page.
+/// Build the [AppBar] with the title and two [IconButton]s to delete and
+/// edit a shape respectively. The [IconButton]s are only visible if in selection
+/// mode.
+AppBar buildAppBar(BuildContext context, ToolPageState state) {
+  return AppBar(
+    title: Row(
+      children: [
+        Text('Werkzeuge'),
+        Spacer(),
+        if (state.isSelectionMode)
+          // Delete button
+          Row(
+            children: [
+              IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () => _deleteTool(context, state.selectedList)),
+              IconButton(
+                  onPressed: () =>
+                      _editTool(context, state.tools, state.selectedList),
+                  icon: Icon(Icons.edit)),
+            ],
+          ),
+      ],
+    ),
+    bottom: TabBar(tabs: [
+      Tab(text: 'Unterwangen', icon: Icon(Icons.border_bottom)),
+      Tab(text: 'Oberwangen', icon: Icon(Icons.border_top)),
+      Tab(text: 'Biegewangen', icon: Icon(Icons.border_left)),
+    ]),
+  );
+}
 
-  /// Load the [Line]s for the given [tool] and pushes them into the
-  /// [ConfigPageBloc].
-  void _loadTool(BuildContext context, Tool tool) {
-    List<Line> lines = tool.lines;
-    context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines));
-    Navigator.of(context).pop();
+/// Load the [Line]s for the given [tool] and pushes them into the
+/// [ConfigPageBloc].
+void _loadTool(BuildContext context, Tool tool) {
+  List<Line> lines = tool.lines;
+  context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines));
+  Navigator.of(context).pop();
+}
 
+ListView buildListView(
+    ToolPageState state, BuildContext context, List<Tool> tools) {
+  return ListView.builder(
+      itemCount: tools.length,
+      itemBuilder: (_, int index) {
+        return ListTile(
+          onTap: () {
+            _loadTool(context, tools[index]);
+          },
+          onLongPress: () {
+            if (state.isSelectionMode) {
+              _toggleSelectionMode(
+                context,
+                false,
+              );
+              _selectedListChanged(context, state, index, false);
+            } else {
+              _toggleSelectionMode(context, true);
+              _selectedListChanged(context, state, index, true);
+            }
+          },
+          title: Text('${tools[index].name}'),
+          trailing: state.isSelectionMode
+              ? Checkbox(
+                  value: state.selectedList[index],
+                  onChanged: (bool? x) => {
+                    _selectedListChanged(context, state, index, x!),
+                  },
+                )
+              : const SizedBox.shrink(),
+        );
+      });
+}
+
+void _toggleSelectionMode(BuildContext context, bool value) {
+  context
+      .read<ToolPageBloc>()
+      .add(SelectionModeChanged(isSelectionMode: value));
+}
+
+void _selectedListChanged(
+    BuildContext context, ToolPageState state, int index, bool value) {
+  if (state.isSelectionMode) {
+    print('selectedListChanged');
+    context
+        .read<ToolPageBloc>()
+        .add(SelectedListChanged(index: index, value: value));
   }
+}
+
+/// Trigger event that deletes the selected [Tool]s.
+void _deleteTool(BuildContext context, List<bool> selectedList) {
+  context.read<ToolPageBloc>().add(ShapeDeleted(selectedList: selectedList));
+}
+
+/// Trigger event that edits the selected [Tool]s.
+/// Opens a modal bottom sheet where the shape can be edited.
+void _editTool(
+    BuildContext context, List<Tool> tools, List<bool> selectedList) {
+  int index = selectedList
+      .indexOf(selectedList.firstWhere((element) => element == true));
+
+  showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return AddToolBottomSheet(selectedShape: tools[index]);
+      });
 }
