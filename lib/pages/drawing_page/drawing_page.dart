@@ -263,6 +263,7 @@ class _DrawingPageState extends State<DrawingPage> {
   /// Navigates to the next Page and passes the selected lines to the next Page.
   void _goToNextPage() {
     List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
+
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(lines: lines));
 
