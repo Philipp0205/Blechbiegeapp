@@ -77,6 +77,7 @@ class _SimulationPageState extends State<SimulationPage> {
       name: 'Unterwange',
       type: ToolType.lowerBeam,
       lines: [line1, line2, line3, line4],
+      isSelected: false
     );
 
     Offset top1 = new Offset(width, 260);
@@ -93,7 +94,9 @@ class _SimulationPageState extends State<SimulationPage> {
     Tool upperBeam = new Tool(
         name: "Oberwange",
         lines: [line5, line6, line7, line8],
-        type: ToolType.lowerBeam);
+        type: ToolType.lowerBeam,
+      isSelected: false
+    );
 
     Offset bending1 = new Offset(0, 260);
     Offset bending2 = new Offset(170, 260);
@@ -113,7 +116,8 @@ class _SimulationPageState extends State<SimulationPage> {
     Tool bendingBeam = new Tool(
         name: "Biegewange",
         lines: [bendingLine1, bendingLine2, bendingLine3, bendingLine4],
-        type: ToolType.bendingBeam);
+        type: ToolType.bendingBeam,
+    isSelected: false);
 
     shapes.addAll([lowerBeam, upperBeam, bendingBeam]);
 

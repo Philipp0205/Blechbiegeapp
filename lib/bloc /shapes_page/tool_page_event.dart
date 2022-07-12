@@ -23,9 +23,9 @@ class ToolAdded extends ToolPageEvent {
 
 /// A [Tool] gets removed from the list
 class ToolDeleted extends ToolPageEvent {
-  final Map<Tool, bool> selectedTools;
+  final List<Tool> tools;
 
-  ToolDeleted({required this.selectedTools});
+  ToolDeleted({required this.tools});
 }
 
 /// A [Tool] gets edited.
@@ -55,7 +55,6 @@ class SelectionModeChanged extends ToolPageEvent {
 /// This event is also triggered when the [selectedList] is changed by the user.
 class SelectedToolsChanged extends ToolPageEvent {
   Tool tool;
-  bool value;
 
-  SelectedToolsChanged({required this.tool, required this.value});
+  SelectedToolsChanged({required this.tool});
 }

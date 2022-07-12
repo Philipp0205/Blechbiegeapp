@@ -122,6 +122,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
 
     print('emitted state ${shapes[0].name}');
     emit(state.copyWith(shapes: []));
+    emit(state.copyWith(shapes: shapes));
   }
 
   bool _shapeAlreadyExists(Tool shape, List<Tool> shapes) {
