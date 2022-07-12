@@ -60,7 +60,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     print('changeSegmentPartLength');
 
     List<Line> lines = state.lines;
-    Line selectedLine = lines.where((line) => line.isSelected).toList().first;
+    Line selectedLine = lines.where((line) => line.isSelected).toList().last;
 
     double currentLength = (selectedLine.start - selectedLine.end).distance;
 
