@@ -55,7 +55,6 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   /// Sets the initial angle in the angle text field.
-  ///
   /// When there are multiple [Line]s selected it show only the angle of
   /// the first Line.
   void _setAngle(List<Line> lines) {
@@ -64,17 +63,18 @@ class _DrawingPageState extends State<DrawingPage> {
           .getAngle(lines.first.start, lines.first.end)
           .toStringAsFixed(1);
     } else {
-      print(
-          'angle controller inner angle ${_calcService.getInnerAngle(lines.first, lines.last)}');
       _angleController.text = _calcService
           .getInnerAngle(lines.first, lines.last)
           .toStringAsFixed(1);
     }
   }
 
-  void _setLength(Line line) {
+  /// Sets the initial length in the length text field.
+  /// When multiple lines are selected the length of the last selected line
+  /// is used.
+  void _setLength(List<Line> lines) {
+    Line line = lines.last;
     double distance = (line.start - line.end).distance;
-
     _lengthController.text = distance.toStringAsFixed(1);
   }
 
@@ -91,7 +91,7 @@ class _DrawingPageState extends State<DrawingPage> {
           current.selectedLines.isNotEmpty,
       listener: (context, state) {
         _setAngle(state.selectedLines);
-        _setLength(state.selectedLines.first);
+        _setLength(state.selectedLines);
       },
 
       /// Rebuild the Widget if [DrawingPageState] changes.
