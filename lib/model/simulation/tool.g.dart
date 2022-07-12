@@ -20,19 +20,22 @@ class ToolAdapter extends TypeAdapter<Tool> {
       name: fields[1] as String,
       lines: (fields[2] as List).cast<Line>(),
       type: fields[3] as ToolType,
+      isSelected: fields[4] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Tool obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
       ..write(obj.lines)
       ..writeByte(3)
-      ..write(obj.type);
+      ..write(obj.type)
+      ..writeByte(4)
+      ..write(obj.isSelected);
   }
 
   @override

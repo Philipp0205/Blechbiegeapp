@@ -18,13 +18,13 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
   ToolPageBloc(this._toolRepository)
       : super(ShapesPageInitial(
-            tools: [], isSelectionMode: false, selectedList: [])) {
+            tools: [], isSelectionMode: false, selectedTools: <Tool, bool>{})) {
     on<ShapesPageCreated>(_shapesPageCreated);
     on<ToolAdded>(_addTool);
-    on<ShapeDeleted>(_deleteTool);
+    on<ToolDeleted>(_deleteTools);
     on<ToolEdited>(_editTool);
     on<SelectionModeChanged>(_toggleSelectionMode);
-    on<SelectedListChanged>(_changeSelectedList);
+    on<SelectedToolsChanged>(_changeSelectedList);
   }
 
   final ToolRepository _toolRepository;
@@ -34,36 +34,25 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The new tool is also added to the [selectedList].
   Future<void> _addTool(ToolAdded event, Emitter<ToolPageState> emit) async {
     _toolRepository.addTool(event.tool);
-    List<Tool> toolsFromRepo = await _toolRepository.getTools();
+    print('add new tool ${event.tool.name}');
 
-    print('add shape shapes page bloc');
-    List<Tool> shapes = state.tools;
-    shapes.add(event.tool);
+    List<Tool> tools = await _toolRepository.getTools();
 
-    Box box = await _service.createBox('shapes');
-    print('${box.length} shapes are saved');
     box.add(event.tool);
+    print('tools: ${box.length}');
 
-    emit(state.copyWith(tools: toolsFromRepo));
+    emit(state.copyWith(tools: tools));
   }
 
-  /// Delete the tool from the database.
-  Future<void> _deleteTool(
-      ShapeDeleted event, Emitter<ToolPageState> emit) async {
-    List<bool> selectedList = event.selectedList;
-
-    selectedList.forEach((element) {
-      if (element == true) {
-        int index = selectedList.indexOf(element);
-        print('delete index: $index');
-        _toolRepository.deleteTool(index);
-      }
+  /// Delete the tools from the database.
+  Future<void> _deleteTools(
+      ToolDeleted event, Emitter<ToolPageState> emit) async {
+    event.tools.forEach((tool) {
+      _toolRepository.deleteTool(tool);
     });
 
     List<Tool> tools = await _toolRepository.getTools();
-    print('godtools: ${tools.length}');
 
-    emit(state.copyWith(tools: []));
     emit(state.copyWith(tools: tools));
   }
 
@@ -71,12 +60,8 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The [index] is the index of the tool in the list of tools.
   /// If multiple tools are selected, the first [tool] is updated.
   Future<void> _editTool(ToolEdited event, Emitter<ToolPageState> emit) async {
-    List<bool> selectedList = state.selectedList;
-
-    int index = selectedList
-        .indexOf(selectedList.firstWhere((element) => element == true));
-
-    _toolRepository.updateTool(index, event.tool);
+    Tool selectedTool = state.tools.firstWhere((tool) => tool.isSelected);
+    _toolRepository.updateTool(selectedTool, event.tool);
     List<Tool> tools = await _toolRepository.getTools();
     emit(state.copyWith(tools: tools));
   }
@@ -85,31 +70,38 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// Shapes are loaded from the repository and saved in the state.
   FutureOr<void> _shapesPageCreated(
       ShapesPageCreated event, Emitter<ToolPageState> emit) async {
+    Map<Tool, bool> selectedTools = <Tool, bool>{};
+    // Generate initial selected tools list where all are unselected.
+
     List<Tool> tools = await _toolRepository.getTools();
 
-    emit(state.copyWith(tools: tools, isSelectionMode: false));
+    emit(state.copyWith(
+        tools: tools, isSelectionMode: false));
   }
 
   /// Called when the selection mode is changed.
   /// The selection mode is changed depending on the current mode.
   void _toggleSelectionMode(
       SelectionModeChanged event, Emitter<ToolPageState> emit) {
-    print('selectionModeChanged ${event.isSelectionMode}');
-    List<bool> selectedList =
-        List<bool>.generate(state.tools.length, (_) => false);
-
-    emit(state.copyWith(
-        isSelectionMode: event.isSelectionMode, selectedList: selectedList));
+    emit(state.copyWith(isSelectionMode: event.isSelectionMode));
   }
 
   /// Called when the selected list is changed.
   /// The selected list is changed when in selection mode.
   void _changeSelectedList(
-      SelectedListChanged event, Emitter<ToolPageState> emit) {
-    List<bool> selectedList = state.selectedList;
-    selectedList[event.index] = event.value;
+      SelectedToolsChanged event, Emitter<ToolPageState> emit) {
+    List<Tool> tools = state.tools;
+    Tool tool = event.tool;
 
-    emit(state.copyWith(selectedList: []));
-    emit(state.copyWith(selectedList: selectedList));
+    Tool newTool = tool.isSelected
+        ? tool.copyWith(isSelected: false)
+        : tool.copyWith(isSelected: true);
+
+    _toolRepository.updateTool(tool, newTool);
+
+    tools[tools.indexOf(tool)] = newTool;
+
+    emit(state.copyWith(tools: []));
+    emit(state.copyWith(tools: tools));
   }
 }

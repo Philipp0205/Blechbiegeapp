@@ -51,17 +51,20 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
         state,
         context,
         state.tools.where((tool) => tool.type == ToolType.lowerBeam).toList(),
+        ToolType.lowerBeam,
       ),
       buildListView(
-        state,
-        context,
-        state.tools.where((tool) => tool.type == ToolType.upperBeam).toList(),
-      ),
+          state,
+          context,
+          state.tools.where((tool) => tool.type == ToolType.upperBeam).toList(),
+          ToolType.upperBeam),
       buildListView(
-        state,
-        context,
-        state.tools.where((tool) => tool.type == ToolType.bendingBeam).toList(),
-      ),
+          state,
+          context,
+          state.tools
+              .where((tool) => tool.type == ToolType.bendingBeam)
+              .toList(),
+          ToolType.bendingBeam),
     ],
   );
 }
@@ -77,18 +80,17 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
         Text('Werkzeuge'),
         Spacer(),
         if (state.isSelectionMode)
-          // Delete button
-          Row(
-            children: [
-              IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () => _deleteTool(context, state.selectedList)),
-              IconButton(
-                  onPressed: () =>
-                      _editTool(context, state.tools, state.selectedList),
-                  icon: Icon(Icons.edit)),
-            ],
-          ),
+          // Show delete button when one or more tools are selected.
+          IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => _deleteTool(context, state)),
+        // Because only one tool can be edited at a time, the edit button is
+        // only visible when no tool is selected.
+        if (state.isSelectionMode &&
+            state.tools.where((tool) => tool.isSelected).length <= 1)
+          IconButton(
+              onPressed: () => _editTool(context, state.tools, state),
+              icon: Icon(Icons.edit)),
       ],
     ),
     bottom: TabBar(tabs: [
@@ -107,10 +109,13 @@ void _loadTool(BuildContext context, Tool tool) {
   Navigator.of(context).pop();
 }
 
-ListView buildListView(
-    ToolPageState state, BuildContext context, List<Tool> tools) {
+ListView buildListView(ToolPageState state, BuildContext context,
+    List<Tool> tools, ToolType toolType) {
+  List<Tool> toolsOfType =
+      tools.where((tool) => tool.type == toolType).toList();
+
   return ListView.builder(
-      itemCount: tools.length,
+      itemCount: toolsOfType.length,
       itemBuilder: (_, int index) {
         return ListTile(
           onTap: () {
@@ -122,18 +127,26 @@ ListView buildListView(
                 context,
                 false,
               );
-              _selectedListChanged(context, state, index, false);
+              _selectedToolsChanged(context, state, state.tools[index], true);
             } else {
               _toggleSelectionMode(context, true);
-              _selectedListChanged(context, state, index, true);
+              // _selectedToolsChanged(context, state, state.tools[index], true);
             }
           },
           title: Text('${tools[index].name}'),
           trailing: state.isSelectionMode
               ? Checkbox(
-                  value: state.selectedList[index],
-                  onChanged: (bool? x) => {
-                    _selectedListChanged(context, state, index, x!),
+                  value: toolsOfType
+                      .map((tool) => tool.isSelected)
+                      .toList()[index],
+                  onChanged: (bool? value) => {
+                    print('index: $index, value: $value'),
+                    _selectedToolsChanged(
+                        context,
+                        state,
+                        // Get the correct tool from the correct list...
+                        toolsOfType[index],
+                        value!),
                   },
                 )
               : const SizedBox.shrink(),
@@ -141,37 +154,40 @@ ListView buildListView(
       });
 }
 
+/// Toggle the selection mode.
 void _toggleSelectionMode(BuildContext context, bool value) {
   context
       .read<ToolPageBloc>()
       .add(SelectionModeChanged(isSelectionMode: value));
 }
 
-void _selectedListChanged(
-    BuildContext context, ToolPageState state, int index, bool value) {
+/// Triggered when a [Tool] is selected or deselected in the [ListView].
+/// If the [Tool] is selected, it is added to the [tools] map.
+/// If the [Tool] is deselected, it is removed from the [tools] map.
+void _selectedToolsChanged(
+    BuildContext context, ToolPageState state, Tool tool, bool value) {
   if (state.isSelectionMode) {
-    print('selectedListChanged');
-    context
-        .read<ToolPageBloc>()
-        .add(SelectedListChanged(index: index, value: value));
+    context.read<ToolPageBloc>().add(SelectedToolsChanged(tool: tool));
   }
 }
 
 /// Trigger event that deletes the selected [Tool]s.
-void _deleteTool(BuildContext context, List<bool> selectedList) {
-  context.read<ToolPageBloc>().add(ShapeDeleted(selectedList: selectedList));
+/// Delete the selected [Tool]s and update the [ToolPageState].
+void _deleteTool(BuildContext context, ToolPageState state) {
+  List<Tool> selectedTools =
+      state.tools.where((tool) => tool.isSelected).toList();
+  context.read<ToolPageBloc>().add(ToolDeleted(tools: selectedTools));
 }
 
 /// Trigger event that edits the selected [Tool]s.
 /// Opens a modal bottom sheet where the shape can be edited.
-void _editTool(
-    BuildContext context, List<Tool> tools, List<bool> selectedList) {
-  int index = selectedList
-      .indexOf(selectedList.firstWhere((element) => element == true));
+void _editTool(BuildContext context, List<Tool> tools, ToolPageState state) {
+  Tool selectedTool =
+      state.tools.where((tool) => tool.isSelected).toList().first;
 
   showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return AddToolBottomSheet(selectedShape: tools[index]);
+        return AddToolBottomSheet(selectedShape: selectedTool);
       });
 }

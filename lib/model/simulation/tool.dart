@@ -17,19 +17,22 @@ class Tool {
   final List<Line> lines;
   @HiveField(3)
   final ToolType type;
+  @HiveField(4)
+  final bool isSelected;
 
-  const Tool({required this.name, required this.lines, required this.type});
+  const Tool({required this.name, required this.lines, required this.type, required this.isSelected});
 
   Tool copyWith({
     String? name,
-    List<Offset>? path,
     List<Line>? lines,
     ToolType? type,
+    bool? isSelected,
   }) {
     return Tool(
       name: name ?? this.name,
       lines: lines ?? this.lines,
-      type: type ?? this.type
+      type: type ?? this.type,
+      isSelected: isSelected ?? this.isSelected,
     );
   }
 }

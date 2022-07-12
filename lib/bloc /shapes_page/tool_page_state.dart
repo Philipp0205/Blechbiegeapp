@@ -6,46 +6,40 @@ part of 'tool_page_bloc.dart';
 /// and all bending beams ('Biegewangen') [bendingBeams].
 class ToolPageState extends Equatable {
   final List<Tool> tools;
-  final List<bool> selectedList;
   final bool isSelectionMode;
 
-  const ToolPageState(
-      {required this.tools,
-      required this.isSelectionMode,
-      required this.selectedList});
-
+  const ToolPageState({
+    required this.tools,
+    required this.isSelectionMode,
+  });
 
 
   /// Copy the state with the given parameters.
   /// Parameters are nullable.
+
+  @override
+  List<Object> get props => [tools, isSelectionMode];
+
   ToolPageState copyWith({
     List<Tool>? tools,
-    List<bool>? selectedList,
     bool? isSelectionMode,
   }) {
     return ToolPageState(
       tools: tools ?? this.tools,
-      selectedList: selectedList ?? this.selectedList,
       isSelectionMode: isSelectionMode ?? this.isSelectionMode,
     );
   }
-
-  @override
-  List<Object> get props => [tools, isSelectionMode, selectedList];
 }
 
 /// Class & constructor for the initial state of the [ToolPageBloc].
 class ShapesPageInitial extends ToolPageState {
   final List<Tool> tools;
-  final List<bool> selectedList;
+  final Map<Tool, bool> selectedTools;
   final bool isSelectionMode;
 
   ShapesPageInitial(
       {required this.tools,
       required this.isSelectionMode,
-      required this.selectedList})
-      : super(
-            tools: tools,
-            isSelectionMode: isSelectionMode,
-            selectedList: selectedList);
+      required this.selectedTools})
+      : super(tools: tools, isSelectionMode: isSelectionMode);
 }

@@ -79,7 +79,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         ElevatedButton(
           onPressed: () {
             List<Line> lines = context.read<ConfigPageBloc>().state.lines;
-            _saveShape(_nameController.text, lines);
+            _saveTool(_nameController.text, lines);
           },
           child: Text('Speichern'),
         ),
@@ -159,7 +159,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   }
 
   /// Saves the shape to the database and notified the [ToolPageBloc].j
-  void _saveShape(String name, List<Line> lines) {
+  void _saveTool(String name, List<Line> lines) {
     ToolType type = ToolType.upperBeam;
 
     switch (dropdownValue) {
@@ -176,9 +176,8 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         print('saved shape type: ${type}');
     }
 
-
     Tool tool =
-    new Tool(name: _nameController.text, lines: lines, type: type);
+    new Tool(name: _nameController.text, lines: lines, type: type, isSelected: false);
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
