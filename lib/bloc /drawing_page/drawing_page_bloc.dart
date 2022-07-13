@@ -10,7 +10,7 @@ part 'drawing_page_event.dart';
 part 'drawing_page_state.dart';
 
 class DrawingPageBloc extends Bloc<DrawingPageEvent, DrawingPageState> {
-  DrawingPageBloc() : super(DrawingPageInitial(mode: Mode.defaultMode, selectionMode: false)) {
+  DrawingPageBloc() : super(DrawingPageInitial(mode: Mode.defaultMode, selectionMode: false, setAdapterMode: false)) {
     on<DrawingPageSelectionModeChanged>(_onSelectionModeChanged);
   }
 

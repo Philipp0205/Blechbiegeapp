@@ -176,8 +176,12 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         print('saved shape type: ${type}');
     }
 
-    Tool tool =
-    new Tool(name: _nameController.text, lines: lines, type: type, isSelected: false);
+    Tool tool = new Tool(
+        name: _nameController.text,
+        lines: lines,
+        type: type,
+        isSelected: false,
+        adapterLine: []);
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
@@ -185,7 +189,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
     } else {
       Navigator.pop(context);
       context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
-
     }
   }
 

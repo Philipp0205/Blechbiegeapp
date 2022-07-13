@@ -186,6 +186,7 @@ class _DrawingPageState extends State<DrawingPage> {
               _toggleSelectionMode(value!);
             }),
         Text('Linien selektieren'),
+
         Container(
           width: 10,
         ),

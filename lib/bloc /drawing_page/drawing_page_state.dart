@@ -4,30 +4,42 @@ part of 'drawing_page_bloc.dart';
 class DrawingPageState extends Equatable {
   final Mode mode;
   final bool selectionMode;
+  final bool setAdapterMode;
 
-  const DrawingPageState({required this.mode, required this.selectionMode});
+  const DrawingPageState(
+      {required this.mode,
+      required this.selectionMode,
+      required this.setAdapterMode});
 
+  @override
+  List<Object> get props => [selectionMode];
 
   DrawingPageState copyWith({
     Mode? mode,
     bool? selectionMode,
+    bool? setAdapterMode,
   }) {
     return DrawingPageState(
       mode: mode ?? this.mode,
       selectionMode: selectionMode ?? this.selectionMode,
+      setAdapterMode: setAdapterMode ?? this.setAdapterMode,
     );
   }
-  @override
-  List<Object> get props => [selectionMode];
 }
 
 class DrawingPageInitial extends DrawingPageState {
   final Mode mode;
   final bool selectionMode;
+  final bool setAdapterMode;
 
-  const DrawingPageInitial({required this.mode, required this.selectionMode})
-      : super(mode: mode, selectionMode: selectionMode);
-
+  const DrawingPageInitial(
+      {required this.mode,
+      required this.selectionMode,
+      required this.setAdapterMode})
+      : super(
+            mode: mode,
+            selectionMode: selectionMode,
+            setAdapterMode: setAdapterMode);
 }
 
 // class ModeSelectionSuccess extends DrawingPageState {

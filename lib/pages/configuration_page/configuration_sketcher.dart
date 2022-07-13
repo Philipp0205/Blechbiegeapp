@@ -135,10 +135,8 @@ class ConfigurationSketcher extends CustomPainter {
       // If current line ist the first or last line do not change the outer offset.
       if (!changeEnds) {
         if (line == lines.first) {
-          print("First line");
           firstOffset = firstOffset.copyWith(offset: line.start);
         } else if (line == lines.last) {
-         print('Last line');
           endOffset = endOffset.copyWith(offset: line.end);
         }
       }

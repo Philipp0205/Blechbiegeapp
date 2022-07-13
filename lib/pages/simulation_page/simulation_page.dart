@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
-import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
 
-import '../../model/line.dart';
+import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/simulation/tool.dart';
-import '../../model/simulation/tool_type.dart';
 
 class SimulationPage extends StatefulWidget {
   const SimulationPage({Key? key}) : super(key: key);
@@ -18,111 +16,115 @@ class SimulationPage extends StatefulWidget {
 class _SimulationPageState extends State<SimulationPage> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SimulationPageBloc, SimulationPageState>(
-        builder: (context, state) {
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Text('Simulation')],
-          ),
-        ),
-        backgroundColor: Colors.white,
-        body: Container(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Container(
-                    height: 300,
-                    width: 500,
-                    decoration: BoxDecoration(border: Border.all(width: 2)),
-                    child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
-                        builder: (context, state) {
-                      return CustomPaint(
-                        painter:
-                            SimulationSketcher(shapes: createDebuggingShapes()),
-                      );
-                    })),
-              )
-            ],
-          ),
-        ),
-      );
-    });
+    return BlocListener<ToolPageBloc, ToolPageState>(
+      listenWhen: (prev, current) => prev.tools != current.tools,
+      listener: (context, state) {
+        _setSelectedBeams(context, state.tools);
+        _setSelectedTracks(context, state.tools);
+      },
+      child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
+          builder: (context, state) {
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: buildAppBar(),
+          backgroundColor: Colors.white,
+          body: buildBody(),
+        );
+      }),
+    );
   }
 
-  /// Will be removed later
-  List<Tool> createDebuggingShapes() {
-    List<Tool> shapes = [];
-
-    Size screenSize = MediaQuery.of(context).size;
-    double width = screenSize.width - 13;
-    double height = 295;
-
-    Offset bottom1 = new Offset(width, height);
-    Offset bottom2 = new Offset(width / 2, height);
-    Offset bottom3 = new Offset(width / 2, 270);
-    Offset bottom4 = new Offset(width, 270);
-
-    // create 4 [Line2] consisting of the 4 points above
-    Line line1 = Line(start: bottom1, end: bottom2, isSelected: false);
-    Line line2 = Line(start: bottom2, end: bottom3, isSelected: false);
-    Line line3 = Line(start: bottom3, end: bottom4, isSelected: false);
-    Line line4 = Line(start: bottom4, end: bottom1, isSelected: false);
-
-    // create [Shape] consisting of the 4 [Line2] above.
-    Tool lowerBeam = Tool(
-      name: 'Unterwange',
-      type: ToolType.lowerBeam,
-      lines: [line1, line2, line3, line4],
-      isSelected: false
+  /// Builds the body of the app.
+  Container buildBody() {
+    return Container(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Column(
+          children: [buildSketcher(), buildButtonRow()],
+        ),
+      ),
     );
-
-    Offset top1 = new Offset(width, 260);
-    Offset top2 = new Offset(width / 2, 260);
-    Offset top3 = new Offset(220, 230);
-    Offset top4 = new Offset(width, 230);
-
-    // create 4 [Line2] consisting of the 4 points above
-    Line line5 = Line(start: top1, end: top2, isSelected: false);
-    Line line6 = Line(start: top2, end: top3, isSelected: false);
-    Line line7 = Line(start: top3, end: top4, isSelected: false);
-    Line line8 = Line(start: top4, end: top1, isSelected: false);
-
-    Tool upperBeam = new Tool(
-        name: "Oberwange",
-        lines: [line5, line6, line7, line8],
-        type: ToolType.lowerBeam,
-      isSelected: false
-    );
-
-    Offset bending1 = new Offset(0, 260);
-    Offset bending2 = new Offset(170, 260);
-    Offset beinding3 = new Offset(170, 230);
-    Offset bending4 = new Offset(0, 230);
-
-    // Create 4 [Line2] consisting of the 4 points above
-    Line bendingLine1 =
-    Line(start: bending1, end: bending2, isSelected: false);
-    Line bendingLine2 =
-    Line(start: bending2, end: beinding3, isSelected: false);
-    Line bendingLine3 =
-    Line(start: beinding3, end: bending4, isSelected: false);
-    Line bendingLine4 =
-    Line(start: bending4, end: bending1, isSelected: false);
-
-    Tool bendingBeam = new Tool(
-        name: "Biegewange",
-        lines: [bendingLine1, bendingLine2, bendingLine3, bendingLine4],
-        type: ToolType.bendingBeam,
-    isSelected: false);
-
-    shapes.addAll([lowerBeam, upperBeam, bendingBeam]);
-
-    return shapes;
   }
 
+  /// Build a row containing the buttons for adding tools and bending tools.
+  Row buildButtonRow() {
+    return Row(
+      children: [
+        ElevatedButton(
+            onPressed: () => _openSelectBeamPage(), child: Text('Wangen')),
+        Container(width: 10),
+        ElevatedButton(
+            onPressed: () => _openSelectTrackPage(), child: Text('Schienen')),
+      ],
+    );
+  }
 
+  /// Builds the sketcher area of the page where the simulation takes place.
+  Container buildSketcher() {
+    return Container(
+        height: 300,
+        width: 500,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10)),
+        ),
+        child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
+            builder: (context, state) {
+          return CustomPaint(
+            painter: SimulationSketcher(
+                beams: state.selectedBeams, tracks: state.selectedTracks),
+          );
+        }));
+  }
+
+  /// Build the appbar of the the page.
+  AppBar buildAppBar() {
+    return AppBar(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Text('Simulation')],
+      ),
+    );
+  }
+
+  /// Open the [ToolPage] to select beams.
+  void _openSelectBeamPage() {
+    Navigator.of(context).pushNamed("/shapes");
+  }
+
+  /// Open the [ToolPage] to select tracks.
+  void _openSelectTrackPage() {
+    Navigator.of(context).pushNamed("/shapes");
+  }
+
+  /// Set the selected beams for the sketcher.
+  /// This is done by listening to the [ToolPageBloc] and setting the selected
+  /// beams.
+  /// The [ToolPageBloc] is listening to the [SimulationPageBloc] and setting
+  /// the selected beams.
+  /// Therefore, this method is called when the [ToolPageBloc] changes.
+  void _setSelectedBeams(BuildContext context, List<Tool> tools) {
+    List<Tool> selectedTools = tools.where((tool) => tool.isSelected).toList();
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationSelectedToolsChanged(selectedTools: selectedTools));
+  }
+
+  /// Set the selected tracks for the sketcher.
+  /// This is done by listening to the [ToolPageBloc] and setting the selected
+  /// tracks.
+  /// The [ToolPageBloc] is listening to the [SimulationPageBloc] and setting
+  /// the selected tracks.
+  /// Therefore, this method is called when the [ToolPageBloc] changes.
+  void _setSelectedTracks(BuildContext context, List<Tool> tools) {
+    List<Tool> selectedTracks = tools.where((tool) => tool.isSelected).toList();
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationSelectedTracksChanged(selectedTracks: selectedTracks));
+  }
 }

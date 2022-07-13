@@ -14,12 +14,17 @@ class Line {
   @HiveField(3)
   bool isSelected;
 
-  Line({required this.start, required this.end, required this.isSelected});
+  Line(
+      {required this.start,
+      required this.end,
+      required this.isSelected,
+      });
 
   Line copyWith({
     Offset? start,
     Offset? end,
     bool? isSelected,
+    bool? isAdapterLine,
   }) {
     return Line(
       start: start ?? this.start,

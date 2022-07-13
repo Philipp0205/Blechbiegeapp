@@ -12,11 +12,35 @@ part 'simulation_page_state.dart';
 
 class SimulationPageBloc
     extends Bloc<SimulationPageEvent, SimulationPageState> {
-  SimulationPageBloc() : super(SimulationPageInitial(shapes: [], lines: [])) {
+  SimulationPageBloc()
+      : super(SimulationPageInitial(
+            tools: [], lines: [], selectedBeams: [], selectedTracks: [])) {
     on<SimulationPageCreated>(_setInitialLines);
+    on<SimulationSelectedToolsChanged>(_setSelectedTool);
+    on<SimulationSelectedTracksChanged>(_setSelectedTracks);
   }
 
-  void _setInitialLines(SimulationPageCreated event, Emitter<SimulationPageState> emit) {
+  /// Set the initial lines of the simulation.
+  void _setInitialLines(
+      SimulationPageCreated event, Emitter<SimulationPageState> emit) {
     emit(state.copyWith(lines: event.lines));
+  }
+
+  /// Set the selected beams of the simulation.
+  void _setSelectedTool(
+      SimulationSelectedToolsChanged event, Emitter<SimulationPageState> emit) {
+    emit(state.copyWith(selectedBeams: event.selectedTools));
+  }
+
+  /// Set the selected tracks of the simulation.
+  void _setSelectedTracks(SimulationSelectedTracksChanged event,
+      Emitter<SimulationPageState> emit) {
+
+    emit(state.copyWith(selectedTracks: event.selectedTracks));
+  }
+
+  void _placeTrackOnBeam(Tool track, Tool beam) {
+
+
   }
 }
