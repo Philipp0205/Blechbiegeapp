@@ -19,7 +19,7 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   ToolPageBloc(this._toolRepository)
       : super(ShapesPageInitial(
             tools: [], isSelectionMode: false, selectedTools: <Tool, bool>{})) {
-    on<ShapesPageCreated>(_shapesPageCreated);
+    on<ToolPageCreated>(_shapesPageCreated);
     on<ToolAdded>(_addTool);
     on<ToolDeleted>(_deleteTools);
     on<ToolEdited>(_editTool);
@@ -33,14 +33,17 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The new tool is added to the end of the list.
   /// The new tool is also added to the [selectedList].
   Future<void> _addTool(ToolAdded event, Emitter<ToolPageState> emit) async {
+    // print('delete all tools');
+    // _toolRepository.deleteAllTools();
+
     _toolRepository.addTool(event.tool);
     print('add new tool ${event.tool.name}');
 
     List<Tool> tools = await _toolRepository.getTools();
-
     box.add(event.tool);
-    print('tools: ${box.length}');
 
+
+    emit(state.copyWith(tools: []));
     emit(state.copyWith(tools: tools));
   }
 
@@ -69,7 +72,7 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// Called initially one time when the shapes page is created.
   /// Shapes are loaded from the repository and saved in the state.
   FutureOr<void> _shapesPageCreated(
-      ShapesPageCreated event, Emitter<ToolPageState> emit) async {
+      ToolPageCreated event, Emitter<ToolPageState> emit) async {
     Map<Tool, bool> selectedTools = <Tool, bool>{};
     // Generate initial selected tools list where all are unselected.
 

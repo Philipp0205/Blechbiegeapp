@@ -40,6 +40,18 @@ class SimulationPageBloc
   }
 
   void _placeTrackOnBeam(Tool track, Tool beam) {
+    Line beamAdapterLine = beam.lines.where((line) => line.isSelected).first;
+    Line trackAdapterLine = track.lines.where((line) => line.isSelected).first;
+
+    double deltaX = (beamAdapterLine.start.dx - beamAdapterLine.start.dx).abs();
+    double deltaY = (beamAdapterLine.start.dy - beamAdapterLine.start.dy).abs();
+
+
+
+
+
+
+
 
 
   }

@@ -94,9 +94,9 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
       ],
     ),
     bottom: TabBar(tabs: [
-      Tab(text: 'Unterwangen', icon: Icon(Icons.border_bottom)),
-      Tab(text: 'Oberwangen', icon: Icon(Icons.border_top)),
-      Tab(text: 'Biegewangen', icon: Icon(Icons.border_left)),
+      Tab(text: 'Unterwange', icon: Icon(Icons.border_bottom)),
+      Tab(text: 'Oberwange', icon: Icon(Icons.border_top)),
+      Tab(text: 'Biegewange', icon: Icon(Icons.border_left)),
     ]),
   );
 }
@@ -105,7 +105,7 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
 /// [ConfigPageBloc].
 void _loadTool(BuildContext context, Tool tool) {
   List<Line> lines = tool.lines;
-  context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines));
+  context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines, tools: [tool]));
   Navigator.of(context).pop();
 }
 

@@ -181,9 +181,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     return Row(
       children: [
         Checkbox(
-            value: state.showAngles,
+            value: state.markAdapterLineMode,
             onChanged: (bool? value) {
-              print('test');
+              _toggleAdapterLineMode(value!);
             }),
         Text('Adapter'),
       ],
@@ -220,7 +220,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   /// Creates a new [Tool] using a [ModalBottomSheet]
   void _createShape(ConfigPageState state) {
     ToolPageBloc(context.read<ToolRepository>())
-        .add(ShapesPageCreated(shapes: state.shapes));
+        .add(ToolPageCreated());
 
     showModalBottomSheet(
       context: context,
@@ -229,5 +229,12 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         return AddToolBottomSheet(selectedShape: null);
       },
     );
+  }
+
+  /// Toggles the adapter line mode.
+  void _toggleAdapterLineMode(bool value) {
+    context
+        .read<ConfigPageBloc>()
+        .add(ConfigToggleMarkAdapterLineMode(adapterLineMode: value));
   }
 }

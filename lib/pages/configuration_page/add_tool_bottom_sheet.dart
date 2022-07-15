@@ -90,7 +90,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
           onPressed: () {
             context
                 .read<ToolPageBloc>()
-                .add(ShapesPageCreated(shapes: state.shapes));
+                .add(ToolPageCreated());
 
             // Close bottom sheet
             Navigator.pop(context);

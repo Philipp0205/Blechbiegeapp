@@ -30,17 +30,35 @@ class _ConstructingPageSegmentWidgetState
       ),
       child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
-        return CustomPaint(
-          painter: ConfigurationSketcher(
-              segments: state.segment,
-              coordinatesShown: state.showCoordinates,
-              edgeLengthsShown: state.showEdgeLengths,
-              anglesShown: state.showAngles,
-              s: state.s,
-              r: state.r,
-              lines: state.lines),
+        return GestureDetector(
+          onPanDown: (details) => onPanDown(context, details, state),
+          child: CustomPaint(
+            painter: ConfigurationSketcher(
+                segments: state.segment,
+                coordinatesShown: state.showCoordinates,
+                edgeLengthsShown: state.showEdgeLengths,
+                anglesShown: state.showAngles,
+                s: state.s,
+                r: state.r,
+                lines: state.lines),
+          ),
         );
       }),
     );
+  }
+
+  /// Called when the suer tabs on the screen
+  /// User can selectect a line of a tool and this line is marked as an
+  /// adapter line.
+  ///
+  /// This means that other tools can be attached to this tool.
+  void onPanDown(
+      BuildContext context, DragDownDetails details, ConfigPageState state) {
+    print('onpanDown');
+    RenderBox box = context.findRenderObject() as RenderBox;
+      Offset point = box.globalToLocal(details.globalPosition);
+      Offset offset = new Offset(point.dx, point.dy);
+
+      context.read<ConfigPageBloc>().add(ConfigMarkAdapterLine(offset: offset));
   }
 }

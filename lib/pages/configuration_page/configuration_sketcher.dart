@@ -62,6 +62,13 @@ class ConfigurationSketcher extends CustomPainter {
       ..strokeWidth = s
       ..style = PaintingStyle.stroke;
 
+    Paint paintRed = Paint()
+      ..color = Colors.red
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = s
+      ..style = PaintingStyle.stroke;
+
+
     List<Line> shortLines = changeLengthsOfSegments(lines, -r, false);
 
     if (lines.isNotEmpty) {
@@ -70,11 +77,19 @@ class ConfigurationSketcher extends CustomPainter {
       Offset firstOffset = lines.first.start;
       drawnPath.moveTo(firstOffset.dx, firstOffset.dy);
 
-      drawnPath = addLinesToPath(shortLines);
+      drawnPath = addLinesToPath(canvas, shortLines, paintRed);
       drawnPath = addCurvesToPath(canvas, shortLines, lines, drawnPath);
 
       canvas.drawPath(drawnPath, paint);
       //   createPicture(canvas, size, drawnPath, paint);
+
+      lines.forEach((line) {
+        if (line.isSelected) {
+          canvas.drawLine(line.start, line.end, paintRed);
+
+        }
+      });
+
       showSegmentDetails(canvas, shortLines, lines);
     }
   }
@@ -174,8 +189,10 @@ class ConfigurationSketcher extends CustomPainter {
   }
 
   ///  Adds all given [lines] to a [Path].
-  Path addLinesToPath(List<Line> lines) {
+  Path addLinesToPath(Canvas canvas, List<Line> lines, Paint paint) {
+    print('add lines to path');
     Path path = new Path();
+
 
     lines.forEach((l) {
       path

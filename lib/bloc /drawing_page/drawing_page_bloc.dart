@@ -7,14 +7,20 @@ import 'package:meta/meta.dart';
 import '../../model/appmodes.dart';
 
 part 'drawing_page_event.dart';
+
 part 'drawing_page_state.dart';
 
 class DrawingPageBloc extends Bloc<DrawingPageEvent, DrawingPageState> {
-  DrawingPageBloc() : super(DrawingPageInitial(mode: Mode.defaultMode, selectionMode: false, setAdapterMode: false)) {
+  DrawingPageBloc()
+      : super(DrawingPageInitial(
+            mode: Mode.defaultMode,
+            selectionMode: false,
+            setAdapterMode: false)) {
     on<DrawingPageSelectionModeChanged>(_onSelectionModeChanged);
   }
 
-  void _onSelectionModeChanged(DrawingPageSelectionModeChanged event, Emitter<DrawingPageState> emit) {
+  void _onSelectionModeChanged(
+      DrawingPageSelectionModeChanged event, Emitter<DrawingPageState> emit) {
     emit(state.copyWith(selectionMode: event.selectionMode));
   }
 }
