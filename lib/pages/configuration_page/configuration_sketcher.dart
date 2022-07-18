@@ -190,7 +190,6 @@ class ConfigurationSketcher extends CustomPainter {
 
   ///  Adds all given [lines] to a [Path].
   Path addLinesToPath(Canvas canvas, List<Line> lines, Paint paint) {
-    print('add lines to path');
     Path path = new Path();
 
 

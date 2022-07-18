@@ -16,12 +16,17 @@ class SimulationPage extends StatefulWidget {
 class _SimulationPageState extends State<SimulationPage> {
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ToolPageBloc, ToolPageState>(
-      listenWhen: (prev, current) => prev.tools != current.tools,
-      listener: (context, state) {
-        _setSelectedBeams(context, state.tools);
-        _setSelectedTracks(context, state.tools);
-      },
+    // Listens for changes in the tool selection.
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ToolPageBloc, ToolPageState>(
+          listenWhen: (prev, current) => prev.beams != current.beams,
+          listener: (context, state) {
+            _setSelectedBeams(context, state.beams);
+            _setSelectedTracks(context, state.beams);
+          },
+        )
+      ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
           builder: (context, state) {
         return Scaffold(

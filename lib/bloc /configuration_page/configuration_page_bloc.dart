@@ -10,6 +10,7 @@ import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/simulation/tool.dart';
 import '../../model/simulation/tool_type.dart';
+import '../../model/simulation/tool_type2.dart';
 import '../../persistence/repositories/tool_repository.dart';
 import '../../services/geometric_calculations_service.dart';
 
@@ -21,7 +22,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   final GeometricCalculationsService _calculationService =
       new GeometricCalculationsService();
 
-  ConfigPageBloc()
+  ConfigPageBloc(this._toolRepository)
       : super(ConstructingPageInitial(
             segment: [],
             lines: [],
@@ -32,7 +33,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
             showAngles: false,
             s: 5,
             r: 20)) {
-    on<ConfigPageCreated>(_setInitialValues);
+    on<ConfigPageCreated>(_initializePage);
     on<ConfigCoordinatesShown>(_showCoordinates);
     on<ConfigEdgeLengthsShown>(_showEdgeLengths);
     on<ConfigAnglesShown>(_showAngles);
@@ -41,23 +42,31 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
     on<ConfigRChanged>(_changeRadius);
     on<ConfigToggleMarkAdapterLineMode>(_toggleAdapterMode);
     on<ConfigMarkAdapterLine>(_markAdapterLine);
+    on<ConfigRegisterAdapters>(_registerAdapters);
   }
 
+  final ToolRepository _toolRepository;
+
   /// When no segment exists an initial segment gets created.
-  Future<void> _setInitialValues(
+  Future<void> _initializePage(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
     emit(state.copyWith(lines: event.lines));
-    _openShapesBox();
+    // _openShapesBox();
   }
 
   /// Registers all adapters needed to save shape objects in the database.
-  Future<Box> _openShapesBox() async {
-    await Hive.initFlutter();
-    Hive.registerAdapter(ToolAdapter());
-    Hive.registerAdapter(LineAdapter());
-    Hive.registerAdapter(OffsetAdapter());
-    Hive.registerAdapter(ToolTypeAdapter());
-    return await Hive.openBox('shapes');
+  void _registerAdapters(
+      ConfigRegisterAdapters event, Emitter<ConfigPageState> emit) async {
+
+    _toolRepository.initRepo();
+
+    // await Hive.initFlutter();
+    // Hive.registerAdapter(ToolAdapter());
+    // Hive.registerAdapter(LineAdapter());
+    // Hive.registerAdapter(OffsetAdapter());
+    // Hive.registerAdapter(ToolTypeAdapter());
+    // Hive.registerAdapter(ToolType2Adapter());
+    // Hive.openBox('shapes4');
   }
 
   /// Decides depending on the [CheckBoxEnum] what should be shown.

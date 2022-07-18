@@ -39,7 +39,8 @@ class MyApp extends StatelessWidget {
             create: (_) => DrawingPageBloc(),
           ),
           BlocProvider(
-            create: (_) => ConfigPageBloc(),
+            create: (context) => ConfigPageBloc(context.read<ToolRepository>())
+                ..add(ConfigRegisterAdapters()),
           ),
           BlocProvider(
             create: (_) => SimulationPageBloc(),
@@ -48,7 +49,6 @@ class MyApp extends StatelessWidget {
             create: (context) => ToolPageBloc(context.read<ToolRepository>()),
           )
         ],
-
         child: MaterialApp(
           title: 'Flutter Demo',
           // home: DrawingPage(),

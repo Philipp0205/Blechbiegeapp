@@ -1,44 +1,35 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'tool.dart';
+part of 'tool_type2.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ToolAdapter extends TypeAdapter<Tool> {
+class ToolType2Adapter extends TypeAdapter<ToolType2> {
   @override
-  final int typeId = 1;
+  final int typeId = 4;
 
   @override
-  Tool read(BinaryReader reader) {
+  ToolType2 read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Tool(
+    return ToolType2(
       name: fields[1] as String,
-      lines: (fields[2] as List).cast<Line>(),
-      type: fields[3] as ToolType2,
-      isSelected: fields[4] as bool,
-      adapterLine: (fields[5] as List).cast<Line>(),
+      type: fields[2] as ToolType,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Tool obj) {
+  void write(BinaryWriter writer, ToolType2 obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(2)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.lines)
-      ..writeByte(3)
-      ..write(obj.type)
-      ..writeByte(4)
-      ..write(obj.isSelected)
-      ..writeByte(5)
-      ..write(obj.adapterLine);
+      ..write(obj.type);
   }
 
   @override
@@ -47,7 +38,7 @@ class ToolAdapter extends TypeAdapter<Tool> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ToolAdapter &&
+      other is ToolType2Adapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

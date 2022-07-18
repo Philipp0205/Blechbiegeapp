@@ -1,8 +1,7 @@
-import 'dart:ui';
-
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 
+import 'tool_type2.dart';
 import '../line.dart';
 
 part 'tool.g.dart';
@@ -16,7 +15,7 @@ class Tool {
   @HiveField(2)
   final List<Line> lines;
   @HiveField(3)
-  final ToolType type;
+  final ToolType2 type;
   @HiveField(4)
   final bool isSelected;
   @HiveField(5)
@@ -32,9 +31,9 @@ class Tool {
   Tool copyWith({
     String? name,
     List<Line>? lines,
-    List<Line>? adapterLine,
-    ToolType? type,
+    ToolType2? type,
     bool? isSelected,
+    List<Line>? adapterLine,
   }) {
     return Tool(
       name: name ?? this.name,

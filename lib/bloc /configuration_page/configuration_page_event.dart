@@ -69,3 +69,9 @@ class ConfigMarkAdapterLine extends ConfigurationPageEvent {
 
   const ConfigMarkAdapterLine({required this.offset});
 }
+
+/// This event is used to register the adapters in the hive database.
+/// This event is only triggered once.
+class ConfigRegisterAdapters extends ConfigurationPageEvent {
+  const ConfigRegisterAdapters();
+}

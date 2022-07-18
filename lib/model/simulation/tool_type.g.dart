@@ -8,7 +8,7 @@ part of 'tool_type.dart';
 
 class ToolTypeAdapter extends TypeAdapter<ToolType> {
   @override
-  final int typeId = 4;
+  final int typeId = 5;
 
   @override
   ToolType read(BinaryReader reader) {
@@ -19,6 +19,12 @@ class ToolTypeAdapter extends TypeAdapter<ToolType> {
         return ToolType.upperBeam;
       case 3:
         return ToolType.bendingBeam;
+      case 4:
+        return ToolType.lowerTrack;
+      case 5:
+        return ToolType.upperTrack;
+      case 6:
+        return ToolType.bendingTrack;
       default:
         return ToolType.lowerBeam;
     }
@@ -35,6 +41,15 @@ class ToolTypeAdapter extends TypeAdapter<ToolType> {
         break;
       case ToolType.bendingBeam:
         writer.writeByte(3);
+        break;
+      case ToolType.lowerTrack:
+        writer.writeByte(4);
+        break;
+      case ToolType.upperTrack:
+        writer.writeByte(5);
+        break;
+      case ToolType.bendingTrack:
+        writer.writeByte(6);
         break;
     }
   }

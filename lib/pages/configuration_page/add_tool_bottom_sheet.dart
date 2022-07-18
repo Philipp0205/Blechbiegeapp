@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
+import 'package:open_bsp/model/simulation/tool_type2.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
-import 'package:open_bsp/persistence/database_provider.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool_type.dart';
@@ -38,7 +38,8 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
     if (selectedShape != null) {
       _nameController.text = selectedShape!.name;
       setState(() {
-        dropdownValue = _getNameOfType(selectedShape!.type);
+        // dropdownValue = _getNameOfType(selectedShape!.type.name);
+        dropdownValue = selectedShape!.type.name;
       });
     }
   }
@@ -88,9 +89,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         ),
         ElevatedButton(
           onPressed: () {
-            context
-                .read<ToolPageBloc>()
-                .add(ToolPageCreated());
+            context.read<ToolPageBloc>().add(ToolPageCreated());
 
             // Close bottom sheet
             Navigator.pop(context);
@@ -121,7 +120,13 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         Container(width: 10),
         DropdownButton(
             value: dropdownValue,
-            items: <String>['Unterwange', 'Oberwange', 'Biegewange']
+            items: context
+                .read<ToolPageBloc>()
+                .state
+                .toolTypes
+                .map((type) => type.name)
+                .toList()
+                // items: <ToolType2>context.read<ToolPageBloc>().state.toolTypes.map((type) {
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -162,6 +167,8 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   void _saveTool(String name, List<Line> lines) {
     ToolType type = ToolType.upperBeam;
 
+    List<ToolType2> types = context.read<ToolPageBloc>().state.toolTypes;
+
     switch (dropdownValue) {
       case 'Oberwange':
         type = ToolType.upperBeam;
@@ -179,7 +186,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
     Tool tool = new Tool(
         name: _nameController.text,
         lines: lines,
-        type: type,
+        type: types.firstWhere((type) => type.name == dropdownValue),
         isSelected: false,
         adapterLine: []);
 
@@ -193,14 +200,14 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   }
 
   /// Returns the name of the type of the shape.
-  String _getNameOfType(ToolType type) {
-    switch (type) {
-      case ToolType.lowerBeam:
-        return 'Unterwange';
-      case ToolType.upperBeam:
-        return 'Oberwange';
-      case ToolType.bendingBeam:
-        return 'Biegewange';
-    }
-  }
+  // String _getNameOfType(ToolType type) {
+  //   switch (type) {
+  //     case ToolType.lowerBeam:
+  //       return 'Unterwange';
+  //     case ToolType.upperBeam:
+  //       return 'Oberwange';
+  //     case ToolType.bendingBeam:
+  //       return 'Biegewange';
+  //   }
+  // }
 }

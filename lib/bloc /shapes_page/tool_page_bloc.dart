@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
+import 'package:open_bsp/model/simulation/tool_type2.dart';
+import 'package:open_bsp/model/simulation/tool_type.dart';
 
 import '../../model/simulation/tool.dart';
 import '../../persistence/database_provider.dart';
@@ -18,8 +20,12 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
   ToolPageBloc(this._toolRepository)
       : super(ShapesPageInitial(
-            tools: [], isSelectionMode: false, selectedTools: <Tool, bool>{})) {
-    on<ToolPageCreated>(_shapesPageCreated);
+            beams: [],
+            tracks: [],
+            toolTypes: [],
+            isSelectionMode: false,
+            selectedTools: <Tool, bool>{})) {
+    on<ToolPageCreated>(_shapesPageInit);
     on<ToolAdded>(_addTool);
     on<ToolDeleted>(_deleteTools);
     on<ToolEdited>(_editTool);
@@ -40,11 +46,10 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
     print('add new tool ${event.tool.name}');
 
     List<Tool> tools = await _toolRepository.getTools();
-    box.add(event.tool);
+    // box.add(event.tool);
 
-
-    emit(state.copyWith(tools: []));
-    emit(state.copyWith(tools: tools));
+    emit(state.copyWith(beams: []));
+    emit(state.copyWith(beams: tools));
   }
 
   /// Delete the tools from the database.
@@ -56,30 +61,55 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
     List<Tool> tools = await _toolRepository.getTools();
 
-    emit(state.copyWith(tools: tools));
+    emit(state.copyWith(beams: tools));
   }
 
   /// Edit the tool with the given [index] and [tool].
   /// The [index] is the index of the tool in the list of tools.
   /// If multiple tools are selected, the first [tool] is updated.
   Future<void> _editTool(ToolEdited event, Emitter<ToolPageState> emit) async {
-    Tool selectedTool = state.tools.firstWhere((tool) => tool.isSelected);
+    Tool selectedTool = state.beams.firstWhere((tool) => tool.isSelected);
     _toolRepository.updateTool(selectedTool, event.tool);
     List<Tool> tools = await _toolRepository.getTools();
-    emit(state.copyWith(tools: tools));
+    emit(state.copyWith(beams: tools));
   }
 
   /// Called initially one time when the shapes page is created.
   /// Shapes are loaded from the repository and saved in the state.
-  FutureOr<void> _shapesPageCreated(
+  FutureOr<void> _shapesPageInit(
       ToolPageCreated event, Emitter<ToolPageState> emit) async {
     Map<Tool, bool> selectedTools = <Tool, bool>{};
     // Generate initial selected tools list where all are unselected.
-
     List<Tool> tools = await _toolRepository.getTools();
 
-    emit(state.copyWith(
-        tools: tools, isSelectionMode: false));
+    _createToolTypes(emit);
+
+    emit(state.copyWith(beams: tools, isSelectionMode: false));
+  }
+
+  /// Create all [ToolType2]s.
+  void _createToolTypes(Emitter<ToolPageState> emit) {
+    ToolType2 lowerBeam =
+        new ToolType2(name: 'Unterwange', type: ToolType.lowerBeam);
+    ToolType2 upperBeam =
+        new ToolType2(name: 'Oberwange', type: ToolType.upperBeam);
+    ToolType2 bendingBeam =
+        new ToolType2(name: 'Biegewange', type: ToolType.bendingBeam);
+    ToolType2 lowerTrack =
+        new ToolType2(name: 'Untere Schiene', type: ToolType.lowerTrack);
+    ToolType2 upperTrack =
+        new ToolType2(name: 'Obere Schiene', type: ToolType.upperTrack);
+    ToolType2 bendingTrack =
+        new ToolType2(name: 'Biegeschiene', type: ToolType.bendingTrack);
+
+    emit(state.copyWith(toolTypes: [
+      lowerBeam,
+      upperBeam,
+      bendingBeam,
+      lowerTrack,
+      upperTrack,
+      bendingTrack
+    ]));
   }
 
   /// Called when the selection mode is changed.
@@ -93,7 +123,7 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The selected list is changed when in selection mode.
   void _changeSelectedList(
       SelectedToolsChanged event, Emitter<ToolPageState> emit) {
-    List<Tool> tools = state.tools;
+    List<Tool> tools = state.beams;
     Tool tool = event.tool;
 
     Tool newTool = tool.isSelected
@@ -104,7 +134,7 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
     tools[tools.indexOf(tool)] = newTool;
 
-    emit(state.copyWith(tools: []));
-    emit(state.copyWith(tools: tools));
+    emit(state.copyWith(beams: []));
+    emit(state.copyWith(beams: tools));
   }
 }

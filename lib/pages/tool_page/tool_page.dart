@@ -50,19 +50,19 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
       buildListView(
         state,
         context,
-        state.tools.where((tool) => tool.type == ToolType.lowerBeam).toList(),
+        state.beams.where((tool) => tool.type.type == ToolType.lowerBeam).toList(),
         ToolType.lowerBeam,
       ),
       buildListView(
           state,
           context,
-          state.tools.where((tool) => tool.type == ToolType.upperBeam).toList(),
+          state.beams.where((tool) => tool.type.type == ToolType.upperBeam).toList(),
           ToolType.upperBeam),
       buildListView(
           state,
           context,
-          state.tools
-              .where((tool) => tool.type == ToolType.bendingBeam)
+          state.beams
+              .where((tool) => tool.type.type == ToolType.bendingBeam)
               .toList(),
           ToolType.bendingBeam),
     ],
@@ -87,16 +87,16 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
         // Because only one tool can be edited at a time, the edit button is
         // only visible when no tool is selected.
         if (state.isSelectionMode &&
-            state.tools.where((tool) => tool.isSelected).length <= 1)
+            state.beams.where((tool) => tool.isSelected).length <= 1)
           IconButton(
-              onPressed: () => _editTool(context, state.tools, state),
+              onPressed: () => _editTool(context, state.beams, state),
               icon: Icon(Icons.edit)),
       ],
     ),
     bottom: TabBar(tabs: [
-      Tab(text: 'Unterwange', icon: Icon(Icons.border_bottom)),
-      Tab(text: 'Oberwange', icon: Icon(Icons.border_top)),
-      Tab(text: 'Biegewange', icon: Icon(Icons.border_left)),
+      Tab(text: 'Unten', icon: Icon(Icons.border_bottom)),
+      Tab(text: 'Oben', icon: Icon(Icons.border_top)),
+      Tab(text: 'Links', icon: Icon(Icons.border_left)),
     ]),
   );
 }
@@ -105,14 +105,17 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
 /// [ConfigPageBloc].
 void _loadTool(BuildContext context, Tool tool) {
   List<Line> lines = tool.lines;
-  context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines, tools: [tool]));
+  context
+      .read<ConfigPageBloc>()
+      .add(ConfigPageCreated(lines: lines, tools: [tool]));
   Navigator.of(context).pop();
 }
 
+/// Builds a list of [Tool]s.
 ListView buildListView(ToolPageState state, BuildContext context,
     List<Tool> tools, ToolType toolType) {
   List<Tool> toolsOfType =
-      tools.where((tool) => tool.type == toolType).toList();
+      tools.where((tool) => tool.type.type == toolType).toList();
 
   return ListView.builder(
       itemCount: toolsOfType.length,
@@ -127,13 +130,14 @@ ListView buildListView(ToolPageState state, BuildContext context,
                 context,
                 false,
               );
-              _selectedToolsChanged(context, state, state.tools[index], true);
+              _selectedToolsChanged(context, state, state.beams[index], true);
             } else {
               _toggleSelectionMode(context, true);
               // _selectedToolsChanged(context, state, state.tools[index], true);
             }
           },
           title: Text('${tools[index].name}'),
+          subtitle: Text('${tools[index].type.name}'),
           trailing: state.isSelectionMode
               ? Checkbox(
                   value: toolsOfType
@@ -162,8 +166,8 @@ void _toggleSelectionMode(BuildContext context, bool value) {
 }
 
 /// Triggered when a [Tool] is selected or deselected in the [ListView].
-/// If the [Tool] is selected, it is added to the [tools] map.
-/// If the [Tool] is deselected, it is removed from the [tools] map.
+/// If the [Tool] is selected, it is added to the [beams] map.
+/// If the [Tool] is deselected, it is removed from the [beams] map.
 void _selectedToolsChanged(
     BuildContext context, ToolPageState state, Tool tool, bool value) {
   if (state.isSelectionMode) {
@@ -175,7 +179,7 @@ void _selectedToolsChanged(
 /// Delete the selected [Tool]s and update the [ToolPageState].
 void _deleteTool(BuildContext context, ToolPageState state) {
   List<Tool> selectedTools =
-      state.tools.where((tool) => tool.isSelected).toList();
+      state.beams.where((tool) => tool.isSelected).toList();
   context.read<ToolPageBloc>().add(ToolDeleted(tools: selectedTools));
 }
 
@@ -183,7 +187,7 @@ void _deleteTool(BuildContext context, ToolPageState state) {
 /// Opens a modal bottom sheet where the shape can be edited.
 void _editTool(BuildContext context, List<Tool> tools, ToolPageState state) {
   Tool selectedTool =
-      state.tools.where((tool) => tool.isSelected).toList().first;
+      state.beams.where((tool) => tool.isSelected).toList().first;
 
   showModalBottomSheet(
       context: context,

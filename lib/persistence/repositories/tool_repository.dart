@@ -1,13 +1,29 @@
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../model/OffsetAdapter.dart';
+import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
+import '../../model/simulation/tool_type.dart';
+import '../../model/simulation/tool_type2.dart';
 import '../database_provider.dart';
 
 class ToolRepository {
   final DatabaseProvider databaseProvider;
-  final String boxName = 'shapes3';
+  final String boxName = 'shapes4';
 
   ToolRepository(this.databaseProvider);
+
+  /// Initializes the box with the name [boxName].
+  void initRepo() async {
+    await Hive.initFlutter();
+    Hive.registerAdapter(ToolAdapter());
+    Hive.registerAdapter(LineAdapter());
+    Hive.registerAdapter(OffsetAdapter());
+    Hive.registerAdapter(ToolTypeAdapter());
+    Hive.registerAdapter(ToolType2Adapter());
+    Hive.openBox(boxName);
+  }
 
   /// get all tools from the database.
   Future<List<Tool>> getTools() async {
@@ -19,7 +35,7 @@ class ToolRepository {
   // Add given [tool] to the database.
   Future<void> addTool(Tool tool) async {
     Box box = await databaseProvider.createBox(boxName);
-    String key =  _getKey(tool);
+    String key = _getKey(tool);
     box.put(key, tool);
   }
 
@@ -47,5 +63,4 @@ class ToolRepository {
   String _getKey(Tool tool) {
     return tool.name.toLowerCase().replaceAll(' ', '-');
   }
-
 }
