@@ -55,26 +55,28 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
                 tool.type.type == ToolType.lowerBeam ||
                 tool.type.type == ToolType.lowerTrack)
             .toList(),
-        ToolType.lowerBeam,
+        [ToolType.lowerBeam, ToolType.lowerTrack],
       ),
       buildListView(
-          state,
-          context,
-          state.beams
-              .where((tool) =>
-                  tool.type.type == ToolType.upperBeam ||
-                  tool.type.type == ToolType.upperTrack)
-              .toList(),
-          ToolType.upperBeam),
+        state,
+        context,
+        state.beams
+            .where((tool) =>
+                tool.type.type == ToolType.upperBeam ||
+                tool.type.type == ToolType.upperTrack)
+            .toList(),
+        [ToolType.upperBeam, ToolType.upperTrack],
+      ),
       buildListView(
-          state,
-          context,
-          state.beams
-              .where((tool) =>
-                  tool.type.type == ToolType.bendingBeam ||
-                  tool.type.type == ToolType.bendingTrack)
-              .toList(),
-          ToolType.bendingBeam),
+        state,
+        context,
+        state.beams
+            .where((tool) =>
+                tool.type.type == ToolType.bendingBeam ||
+                tool.type.type == ToolType.bendingTrack)
+            .toList(),
+        [ToolType.bendingBeam, ToolType.bendingTrack],
+      ),
     ],
   );
 }
@@ -123,9 +125,9 @@ void _loadTool(BuildContext context, Tool tool) {
 
 /// Builds a list of [Tool]s.
 ListView buildListView(ToolPageState state, BuildContext context,
-    List<Tool> tools, ToolType toolType) {
+    List<Tool> tools, List<ToolType> toolTypes) {
   List<Tool> toolsOfType =
-      tools.where((tool) => tool.type.type == toolType).toList();
+      tools.where((tool) => toolTypes.contains(tool.type.type)).toList();
 
   return ListView.builder(
       itemCount: toolsOfType.length,

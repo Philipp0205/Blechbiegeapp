@@ -115,6 +115,7 @@ class _SimulationPageState extends State<SimulationPage> {
   /// Therefore, this method is called when the [ToolPageBloc] changes.
   void _setSelectedBeams(BuildContext context, List<Tool> tools) {
     List<Tool> selectedTools = tools.where((tool) => tool.isSelected).toList();
+
     context
         .read<SimulationPageBloc>()
         .add(SimulationSelectedToolsChanged(selectedTools: selectedTools));
