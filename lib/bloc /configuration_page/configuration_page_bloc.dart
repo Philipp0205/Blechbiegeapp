@@ -32,7 +32,8 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
             showEdgeLengths: false,
             showAngles: false,
             s: 5,
-            r: 20)) {
+            r: 20,
+            toolTypes: [])) {
     on<ConfigPageCreated>(_initializePage);
     on<ConfigCoordinatesShown>(_showCoordinates);
     on<ConfigEdgeLengthsShown>(_showEdgeLengths);
@@ -50,14 +51,13 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   /// When no segment exists an initial segment gets created.
   Future<void> _initializePage(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
+    _createToolTypes(emit);
     emit(state.copyWith(lines: event.lines));
-    // _openShapesBox();
   }
 
   /// Registers all adapters needed to save shape objects in the database.
   void _registerAdapters(
       ConfigRegisterAdapters event, Emitter<ConfigPageState> emit) async {
-
     _toolRepository.initRepo();
 
     // await Hive.initFlutter();
@@ -67,6 +67,32 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
     // Hive.registerAdapter(ToolTypeAdapter());
     // Hive.registerAdapter(ToolType2Adapter());
     // Hive.openBox('shapes4');
+  }
+
+  /// Create all [ToolType2]s.
+  void _createToolTypes(Emitter<ConfigPageState> emit) {
+    ToolType2 lowerBeam =
+        new ToolType2(name: 'Unterwange', type: ToolType.lowerBeam);
+    ToolType2 upperBeam =
+        new ToolType2(name: 'Oberwange', type: ToolType.upperBeam);
+    ToolType2 bendingBeam =
+        new ToolType2(name: 'Biegewange', type: ToolType.bendingBeam);
+    ToolType2 lowerTrack =
+        new ToolType2(name: 'Untere Schiene', type: ToolType.lowerTrack);
+    ToolType2 upperTrack =
+        new ToolType2(name: 'Obere Schiene', type: ToolType.upperTrack);
+    ToolType2 bendingTrack =
+        new ToolType2(name: 'Biegeschiene', type: ToolType.bendingTrack);
+
+    emit(state.copyWith(toolTypes: []));
+    emit(state.copyWith(toolTypes: [
+      lowerBeam,
+      upperBeam,
+      bendingBeam,
+      lowerTrack,
+      upperTrack,
+      bendingTrack
+    ]));
   }
 
   /// Decides depending on the [CheckBoxEnum] what should be shown.

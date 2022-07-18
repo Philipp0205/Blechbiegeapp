@@ -17,7 +17,7 @@ class SimulationPageBloc
       : super(SimulationPageInitial(
             tools: [], lines: [], selectedBeams: [], selectedTracks: [])) {
     on<SimulationPageCreated>(_setInitialLines);
-    on<SimulationSelectedToolsChanged>(_setSelectedTool);
+    on<SimulationSelectedToolsChanged>(_setSelectedBeam);
     on<SimulationSelectedTracksChanged>(_setSelectedTracks);
   }
 
@@ -28,7 +28,7 @@ class SimulationPageBloc
   }
 
   /// Set the selected beams of the simulation.
-  void _setSelectedTool(
+  void _setSelectedBeam(
       SimulationSelectedToolsChanged event, Emitter<SimulationPageState> emit) {
     emit(state.copyWith(selectedBeams: event.selectedTools));
   }
@@ -37,9 +37,9 @@ class SimulationPageBloc
   void _setSelectedTracks(SimulationSelectedTracksChanged event,
       Emitter<SimulationPageState> emit) {
 
-    Tool newTrack = _placeTrackOnBeam(event.selectedTracks.first, state.selectedBeams.first);
+    // Tool newTrack = _placeTrackOnBeam(event.selectedTracks.first, state.selectedBeams.first);
 
-    emit(state.copyWith(selectedTracks: [newTrack]));
+    emit(state.copyWith(selectedTracks: event.selectedTracks));
   }
 
   Tool _placeTrackOnBeam(Tool track, Tool beam) {
@@ -60,6 +60,5 @@ class SimulationPageBloc
     lines..removeAt(index)..insert(index, newLine);
 
     return track.copyWith(lines: lines);
-
   }
 }

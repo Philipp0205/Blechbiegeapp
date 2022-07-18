@@ -50,19 +50,29 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
       buildListView(
         state,
         context,
-        state.beams.where((tool) => tool.type.type == ToolType.lowerBeam).toList(),
+        state.beams
+            .where((tool) =>
+                tool.type.type == ToolType.lowerBeam ||
+                tool.type.type == ToolType.lowerTrack)
+            .toList(),
         ToolType.lowerBeam,
       ),
       buildListView(
           state,
           context,
-          state.beams.where((tool) => tool.type.type == ToolType.upperBeam).toList(),
+          state.beams
+              .where((tool) =>
+                  tool.type.type == ToolType.upperBeam ||
+                  tool.type.type == ToolType.upperTrack)
+              .toList(),
           ToolType.upperBeam),
       buildListView(
           state,
           context,
           state.beams
-              .where((tool) => tool.type.type == ToolType.bendingBeam)
+              .where((tool) =>
+                  tool.type.type == ToolType.bendingBeam ||
+                  tool.type.type == ToolType.bendingTrack)
               .toList(),
           ToolType.bendingBeam),
     ],

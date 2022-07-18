@@ -22,7 +22,6 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
       : super(ShapesPageInitial(
             beams: [],
             tracks: [],
-            toolTypes: [],
             isSelectionMode: false,
             selectedTools: <Tool, bool>{})) {
     on<ToolPageCreated>(_shapesPageInit);
@@ -82,35 +81,11 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
     // Generate initial selected tools list where all are unselected.
     List<Tool> tools = await _toolRepository.getTools();
 
-    _createToolTypes(emit);
 
     emit(state.copyWith(beams: tools, isSelectionMode: false));
   }
 
-  /// Create all [ToolType2]s.
-  void _createToolTypes(Emitter<ToolPageState> emit) {
-    ToolType2 lowerBeam =
-        new ToolType2(name: 'Unterwange', type: ToolType.lowerBeam);
-    ToolType2 upperBeam =
-        new ToolType2(name: 'Oberwange', type: ToolType.upperBeam);
-    ToolType2 bendingBeam =
-        new ToolType2(name: 'Biegewange', type: ToolType.bendingBeam);
-    ToolType2 lowerTrack =
-        new ToolType2(name: 'Untere Schiene', type: ToolType.lowerTrack);
-    ToolType2 upperTrack =
-        new ToolType2(name: 'Obere Schiene', type: ToolType.upperTrack);
-    ToolType2 bendingTrack =
-        new ToolType2(name: 'Biegeschiene', type: ToolType.bendingTrack);
 
-    emit(state.copyWith(toolTypes: [
-      lowerBeam,
-      upperBeam,
-      bendingBeam,
-      lowerTrack,
-      upperTrack,
-      bendingTrack
-    ]));
-  }
 
   /// Called when the selection mode is changed.
   /// The selection mode is changed depending on the current mode.

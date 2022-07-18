@@ -4,6 +4,7 @@ class ConfigPageState extends Equatable {
   final List<Segment> segment;
   final List<Tool> tools;
   final List<Line> lines;
+  final List<ToolType2> toolTypes;
   final bool showCoordinates;
   final bool showEdgeLengths;
   final bool showAngles;
@@ -15,6 +16,7 @@ class ConfigPageState extends Equatable {
       {required this.segment,
       required this.lines,
       required this.tools,
+      required this.toolTypes,
       required this.showEdgeLengths,
       required this.showCoordinates,
       required this.showAngles,
@@ -32,13 +34,15 @@ class ConfigPageState extends Equatable {
         s,
         r,
         markAdapterLineMode,
-    tools
+        tools,
+        toolTypes
       ];
 
   ConfigPageState copyWith({
     List<Segment>? segment,
     List<Tool>? tools,
     List<Line>? lines,
+    List<ToolType2>? toolTypes,
     bool? showCoordinates,
     bool? showEdgeLengths,
     bool? showAngles,
@@ -50,6 +54,7 @@ class ConfigPageState extends Equatable {
       segment: segment ?? this.segment,
       tools: tools ?? this.tools,
       lines: lines ?? this.lines,
+      toolTypes: toolTypes ?? this.toolTypes,
       showCoordinates: showCoordinates ?? this.showCoordinates,
       showEdgeLengths: showEdgeLengths ?? this.showEdgeLengths,
       showAngles: showAngles ?? this.showAngles,
@@ -64,6 +69,7 @@ class ConstructingPageInitial extends ConfigPageState {
   final List<Segment> segment;
   final List<Tool> tools;
   final List<Line> lines;
+  final List<ToolType2> toolTypes;
   final bool showCoordinates;
   final bool showEdgeLengths;
   final bool markAdapterLineMode;
@@ -75,6 +81,7 @@ class ConstructingPageInitial extends ConfigPageState {
     required this.segment,
     required this.lines,
     required this.tools,
+    required this.toolTypes,
     required this.showCoordinates,
     required this.showEdgeLengths,
     required this.markAdapterLineMode,
@@ -83,6 +90,7 @@ class ConstructingPageInitial extends ConfigPageState {
     required this.r,
   }) : super(
             segment: segment,
+            toolTypes: toolTypes,
             lines: lines,
             showEdgeLengths: showEdgeLengths,
             tools: tools,

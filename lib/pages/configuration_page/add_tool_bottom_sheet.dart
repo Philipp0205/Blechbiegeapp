@@ -26,7 +26,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   bool upperCheek = false;
   final Tool? selectedShape;
 
-  String? dropdownValue = 'Unterwange';
+  String? dropdownValue = "Unterwange";
 
   _AddToolBottomSheetState({required this.selectedShape});
 
@@ -58,18 +58,18 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
       height: 450,
       child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              buildTitleRow(),
-              Divider(),
-              buildNameRow(),
-              buildButtonRow(state, context),
-            ],
-          ),
-        );
-      }),
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  buildTitleRow(),
+                  Divider(),
+                  buildNameRow(),
+                  buildButtonRow(state, context),
+                ],
+              ),
+            );
+          }),
     );
   }
 
@@ -79,7 +79,10 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
       children: [
         ElevatedButton(
           onPressed: () {
-            List<Line> lines = context.read<ConfigPageBloc>().state.lines;
+            List<Line> lines = context
+                .read<ConfigPageBloc>()
+                .state
+                .lines;
             _saveTool(_nameController.text, lines);
           },
           child: Text('Speichern'),
@@ -121,12 +124,12 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         DropdownButton(
             value: dropdownValue,
             items: context
-                .read<ToolPageBloc>()
+                .read<ConfigPageBloc>()
                 .state
                 .toolTypes
                 .map((type) => type.name)
                 .toList()
-                // items: <ToolType2>context.read<ToolPageBloc>().state.toolTypes.map((type) {
+            // items: <ToolType2>context.read<ToolPageBloc>().state.toolTypes.map((type) {
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -165,49 +168,39 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
 
   /// Saves the shape to the database and notified the [ToolPageBloc].j
   void _saveTool(String name, List<Line> lines) {
-    ToolType type = ToolType.upperBeam;
+    List<ToolType2> types = context
+        .read<ConfigPageBloc>()
+        .state
+        .toolTypes;
 
-    List<ToolType2> types = context.read<ToolPageBloc>().state.toolTypes;
 
-    switch (dropdownValue) {
-      case 'Oberwange':
-        type = ToolType.upperBeam;
-        print('saved shape type: ${type}');
-        break;
-      case 'Unterwange':
-        type = ToolType.lowerBeam;
-        print('saved shape type: ${type}');
-        break;
-      case 'Biegewange':
-        type = ToolType.bendingBeam;
-        print('saved shape type: ${type}');
-    }
+    // switch (types) {
+    //   case 'Oberwange':
+    //     type = ToolType.upperBeam;
+    //     print('saved shape type: ${type}');
+    //     break;
+    //   case 'Unterwange':
+    //     type = ToolType.lowerBeam;
+    //     print('saved shape type: ${type}');
+    //     break;
+    //   case 'Biegewange':
+    //     type = ToolType.bendingBeam;
+    //     print('saved shape type: ${type}');
+    // }
 
     Tool tool = new Tool(
-        name: _nameController.text,
-        lines: lines,
-        type: types.firstWhere((type) => type.name == dropdownValue),
-        isSelected: false,
-        adapterLine: []);
+    name: _nameController.text,
+    lines: lines,
+    type: types.firstWhere((type) => type.name == dropdownValue),
+    isSelected: false,
+    adapterLine: []);
 
     if (selectedShape == null) {
-      Navigator.of(context).pushNamed("/shapes");
-      context.read<ToolPageBloc>().add(ToolAdded(tool: tool));
+    Navigator.of(context).pushNamed("/shapes");
+    context.read<ToolPageBloc>().add(ToolAdded(tool: tool));
     } else {
-      Navigator.pop(context);
-      context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
+    Navigator.pop(context);
+    context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
     }
   }
-
-  /// Returns the name of the type of the shape.
-  // String _getNameOfType(ToolType type) {
-  //   switch (type) {
-  //     case ToolType.lowerBeam:
-  //       return 'Unterwange';
-  //     case ToolType.upperBeam:
-  //       return 'Oberwange';
-  //     case ToolType.bendingBeam:
-  //       return 'Biegewange';
-  //   }
-  // }
 }
