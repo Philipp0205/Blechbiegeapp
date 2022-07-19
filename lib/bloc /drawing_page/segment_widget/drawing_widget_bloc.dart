@@ -135,7 +135,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       Line line = new Line(
           start: event.firstDrawnOffset,
           end: event.firstDrawnOffset,
-          isSelected: false);
+          isSelected: false,
+      );
 
       if (lines.isNotEmpty) line = line.copyWith(start: lines.last.end);
 

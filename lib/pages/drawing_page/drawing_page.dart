@@ -186,6 +186,7 @@ class _DrawingPageState extends State<DrawingPage> {
               _toggleSelectionMode(value!);
             }),
         Text('Linien selektieren'),
+
         Container(
           width: 10,
         ),
@@ -265,7 +266,7 @@ class _DrawingPageState extends State<DrawingPage> {
     List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
 
     BlocProvider.of<ConfigPageBloc>(context)
-        .add(ConfigPageCreated(lines: lines));
+        .add(ConfigPageCreated(lines: lines, tools: []));
 
     Navigator.of(context).pushNamed('/config');
   }

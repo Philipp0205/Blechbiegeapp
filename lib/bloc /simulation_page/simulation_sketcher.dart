@@ -4,9 +4,11 @@ import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
 
 class SimulationSketcher extends CustomPainter {
-  final List<Tool> shapes;
+  final List<Tool> beams;
+  final List<Tool> tracks;
 
-  SimulationSketcher({required this.shapes});
+  SimulationSketcher({required this.beams, required this.tracks});
+
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
@@ -17,20 +19,27 @@ class SimulationSketcher extends CustomPainter {
 
     Path path = new Path();
 
-    print('${shapes.length} shapes');
-
-
     // path.moveTo(testLine.start.dx, testLine.start.dy);
     // path.lineTo(testLine.end.dx, testLine.end.dy);
 
-    Offset firstOffset = shapes.first.lines.first.start;
-
-    shapes.forEach((shape) {
-      path.moveTo(shape.lines.first.start.dx, shape.lines.first.start.dy);
-      shape.lines.forEach((line) {
-        path.lineTo(line.end.dx, line.end.dy);
+    if (beams.isNotEmpty ) {
+      beams.forEach((tool) {
+        path.moveTo(tool.lines.first.start.dx, tool.lines.first.start.dy);
+        tool.lines.forEach((line) {
+          path.lineTo(line.end.dx, line.end.dy);
+        });
       });
-    });
+    }
+
+    if (tracks.isNotEmpty) {
+      tracks.forEach((track) {
+        path.moveTo(track.lines.first.start.dx, track.lines.first.start.dy);
+        track.lines.forEach((line) {
+          path.lineTo(line.end.dx, line.end.dy);
+        });
+      });
+    }
+
 
     canvas.drawPath(path, paint);
 

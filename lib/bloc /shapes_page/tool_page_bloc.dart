@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
+import 'package:open_bsp/model/simulation/tool_category.dart';
+import 'package:open_bsp/model/simulation/tool_type2.dart';
+import 'package:open_bsp/model/simulation/tool_type.dart';
 
 import '../../model/simulation/tool.dart';
 import '../../persistence/database_provider.dart';
@@ -19,7 +22,7 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   ToolPageBloc(this._toolRepository)
       : super(ShapesPageInitial(
             tools: [], isSelectionMode: false, selectedTools: <Tool, bool>{})) {
-    on<ShapesPageCreated>(_shapesPageCreated);
+    on<ToolPageCreated>(_shapesPageInit);
     on<ToolAdded>(_addTool);
     on<ToolDeleted>(_deleteTools);
     on<ToolEdited>(_editTool);
@@ -33,14 +36,16 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The new tool is added to the end of the list.
   /// The new tool is also added to the [selectedList].
   Future<void> _addTool(ToolAdded event, Emitter<ToolPageState> emit) async {
+    // print('delete all tools');
+    // _toolRepository.deleteAllTools();
+
     _toolRepository.addTool(event.tool);
     print('add new tool ${event.tool.name}');
 
     List<Tool> tools = await _toolRepository.getTools();
+    // box.add(event.tool);
 
-    box.add(event.tool);
-    print('tools: ${box.length}');
-
+    emit(state.copyWith(tools: []));
     emit(state.copyWith(tools: tools));
   }
 
@@ -68,15 +73,13 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
   /// Called initially one time when the shapes page is created.
   /// Shapes are loaded from the repository and saved in the state.
-  FutureOr<void> _shapesPageCreated(
-      ShapesPageCreated event, Emitter<ToolPageState> emit) async {
+  FutureOr<void> _shapesPageInit(
+      ToolPageCreated event, Emitter<ToolPageState> emit) async {
     Map<Tool, bool> selectedTools = <Tool, bool>{};
     // Generate initial selected tools list where all are unselected.
-
     List<Tool> tools = await _toolRepository.getTools();
 
-    emit(state.copyWith(
-        tools: tools, isSelectionMode: false));
+    emit(state.copyWith(tools: tools, isSelectionMode: false));
   }
 
   /// Called when the selection mode is changed.
@@ -90,7 +93,6 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The selected list is changed when in selection mode.
   void _changeSelectedList(
       SelectedToolsChanged event, Emitter<ToolPageState> emit) {
-    List<Tool> tools = state.tools;
     Tool tool = event.tool;
 
     Tool newTool = tool.isSelected
@@ -99,9 +101,10 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
     _toolRepository.updateTool(tool, newTool);
 
-    tools[tools.indexOf(tool)] = newTool;
+    List<Tool> beams = state.tools;
+    beams[beams.indexOf(tool)] = newTool;
 
     emit(state.copyWith(tools: []));
-    emit(state.copyWith(tools: tools));
+    emit(state.copyWith(tools: beams));
   }
 }

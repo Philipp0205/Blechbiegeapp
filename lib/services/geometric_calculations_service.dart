@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:vector_math/vector_math.dart';
 
 import '../model/line.dart';
-import '../model/segment_offset.dart';
 import '../model/segment_widget/segment.dart';
+import '../model/simulation/tool.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
@@ -13,8 +13,8 @@ class GeometricCalculationsService {
 
   /// Returns sorted Map according to distance of [offset] to each element
   /// in [offsets].
-  Map<Offset, double> _getOffsetsByDistance(
-      Offset offset, List<Offset> offsets) {
+  Map<Offset, double> _getOffsetsByDistance(Offset offset,
+      List<Offset> offsets) {
     Map<Offset, double> distances = {};
     offsets.forEach((currentOffset) {
       distances.addEntries(
@@ -32,8 +32,8 @@ class GeometricCalculationsService {
 
   /// Returns nearest nearest offsets of [offset] in [offsets].
   /// Number of nearest offsets is determined by [numberOfOffsets].
-  List<Offset> getNNearestOffsets(
-      Offset offset, List<Offset> offsets, int numberOfOffsets) {
+  List<Offset> getNNearestOffsets(Offset offset, List<Offset> offsets,
+      int numberOfOffsets) {
     return _getOffsetsByDistance(offset, offsets)
         .keys
         .toList()
@@ -57,8 +57,8 @@ class GeometricCalculationsService {
   ///
   /// Always two offsets are returned. Only one end got shorted one of the
   /// results will be  the same offset.
-  List<Offset> changeLengthOfSegment(
-      Offset start, Offset end, double length, bool shortStart, bool shortEnd) {
+  List<Offset> changeLengthOfSegment(Offset start, Offset end, double length,
+      bool shortStart, bool shortEnd) {
     List<Offset> result = [];
 
     Offset newStart = _changeLengthOfOffset(start, end, length);
@@ -82,11 +82,11 @@ class GeometricCalculationsService {
   */
   double getDistanceToSegment(DragDownDetails details, Segment segment) {
     Point currentPoint =
-        new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
+    new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
     Point startPoint =
-        new Point(segment.path.first.offset.dx, segment.path.first.offset.dy);
+    new Point(segment.path.first.offset.dx, segment.path.first.offset.dy);
     Point endPoint =
-        new Point(segment.path.last.offset.dx, segment.path.last.offset.dy);
+    new Point(segment.path.last.offset.dx, segment.path.last.offset.dy);
 
     return startPoint.distanceTo(currentPoint) +
         currentPoint.distanceTo(endPoint) -
@@ -147,7 +147,7 @@ class GeometricCalculationsService {
   /// https://stackoverflow.com/questions/33960924/is-arc-clockwise-or-counter-clockwise
   bool getDirection(Offset start, Offset end, Offset middle) {
     return ((end.dx - start.dx) * (middle.dy - start.dy) -
-            (end.dy - start.dy) * (middle.dx - start.dx)) >
+        (end.dy - start.dy) * (middle.dx - start.dx)) >
         0;
   }
 
@@ -173,7 +173,7 @@ class GeometricCalculationsService {
 
     return new Offset(x, y);
   }
-  
+
   double getAngleBetweenTwoLines(double angleA, double angleB) {
     double angle;
     if (angleA > angleB) {
@@ -189,11 +189,10 @@ class GeometricCalculationsService {
     }
     return angle;
   }
-  
+
   /// atan2(vector1.y - vector2.y, vector1.x - vector2.x)
   /// angle = arccos[(xa * xb + ya * yb) / (√(xa2 + ya2) * √(xb2 + yb2))]
   double getAngleFromVectors(Vector2 vector1, Vector2 vector2) {
-
     double angle = atan2(vector2.y, vector2.x) - atan2(vector1.y, vector1.x);
 
     if (angle > pi) {
@@ -217,4 +216,5 @@ class GeometricCalculationsService {
   List<Line> getSelectedLines(List<Line> lines) {
     return lines.where((line) => line.isSelected).toList();
   }
+
 }

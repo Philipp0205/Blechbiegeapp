@@ -50,21 +50,33 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
       buildListView(
         state,
         context,
-        state.tools.where((tool) => tool.type == ToolType.lowerBeam).toList(),
-        ToolType.lowerBeam,
+        state.tools
+            .where((tool) =>
+                tool.type.type == ToolType.lowerBeam ||
+                tool.type.type == ToolType.lowerTrack)
+            .toList(),
+        [ToolType.lowerBeam, ToolType.lowerTrack],
       ),
       buildListView(
-          state,
-          context,
-          state.tools.where((tool) => tool.type == ToolType.upperBeam).toList(),
-          ToolType.upperBeam),
+        state,
+        context,
+        state.tools
+            .where((tool) =>
+                tool.type.type == ToolType.upperBeam ||
+                tool.type.type == ToolType.upperTrack)
+            .toList(),
+        [ToolType.upperBeam, ToolType.upperTrack],
+      ),
       buildListView(
-          state,
-          context,
-          state.tools
-              .where((tool) => tool.type == ToolType.bendingBeam)
-              .toList(),
-          ToolType.bendingBeam),
+        state,
+        context,
+        state.tools
+            .where((tool) =>
+                tool.type.type == ToolType.bendingBeam ||
+                tool.type.type == ToolType.bendingTrack)
+            .toList(),
+        [ToolType.bendingBeam, ToolType.bendingTrack],
+      ),
     ],
   );
 }
@@ -94,9 +106,9 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
       ],
     ),
     bottom: TabBar(tabs: [
-      Tab(text: 'Unterwangen', icon: Icon(Icons.border_bottom)),
-      Tab(text: 'Oberwangen', icon: Icon(Icons.border_top)),
-      Tab(text: 'Biegewangen', icon: Icon(Icons.border_left)),
+      Tab(text: 'Unten', icon: Icon(Icons.border_bottom)),
+      Tab(text: 'Oben', icon: Icon(Icons.border_top)),
+      Tab(text: 'Links', icon: Icon(Icons.border_left)),
     ]),
   );
 }
@@ -105,14 +117,17 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
 /// [ConfigPageBloc].
 void _loadTool(BuildContext context, Tool tool) {
   List<Line> lines = tool.lines;
-  context.read<ConfigPageBloc>().add(ConfigPageCreated(lines: lines));
+  context
+      .read<ConfigPageBloc>()
+      .add(ConfigPageCreated(lines: lines, tools: [tool]));
   Navigator.of(context).pop();
 }
 
+/// Builds a list of [Tool]s.
 ListView buildListView(ToolPageState state, BuildContext context,
-    List<Tool> tools, ToolType toolType) {
+    List<Tool> tools, List<ToolType> toolTypes) {
   List<Tool> toolsOfType =
-      tools.where((tool) => tool.type == toolType).toList();
+      tools.where((tool) => toolTypes.contains(tool.type.type)).toList();
 
   return ListView.builder(
       itemCount: toolsOfType.length,
@@ -134,13 +149,13 @@ ListView buildListView(ToolPageState state, BuildContext context,
             }
           },
           title: Text('${tools[index].name}'),
+          subtitle: Text('${tools[index].type.name}'),
           trailing: state.isSelectionMode
               ? Checkbox(
                   value: toolsOfType
                       .map((tool) => tool.isSelected)
                       .toList()[index],
                   onChanged: (bool? value) => {
-                    print('index: $index, value: $value'),
                     _selectedToolsChanged(
                         context,
                         state,
@@ -162,8 +177,8 @@ void _toggleSelectionMode(BuildContext context, bool value) {
 }
 
 /// Triggered when a [Tool] is selected or deselected in the [ListView].
-/// If the [Tool] is selected, it is added to the [tools] map.
-/// If the [Tool] is deselected, it is removed from the [tools] map.
+/// If the [Tool] is selected, it is added to the [beams] map.
+/// If the [Tool] is deselected, it is removed from the [beams] map.
 void _selectedToolsChanged(
     BuildContext context, ToolPageState state, Tool tool, bool value) {
   if (state.isSelectionMode) {

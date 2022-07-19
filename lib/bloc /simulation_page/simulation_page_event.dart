@@ -14,3 +14,12 @@ class SimulationPageCreated extends SimulationPageEvent {
 
   const SimulationPageCreated({required this.lines});
 }
+
+/// The event contains the new [Tool]s.
+/// The event is used to change the [Tool]s in the [SimulationPageState].
+class SimulationToolsChanged extends SimulationPageEvent {
+  final List<Tool> tools;
+  const SimulationToolsChanged({required this.tools});
+}
+
+

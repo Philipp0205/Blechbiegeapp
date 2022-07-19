@@ -1,6 +1,8 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../model/OffsetAdapter.dart';
@@ -8,56 +10,89 @@ import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/simulation/tool.dart';
 import '../../model/simulation/tool_type.dart';
+import '../../model/simulation/tool_type2.dart';
+import '../../persistence/repositories/tool_repository.dart';
+import '../../services/geometric_calculations_service.dart';
 
 part 'configuration_page_event.dart';
 
 part 'configuration_page_state.dart';
 
 class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
-  // ConstructingPageBloc() : super(ConstructingPageCreate(segment: [])) {
-  ConfigPageBloc()
+  final GeometricCalculationsService _calculationService =
+      new GeometricCalculationsService();
+
+  ConfigPageBloc(this._toolRepository)
       : super(ConstructingPageInitial(
             segment: [],
             lines: [],
-            shapes: [],
+            tools: [],
+            markAdapterLineMode: false,
             showCoordinates: false,
             showEdgeLengths: false,
             showAngles: false,
             s: 5,
-            r: 20)) {
-    on<ConfigPageCreated>(_setInitialValues);
+            r: 20,
+            toolTypes: [])) {
+    on<ConfigPageCreated>(_initializePage);
     on<ConfigCoordinatesShown>(_showCoordinates);
     on<ConfigEdgeLengthsShown>(_showEdgeLengths);
     on<ConfigAnglesShown>(_showAngles);
     on<ConfigCheckboxChanged>(_showDataDependingOnCheckbox);
     on<ConfigSChanged>(_changeThicknes);
     on<ConfigRChanged>(_changeRadius);
-    on<ConfigShapeAdded>(_saveShape);
+    on<ConfigToggleMarkAdapterLineMode>(_toggleAdapterMode);
+    on<ConfigMarkAdapterLine>(_markAdapterLine);
+    on<ConfigRegisterAdapters>(_registerAdapters);
   }
 
+  final ToolRepository _toolRepository;
+
   /// When no segment exists an initial segment gets created.
-  Future<void> _setInitialValues(
+  Future<void> _initializePage(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
+    _createToolTypes(emit);
     emit(state.copyWith(lines: event.lines));
-    _openShapesBox();
   }
 
   /// Registers all adapters needed to save shape objects in the database.
-  Future<Box> _openShapesBox() async {
-    await Hive.initFlutter();
-    Hive.registerAdapter(ToolAdapter());
-    Hive.registerAdapter(LineAdapter());
-    Hive.registerAdapter(OffsetAdapter());
-    Hive.registerAdapter(ToolTypeAdapter());
-    return await Hive.openBox('shapes');
+  void _registerAdapters(
+      ConfigRegisterAdapters event, Emitter<ConfigPageState> emit) async {
+    _toolRepository.initRepo();
+
+    // await Hive.initFlutter();
+    // Hive.registerAdapter(ToolAdapter());
+    // Hive.registerAdapter(LineAdapter());
+    // Hive.registerAdapter(OffsetAdapter());
+    // Hive.registerAdapter(ToolTypeAdapter());
+    // Hive.registerAdapter(ToolType2Adapter());
+    // Hive.openBox('shapes4');
   }
 
-  /// Save [Tool] to hive database.
-  void _saveShapeToDatabase(Tool shape) {
-    print('save shape');
-    Box box = Hive.box('shapes');
-    box.add(shape);
-    // emit(state.copyWith(shapes: event.shapes));
+  /// Create all [ToolType2]s.
+  void _createToolTypes(Emitter<ConfigPageState> emit) {
+    ToolType2 lowerBeam =
+        new ToolType2(name: 'Unterwange', type: ToolType.lowerBeam);
+    ToolType2 upperBeam =
+        new ToolType2(name: 'Oberwange', type: ToolType.upperBeam);
+    ToolType2 bendingBeam =
+        new ToolType2(name: 'Biegewange', type: ToolType.bendingBeam);
+    ToolType2 lowerTrack =
+        new ToolType2(name: 'Untere Schiene', type: ToolType.lowerTrack);
+    ToolType2 upperTrack =
+        new ToolType2(name: 'Obere Schiene', type: ToolType.upperTrack);
+    ToolType2 bendingTrack =
+        new ToolType2(name: 'Biegeschiene', type: ToolType.bendingTrack);
+
+    emit(state.copyWith(toolTypes: []));
+    emit(state.copyWith(toolTypes: [
+      lowerBeam,
+      upperBeam,
+      bendingBeam,
+      lowerTrack,
+      upperTrack,
+      bendingTrack
+    ]));
   }
 
   /// Decides depending on the [CheckBoxEnum] what should be shown.
@@ -103,31 +138,47 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
     emit(state.copyWith(r: event.r));
   }
 
-  /// Saves a to the state (no DB involved here).
-  Future<void> _saveShape(ConfigShapeAdded event, Emitter<ConfigPageState> emit) async {
-    List<List<Line>> lines = state.shapes.map((shape) => shape.lines).toList();
-    int index = lines.indexOf(event.shape.lines);
-    List<Tool> shapes = state.shapes;
-
-    if (_shapeAlreadyExists(event.shape, shapes)) {
-      shapes
-        ..removeAt(index)
-        ..insert(index, event.shape);
-    } else {
-      print('shape does not exist');
-      shapes.add(event.shape);
-    }
-
-    _saveShapeToDatabase(event.shape);
-
-    print('emitted state ${shapes[0].name}');
-    emit(state.copyWith(shapes: []));
-    emit(state.copyWith(shapes: shapes));
-  }
-
   bool _shapeAlreadyExists(Tool shape, List<Tool> shapes) {
     List<List<Line>> lines = shapes.map((shape) => shape.lines).toList();
     return lines.contains(shape.lines);
+  }
+
+  /// Toggles the adapter mode of the configuration page.
+  /// When the mode is enables the suer can chose one line that is marked as
+  /// adapter for that tool and then other tools can be attached to that tool.
+  void _toggleAdapterMode(
+      ConfigToggleMarkAdapterLineMode event, Emitter<ConfigPageState> emit) {
+    emit(state.copyWith(markAdapterLineMode: event.adapterLineMode));
+  }
+
+  void _markAdapterLine(
+      ConfigMarkAdapterLine event, Emitter<ConfigPageState> emit) {
+    if (state.markAdapterLineMode == false) return;
+
+    List<Line> lines = state.lines;
+    List<Tool> tools = state.tools;
+
+    List<Offset> middlePoints = lines
+        .map((line) => _calculationService.getMiddle(line.start, line.end))
+        .toList();
+
+    List<Offset> nearestMiddlePoint =
+        _calculationService.getNNearestOffsets(event.offset, middlePoints, 1);
+
+    int index = middlePoints.indexOf(nearestMiddlePoint.first);
+
+    Line selectedLine = lines[index];
+
+    Line newLine = selectedLine.isSelected
+        ? selectedLine.copyWith(isSelected: false)
+        : selectedLine.copyWith(isSelected: true);
+
+    lines
+      ..insert(lines.indexOf(selectedLine), newLine)
+      ..remove(selectedLine);
+
+    emit(state.copyWith(lines: []));
+    emit(state.copyWith(lines: lines));
   }
 }
 

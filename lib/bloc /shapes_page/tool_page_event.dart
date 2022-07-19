@@ -8,10 +8,9 @@ abstract class ToolPageEvent extends Equatable {
 }
 
 /// Event which is called when the shape page is created.
-class ShapesPageCreated extends ToolPageEvent {
-  final List<Tool> shapes;
+class ToolPageCreated extends ToolPageEvent {
 
-  ShapesPageCreated({required this.shapes});
+  ToolPageCreated();
 }
 
 /// A new [Tool] gets added to the list
