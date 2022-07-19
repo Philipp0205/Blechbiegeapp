@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:open_bsp/model/simulation/tool_category.dart';
 
 import '../../model/OffsetAdapter.dart';
 import '../../model/line.dart';
@@ -22,6 +23,7 @@ class ToolRepository {
     Hive.registerAdapter(OffsetAdapter());
     Hive.registerAdapter(ToolTypeAdapter());
     Hive.registerAdapter(ToolType2Adapter());
+    Hive.registerAdapter(ToolCategoryAdapter());
     Hive.openBox(boxName);
   }
 

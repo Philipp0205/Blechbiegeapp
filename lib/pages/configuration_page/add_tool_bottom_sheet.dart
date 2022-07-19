@@ -6,6 +6,7 @@ import 'package:open_bsp/model/simulation/tool_type2.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
 
 import '../../model/line.dart';
+import '../../model/simulation/tool_category.dart';
 import '../../model/simulation/tool_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.
@@ -166,20 +167,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   /// Saves the shape to the database and notified the [ToolPageBloc].j
   void _saveTool(String name, List<Line> lines) {
     List<ToolType2> types = context.read<ConfigPageBloc>().state.toolTypes;
-
-    // switch (types) {
-    //   case 'Oberwange':
-    //     type = ToolType.upperBeam;
-    //     print('saved shape type: ${type}');
-    //     break;
-    //   case 'Unterwange':
-    //     type = ToolType.lowerBeam;
-    //     print('saved shape type: ${type}');
-    //     break;
-    //   case 'Biegewange':
-    //     type = ToolType.bendingBeam;
-    //     print('saved shape type: ${type}');
-    // }
 
     ToolType2 type = types.firstWhere((type) => type.name == dropdownValue);
 
