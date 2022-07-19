@@ -129,6 +129,7 @@ class _SimulationPageState extends State<SimulationPage> {
   /// Therefore, this method is called when the [ToolPageBloc] changes.
   void _setSelectedTracks(BuildContext context, List<Tool> tools) {
     List<Tool> selectedTracks = tools.where((tool) => tool.isSelected).toList();
+    // tools.where((tool) => tool.isSelected).toList().where((tool) => tool.type.type)
     context
         .read<SimulationPageBloc>()
         .add(SimulationSelectedTracksChanged(selectedTracks: selectedTracks));

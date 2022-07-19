@@ -37,7 +37,7 @@ class SimulationPageBloc
   void _setSelectedTracks(SimulationSelectedTracksChanged event,
       Emitter<SimulationPageState> emit) {
 
-    // Tool newTrack = _placeTrackOnBeam(event.selectedTracks.first, state.selectedBeams.first);
+    Tool newTrack = _placeTrackOnBeam(event.selectedTracks.first, state.selectedBeams.first);
 
     emit(state.copyWith(selectedTracks: event.selectedTracks));
   }
