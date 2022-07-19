@@ -10,7 +10,7 @@ import '../database_provider.dart';
 
 class ToolRepository {
   final DatabaseProvider databaseProvider;
-  final String boxName = 'shapes4';
+  final String boxName = 'shapes5';
 
   ToolRepository(this.databaseProvider);
 

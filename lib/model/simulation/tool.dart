@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:open_bsp/model/simulation/tool_category.dart';
 
 import 'tool_type2.dart';
 import '../line.dart';
@@ -49,7 +50,3 @@ class Tool {
   }
 }
 
-enum ToolCategory {
-  BEAM,
-  TRACK,
-}

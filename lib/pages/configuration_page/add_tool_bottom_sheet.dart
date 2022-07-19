@@ -205,8 +205,10 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
     if (type.type == ToolType.upperBeam ||
         type.type == ToolType.lowerBeam ||
         type.type == ToolType.bendingBeam) {
+      print('tool category: ${ToolCategory.BEAM}');
       return ToolCategory.BEAM;
     } else {
+      print('tool category: ${ToolCategory.TRACK}');
       return ToolCategory.TRACK;
     }
   }
