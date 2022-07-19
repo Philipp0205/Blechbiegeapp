@@ -5,6 +5,7 @@ import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/simulation/tool.dart';
+import '../../model/simulation/tool_category.dart';
 
 class SimulationPage extends StatefulWidget {
   const SimulationPage({Key? key}) : super(key: key);
@@ -20,12 +21,11 @@ class _SimulationPageState extends State<SimulationPage> {
     return MultiBlocListener(
       listeners: [
         BlocListener<ToolPageBloc, ToolPageState>(
-          listenWhen: (prev, current) => prev.beams != current.beams,
-          listener: (context, state) {
-            _setSelectedBeams(context, state.beams);
-            _setSelectedTracks(context, state.beams);
-          },
-        )
+            listenWhen: (prev, current) => prev.tools != current.tools,
+            listener: (context, state) {
+              // _setSelectedBeams(context, state.tools);
+              _setSelectedTools(context, state.tools);
+            }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
           builder: (context, state) {
@@ -56,10 +56,11 @@ class _SimulationPageState extends State<SimulationPage> {
     return Row(
       children: [
         ElevatedButton(
-            onPressed: () => _openSelectBeamPage(), child: Text('Wangen')),
-        Container(width: 10),
-        ElevatedButton(
-            onPressed: () => _openSelectTrackPage(), child: Text('Schienen')),
+            onPressed: () => _openSelectToolPage(),
+            child: Text('Wangen & Schienen')),
+        // Container(width: 10),
+        // ElevatedButton(
+        //     onPressed: () => _openSelectTrackPage(), child: Text('Schienen')),
       ],
     );
   }
@@ -98,40 +99,21 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   /// Open the [ToolPage] to select beams.
-  void _openSelectBeamPage() {
+  void _openSelectToolPage() {
     Navigator.of(context).pushNamed("/shapes");
   }
 
-  /// Open the [ToolPage] to select tracks.
-  void _openSelectTrackPage() {
-    Navigator.of(context).pushNamed("/shapes");
-  }
-
-  /// Set the selected beams for the sketcher.
+  /// Set the selected tools for the sketcher.
   /// This is done by listening to the [ToolPageBloc] and setting the selected
-  /// beams.
+  /// tools.
   /// The [ToolPageBloc] is listening to the [SimulationPageBloc] and setting
-  /// the selected beams.
+  /// the selected tools.
   /// Therefore, this method is called when the [ToolPageBloc] changes.
-  void _setSelectedBeams(BuildContext context, List<Tool> tools) {
+  void _setSelectedTools(BuildContext context, List<Tool> tools) {
     List<Tool> selectedTools = tools.where((tool) => tool.isSelected).toList();
 
     context
         .read<SimulationPageBloc>()
-        .add(SimulationSelectedToolsChanged(selectedTools: selectedTools));
-  }
-
-  /// Set the selected tracks for the sketcher.
-  /// This is done by listening to the [ToolPageBloc] and setting the selected
-  /// tracks.
-  /// The [ToolPageBloc] is listening to the [SimulationPageBloc] and setting
-  /// the selected tracks.
-  /// Therefore, this method is called when the [ToolPageBloc] changes.
-  void _setSelectedTracks(BuildContext context, List<Tool> tools) {
-    List<Tool> selectedTracks = tools.where((tool) => tool.isSelected).toList();
-    // tools.where((tool) => tool.isSelected).toList().where((tool) => tool.type.type)
-    context
-        .read<SimulationPageBloc>()
-        .add(SimulationSelectedTracksChanged(selectedTracks: selectedTracks));
+        .add(SimulationToolsChanged(tools: selectedTools));
   }
 }

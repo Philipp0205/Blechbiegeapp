@@ -50,7 +50,7 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
       buildListView(
         state,
         context,
-        state.beams
+        state.tools
             .where((tool) =>
                 tool.type.type == ToolType.lowerBeam ||
                 tool.type.type == ToolType.lowerTrack)
@@ -60,7 +60,7 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
       buildListView(
         state,
         context,
-        state.beams
+        state.tools
             .where((tool) =>
                 tool.type.type == ToolType.upperBeam ||
                 tool.type.type == ToolType.upperTrack)
@@ -70,7 +70,7 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
       buildListView(
         state,
         context,
-        state.beams
+        state.tools
             .where((tool) =>
                 tool.type.type == ToolType.bendingBeam ||
                 tool.type.type == ToolType.bendingTrack)
@@ -99,9 +99,9 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
         // Because only one tool can be edited at a time, the edit button is
         // only visible when no tool is selected.
         if (state.isSelectionMode &&
-            state.beams.where((tool) => tool.isSelected).length <= 1)
+            state.tools.where((tool) => tool.isSelected).length <= 1)
           IconButton(
-              onPressed: () => _editTool(context, state.beams, state),
+              onPressed: () => _editTool(context, state.tools, state),
               icon: Icon(Icons.edit)),
       ],
     ),
@@ -142,7 +142,7 @@ ListView buildListView(ToolPageState state, BuildContext context,
                 context,
                 false,
               );
-              _selectedToolsChanged(context, state, state.beams[index], true);
+              _selectedToolsChanged(context, state, state.tools[index], true);
             } else {
               _toggleSelectionMode(context, true);
               // _selectedToolsChanged(context, state, state.tools[index], true);
@@ -156,7 +156,6 @@ ListView buildListView(ToolPageState state, BuildContext context,
                       .map((tool) => tool.isSelected)
                       .toList()[index],
                   onChanged: (bool? value) => {
-                    print('index: $index, value: $value'),
                     _selectedToolsChanged(
                         context,
                         state,
@@ -191,7 +190,7 @@ void _selectedToolsChanged(
 /// Delete the selected [Tool]s and update the [ToolPageState].
 void _deleteTool(BuildContext context, ToolPageState state) {
   List<Tool> selectedTools =
-      state.beams.where((tool) => tool.isSelected).toList();
+      state.tools.where((tool) => tool.isSelected).toList();
   context.read<ToolPageBloc>().add(ToolDeleted(tools: selectedTools));
 }
 
@@ -199,7 +198,7 @@ void _deleteTool(BuildContext context, ToolPageState state) {
 /// Opens a modal bottom sheet where the shape can be edited.
 void _editTool(BuildContext context, List<Tool> tools, ToolPageState state) {
   Tool selectedTool =
-      state.beams.where((tool) => tool.isSelected).toList().first;
+      state.tools.where((tool) => tool.isSelected).toList().first;
 
   showModalBottomSheet(
       context: context,

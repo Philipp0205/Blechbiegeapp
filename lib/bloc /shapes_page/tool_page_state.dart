@@ -5,13 +5,11 @@ part of 'tool_page_bloc.dart';
 /// all lower beams ('Unterwangen') [lowerBeams],
 /// and all bending beams ('Biegewangen') [bendingBeams].
 class ToolPageState extends Equatable {
-  final List<Tool> beams;
-  final List<Tool> tracks;
+  final List<Tool> tools;
   final bool isSelectionMode;
 
   const ToolPageState({
-    required this.beams,
-    required this.tracks,
+    required this.tools,
     required this.isSelectionMode,
   });
 
@@ -19,16 +17,14 @@ class ToolPageState extends Equatable {
   /// Parameters are nullable.
 
   @override
-  List<Object> get props => [beams, tracks, isSelectionMode];
+  List<Object> get props => [tools, isSelectionMode];
 
   ToolPageState copyWith({
-    List<Tool>? beams,
-    List<Tool>? tracks,
+    List<Tool>? tools,
     bool? isSelectionMode,
   }) {
     return ToolPageState(
-      beams: beams ?? this.beams,
-      tracks: tracks ?? this.tracks,
+      tools: tools ?? this.tools,
       isSelectionMode: isSelectionMode ?? this.isSelectionMode,
     );
   }
@@ -36,15 +32,13 @@ class ToolPageState extends Equatable {
 
 /// Class & constructor for the initial state of the [ToolPageBloc].
 class ShapesPageInitial extends ToolPageState {
-  final List<Tool> beams;
-  final List<Tool> tracks;
+  final List<Tool> tools;
   final Map<Tool, bool> selectedTools;
   final bool isSelectionMode;
 
   ShapesPageInitial(
-      {required this.beams,
-      required this.tracks,
+      {required this.tools,
       required this.isSelectionMode,
       required this.selectedTools})
-      : super(beams: beams, tracks: tracks, isSelectionMode: isSelectionMode);
+      : super(tools: tools, isSelectionMode: isSelectionMode);
 }

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -6,6 +5,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
+import '../../model/simulation/tool_category.dart';
 
 part 'simulation_page_event.dart';
 
@@ -17,8 +17,7 @@ class SimulationPageBloc
       : super(SimulationPageInitial(
             tools: [], lines: [], selectedBeams: [], selectedTracks: [])) {
     on<SimulationPageCreated>(_setInitialLines);
-    on<SimulationSelectedToolsChanged>(_setSelectedBeam);
-    on<SimulationSelectedTracksChanged>(_setSelectedTracks);
+    on<SimulationToolsChanged>(_setTools);
   }
 
   /// Set the initial lines of the simulation.
@@ -27,19 +26,36 @@ class SimulationPageBloc
     emit(state.copyWith(lines: event.lines));
   }
 
-  /// Set the selected beams of the simulation.
-  void _setSelectedBeam(
-      SimulationSelectedToolsChanged event, Emitter<SimulationPageState> emit) {
-    emit(state.copyWith(selectedBeams: event.selectedTools));
-  }
+  /// Set the tools of the simulation.
+  /// This method is called when the [SimulationToolsChanged] event is emitted.
+  void _setTools(
+      SimulationToolsChanged event, Emitter<SimulationPageState> emit) {
+    if (event.tools.isNotEmpty) {
+      List<Tool> selectedBeams = event.tools
+          .where(
+              (tool) => tool.isSelected && tool.category == ToolCategory.BEAM)
+          .toList();
 
-  /// Set the selected tracks of the simulation.
-  void _setSelectedTracks(SimulationSelectedTracksChanged event,
-      Emitter<SimulationPageState> emit) {
+      List<Tool> selectedTracks = event.tools
+          .where(
+              (tool) => tool.isSelected && tool.category == ToolCategory.TRACK)
+          .toList();
 
-    Tool newTrack = _placeTrackOnBeam(event.selectedTracks.first, state.selectedBeams.first);
+      selectedTracks.forEach((track) {
+        Tool newTrack = _placeTrackOnBeam(track, selectedBeams.first);
+        int index = selectedTracks.indexOf(track);
+        selectedTracks
+          ..removeAt(0)
+          ..insert(index, newTrack);
+      });
 
-    emit(state.copyWith(selectedTracks: event.selectedTracks));
+      print(
+          'selectedBeams: ${selectedBeams.length}, selectedTracks: ${selectedTracks.length}');
+
+      emit(state.copyWith(selectedBeams: [], selectedTracks: []));
+      emit(state.copyWith(
+          selectedBeams: selectedBeams, selectedTracks: selectedTracks));
+    }
   }
 
   Tool _placeTrackOnBeam(Tool track, Tool beam) {
@@ -50,14 +66,17 @@ class SimulationPageBloc
     double deltaX = (beamAdapterLine.start.dx - beamAdapterLine.start.dx).abs();
     double deltaY = (beamAdapterLine.start.dy - beamAdapterLine.start.dy).abs();
 
-    Offset newOffsetStart = new Offset(trackAdapterLine.start.dx + deltaX, trackAdapterLine.start.dy + deltaY);
+    Offset newOffsetStart = new Offset(
+        trackAdapterLine.start.dx - deltaX, trackAdapterLine.start.dy - deltaY);
 
     Line newLine = trackAdapterLine.copyWith(start: newOffsetStart);
 
     List<Line> lines = track.lines;
     int index = lines.indexOf(trackAdapterLine);
 
-    lines..removeAt(index)..insert(index, newLine);
+    lines
+      ..removeAt(index)
+      ..insert(index, newLine);
 
     return track.copyWith(lines: lines);
   }
