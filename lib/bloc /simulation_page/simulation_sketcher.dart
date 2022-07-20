@@ -11,37 +11,46 @@ class SimulationSketcher extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
+    Paint blackPaint = Paint()
+      ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0
+      ..style = PaintingStyle.fill;
+
+    Paint greyPaint = Paint()
       ..color = Colors.grey
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
       ..style = PaintingStyle.fill;
 
-    Path path = new Path();
+
+    Path beamsPath = new Path();
+    Path tracksPath = new Path();
 
     // path.moveTo(testLine.start.dx, testLine.start.dy);
     // path.lineTo(testLine.end.dx, testLine.end.dy);
 
     if (beams.isNotEmpty ) {
       beams.forEach((tool) {
-        path.moveTo(tool.lines.first.start.dx, tool.lines.first.start.dy);
+        beamsPath.moveTo(tool.lines.first.start.dx, tool.lines.first.start.dy);
         tool.lines.forEach((line) {
-          path.lineTo(line.end.dx, line.end.dy);
+          beamsPath.lineTo(line.end.dx, line.end.dy);
         });
       });
     }
 
     if (tracks.isNotEmpty) {
       tracks.forEach((track) {
-        path.moveTo(track.lines.first.start.dx, track.lines.first.start.dy);
+        tracksPath.moveTo(track.lines.first.start.dx, track.lines.first.start.dy);
         track.lines.forEach((line) {
-          path.lineTo(line.end.dx, line.end.dy);
+          tracksPath.lineTo(line.end.dx, line.end.dy);
         });
       });
     }
 
 
-    canvas.drawPath(path, paint);
+    canvas.drawPath(beamsPath, blackPaint);
+    canvas.drawPath(tracksPath, greyPaint);
 
     // shapes.forEach((shape) {
     // Move to first offset to start drawing

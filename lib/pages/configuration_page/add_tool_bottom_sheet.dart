@@ -6,7 +6,7 @@ import 'package:open_bsp/model/simulation/tool_type2.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
 
 import '../../model/line.dart';
-import '../../model/simulation/tool_category.dart';
+import '../../model/simulation/enums/tool_category_enum.dart';
 import '../../model/simulation/tool_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.
@@ -174,7 +174,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         name: _nameController.text,
         lines: lines,
         type: type,
-        category: _getToolCategory(type),
         isSelected: false,
         adapterLine: []);
 
@@ -188,15 +187,15 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   }
 
   /// Returns the category of the given [ToolType2].
-  ToolCategory _getToolCategory(ToolType2 type) {
+  ToolCategoryEnum _getToolCategory(ToolType2 type) {
     if (type.type == ToolType.upperBeam ||
         type.type == ToolType.lowerBeam ||
         type.type == ToolType.bendingBeam) {
-      print('tool category: ${ToolCategory.BEAM}');
-      return ToolCategory.BEAM;
+      print('tool category: ${ToolCategoryEnum.BEAM}');
+      return ToolCategoryEnum.BEAM;
     } else {
-      print('tool category: ${ToolCategory.TRACK}');
-      return ToolCategory.TRACK;
+      print('tool category: ${ToolCategoryEnum.TRACK}');
+      return ToolCategoryEnum.TRACK;
     }
   }
 }

@@ -19,17 +19,23 @@ class ToolType2Adapter extends TypeAdapter<ToolType2> {
     return ToolType2(
       name: fields[1] as String,
       type: fields[2] as ToolType,
+      category: fields[3] as ToolCategoryEnum,
+      position: fields[4] as PositionEnum,
     );
   }
 
   @override
   void write(BinaryWriter writer, ToolType2 obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.type);
+      ..write(obj.type)
+      ..writeByte(3)
+      ..write(obj.category)
+      ..writeByte(4)
+      ..write(obj.position);
   }
 
   @override
