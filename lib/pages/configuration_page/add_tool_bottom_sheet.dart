@@ -6,7 +6,7 @@ import 'package:open_bsp/model/simulation/tool_type2.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
 
 import '../../model/line.dart';
-import '../../model/simulation/tool_category_enum.dart';
+import '../../model/simulation/enums/tool_category_enum.dart';
 import '../../model/simulation/tool_type.dart';
 
 /// Bottom sheet which appears when the users adds a shape.

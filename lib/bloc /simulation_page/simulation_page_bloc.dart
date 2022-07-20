@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
-import '../../model/simulation/tool_category_enum.dart';
+import '../../model/simulation/enums/tool_category_enum.dart';
 
 part 'simulation_page_event.dart';
 
@@ -33,13 +33,13 @@ class SimulationPageBloc
       SimulationToolsChanged event, Emitter<SimulationPageState> emit) {
     if (event.tools.isNotEmpty) {
       List<Tool> selectedBeams = event.tools
-          .where(
-              (tool) => tool.isSelected && tool.type.category == ToolCategoryEnum.BEAM)
+          .where((tool) =>
+              tool.isSelected && tool.type.category == ToolCategoryEnum.BEAM)
           .toList();
 
       List<Tool> selectedTracks = event.tools
-          .where(
-              (tool) => tool.isSelected && tool.type.category == ToolCategoryEnum.TRACK)
+          .where((tool) =>
+              tool.isSelected && tool.type.category == ToolCategoryEnum.TRACK)
           .toList();
 
       if (selectedTracks.isNotEmpty) {

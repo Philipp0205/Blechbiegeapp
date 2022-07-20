@@ -3,9 +3,6 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
-import 'package:open_bsp/model/simulation/tool_category_enum.dart';
-import 'package:open_bsp/model/simulation/tool_type2.dart';
-import 'package:open_bsp/model/simulation/tool_type.dart';
 
 import '../../model/simulation/tool.dart';
 import '../../persistence/database_provider.dart';

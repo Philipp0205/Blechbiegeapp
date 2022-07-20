@@ -1,9 +1,10 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:open_bsp/model/simulation/tool_category_enum.dart';
+import 'package:open_bsp/model/simulation/enums/position_enum.dart';
 
 import '../../model/OffsetAdapter.dart';
 import '../../model/line.dart';
+import '../../model/simulation/enums/tool_category_enum.dart';
 import '../../model/simulation/tool.dart';
 import '../../model/simulation/tool_type.dart';
 import '../../model/simulation/tool_type2.dart';
@@ -24,6 +25,7 @@ class ToolRepository {
     Hive.registerAdapter(ToolTypeAdapter());
     Hive.registerAdapter(ToolType2Adapter());
     Hive.registerAdapter(ToolCategoryEnumAdapter());
+    Hive.registerAdapter(PositionEnumAdapter());
     Hive.openBox(boxName);
   }
 

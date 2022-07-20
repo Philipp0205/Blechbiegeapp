@@ -4,13 +4,13 @@ import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:open_bsp/model/simulation/position_enum.dart';
+import 'package:open_bsp/model/simulation/enums/position_enum.dart';
 
 import '../../model/OffsetAdapter.dart';
 import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/simulation/tool.dart';
-import '../../model/simulation/tool_category_enum.dart';
+import '../../model/simulation/enums/tool_category_enum.dart';
 import '../../model/simulation/tool_type.dart';
 import '../../model/simulation/tool_type2.dart';
 import '../../persistence/repositories/tool_repository.dart';
