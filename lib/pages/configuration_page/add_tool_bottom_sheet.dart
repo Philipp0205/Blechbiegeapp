@@ -127,7 +127,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
                 .toolTypes
                 .map((type) => type.name)
                 .toList()
-                // items: <ToolType2>context.read<ToolPageBloc>().state.toolTypes.map((type) {
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -183,19 +182,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
     } else {
       Navigator.pop(context);
       context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
-    }
-  }
-
-  /// Returns the category of the given [ToolType2].
-  ToolCategoryEnum _getToolCategory(ToolType2 type) {
-    if (type.type == ToolType.upperBeam ||
-        type.type == ToolType.lowerBeam ||
-        type.type == ToolType.bendingBeam) {
-      print('tool category: ${ToolCategoryEnum.BEAM}');
-      return ToolCategoryEnum.BEAM;
-    } else {
-      print('tool category: ${ToolCategoryEnum.TRACK}');
-      return ToolCategoryEnum.TRACK;
     }
   }
 }

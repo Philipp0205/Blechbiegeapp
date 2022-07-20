@@ -31,7 +31,7 @@ class _ToolPageState extends State<ToolPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<ToolPageBloc, ToolPageState>(builder: (context, state) {
       return DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           appBar: buildAppBar(context, state),
           body: buildTabBarViews(state, context),
@@ -77,6 +77,14 @@ TabBarView buildTabBarViews(ToolPageState state, BuildContext context) {
             .toList(),
         [ToolType.bendingBeam, ToolType.bendingTrack],
       ),
+      buildListView(
+        state,
+        context,
+        state.tools
+            .where((tool) => tool.type.type == ToolType.plateProfile)
+            .toList(),
+        [ToolType.plateProfile],
+      ),
     ],
   );
 }
@@ -109,6 +117,7 @@ AppBar buildAppBar(BuildContext context, ToolPageState state) {
       Tab(text: 'Unten', icon: Icon(Icons.border_bottom)),
       Tab(text: 'Oben', icon: Icon(Icons.border_top)),
       Tab(text: 'Links', icon: Icon(Icons.border_left)),
+      Tab(text: 'Bleche', icon: Icon(Icons.line_axis)),
     ]),
   );
 }

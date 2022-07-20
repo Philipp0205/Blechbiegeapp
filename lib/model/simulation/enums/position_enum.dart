@@ -9,5 +9,7 @@ enum PositionEnum {
   @HiveField(2)
   BOTTOM,
   @HiveField(3)
-  LEFT
+  LEFT,
+  @HiveField(4)
+  RIGHT
 }

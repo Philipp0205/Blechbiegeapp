@@ -61,58 +61,6 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   void _registerAdapters(
       ConfigRegisterAdapters event, Emitter<ConfigPageState> emit) async {
     _toolRepository.initRepo();
-
-    // await Hive.initFlutter();
-    // Hive.registerAdapter(ToolAdapter());
-    // Hive.registerAdapter(LineAdapter());
-    // Hive.registerAdapter(OffsetAdapter());
-    // Hive.registerAdapter(ToolTypeAdapter());
-    // Hive.registerAdapter(ToolType2Adapter());
-    // Hive.openBox('shapes4');
-  }
-
-  /// Create all [ToolType2]s.
-  void _createToolTypes(Emitter<ConfigPageState> emit) {
-    ToolType2 lowerBeam = new ToolType2(
-        name: 'Unterwange',
-        category: ToolCategoryEnum.BEAM,
-        type: ToolType.lowerBeam,
-        position: PositionEnum.BOTTOM);
-    ToolType2 upperBeam = new ToolType2(
-        name: 'Oberwange',
-        category: ToolCategoryEnum.BEAM,
-        type: ToolType.upperBeam,
-        position: PositionEnum.TOP);
-    ToolType2 bendingBeam = new ToolType2(
-        name: 'Biegewange',
-        category: ToolCategoryEnum.BEAM,
-        type: ToolType.bendingBeam,
-        position: PositionEnum.LEFT);
-    ToolType2 lowerTrack = new ToolType2(
-        name: 'Untere Schiene',
-        category: ToolCategoryEnum.TRACK,
-        type: ToolType.lowerTrack,
-        position: PositionEnum.BOTTOM);
-    ToolType2 upperTrack = new ToolType2(
-        name: 'Obere Schiene',
-        type: ToolType.upperTrack,
-        category: ToolCategoryEnum.TRACK,
-        position: PositionEnum.TOP);
-    ToolType2 bendingTrack = new ToolType2(
-        name: 'Biegeschiene',
-        category: ToolCategoryEnum.TRACK,
-        type: ToolType.bendingTrack,
-        position: PositionEnum.LEFT);
-
-    emit(state.copyWith(toolTypes: []));
-    emit(state.copyWith(toolTypes: [
-      lowerBeam,
-      upperBeam,
-      bendingBeam,
-      lowerTrack,
-      upperTrack,
-      bendingTrack
-    ]));
   }
 
   /// Decides depending on the [CheckBoxEnum] what should be shown.
@@ -199,6 +147,56 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
+  }
+
+  /// Create all [ToolType2]s.
+  void _createToolTypes(Emitter<ConfigPageState> emit) {
+    ToolType2 lowerBeam = new ToolType2(
+        name: 'Unterwange',
+        category: ToolCategoryEnum.BEAM,
+        type: ToolType.lowerBeam,
+        position: PositionEnum.BOTTOM);
+    ToolType2 upperBeam = new ToolType2(
+        name: 'Oberwange',
+        category: ToolCategoryEnum.BEAM,
+        type: ToolType.upperBeam,
+        position: PositionEnum.TOP);
+    ToolType2 bendingBeam = new ToolType2(
+        name: 'Biegewange',
+        category: ToolCategoryEnum.BEAM,
+        type: ToolType.bendingBeam,
+        position: PositionEnum.LEFT);
+    ToolType2 lowerTrack = new ToolType2(
+        name: 'Untere Schiene',
+        category: ToolCategoryEnum.TRACK,
+        type: ToolType.lowerTrack,
+        position: PositionEnum.BOTTOM);
+    ToolType2 upperTrack = new ToolType2(
+        name: 'Obere Schiene',
+        type: ToolType.upperTrack,
+        category: ToolCategoryEnum.TRACK,
+        position: PositionEnum.TOP);
+    ToolType2 bendingTrack = new ToolType2(
+        name: 'Biegeschiene',
+        category: ToolCategoryEnum.TRACK,
+        type: ToolType.bendingTrack,
+        position: PositionEnum.LEFT);
+    ToolType2 plateProfile = new ToolType2(
+        name: 'Blech',
+        category: ToolCategoryEnum.PLATE_PROFILE,
+        type: ToolType.plateProfile,
+        position: PositionEnum.RIGHT);
+
+    emit(state.copyWith(toolTypes: []));
+    emit(state.copyWith(toolTypes: [
+      lowerBeam,
+      upperBeam,
+      bendingBeam,
+      lowerTrack,
+      upperTrack,
+      bendingTrack,
+      plateProfile
+    ]));
   }
 }
 
