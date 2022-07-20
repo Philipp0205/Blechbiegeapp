@@ -7,4 +7,6 @@ enum ToolCategoryEnum {
   BEAM,
   @HiveField(2)
   TRACK,
+  @HiveField(3)
+  PLATE_PROFILE,
 }

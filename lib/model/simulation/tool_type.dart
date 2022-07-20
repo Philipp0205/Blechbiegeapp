@@ -16,4 +16,6 @@ enum ToolType {
   upperTrack,
   @HiveField(6)
   bendingTrack,
+  @HiveField(7)
+  plateProfile
 }
