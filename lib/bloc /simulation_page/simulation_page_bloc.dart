@@ -11,6 +11,7 @@ part 'simulation_page_event.dart';
 
 part 'simulation_page_state.dart';
 
+/// Business logic for the [SimulationPage].
 class SimulationPageBloc
     extends Bloc<SimulationPageEvent, SimulationPageState> {
   SimulationPageBloc()
@@ -33,21 +34,19 @@ class SimulationPageBloc
     if (event.tools.isNotEmpty) {
       List<Tool> selectedBeams = event.tools
           .where(
-              (tool) => tool.isSelected && tool.category == ToolCategory.BEAM)
+              (tool) => tool.isSelected && tool.type.category == ToolCategory.BEAM)
           .toList();
 
       List<Tool> selectedTracks = event.tools
           .where(
-              (tool) => tool.isSelected && tool.category == ToolCategory.TRACK)
+              (tool) => tool.isSelected && tool.type.category == ToolCategory.TRACK)
           .toList();
 
-      selectedTracks.forEach((track) {
-        Tool newTrack = _placeTrackOnBeam(track, selectedBeams.first);
-        int index = selectedTracks.indexOf(track);
-        selectedTracks
-          ..removeAt(0)
-          ..insert(index, newTrack);
-      });
+      if (selectedTracks.isNotEmpty) {
+        Tool newTrack =
+            _placeTrackOnBeam(selectedTracks.first, selectedBeams.first);
+        selectedTracks.add(newTrack);
+      }
 
       print(
           'selectedBeams: ${selectedBeams.length}, selectedTracks: ${selectedTracks.length}');
@@ -58,26 +57,43 @@ class SimulationPageBloc
     }
   }
 
+  /// Place a track on a beam.
+  /// This method is called when the [SimulationToolsChanged] event is emitted.
+  /// The track is placed on the beam at the same position as the beam.
   Tool _placeTrackOnBeam(Tool track, Tool beam) {
     print('placeTrackOnBeam');
+
     Line beamAdapterLine = beam.lines.where((line) => line.isSelected).first;
     Line trackAdapterLine = track.lines.where((line) => line.isSelected).first;
 
-    double deltaX = (beamAdapterLine.start.dx - beamAdapterLine.start.dx).abs();
-    double deltaY = (beamAdapterLine.start.dy - beamAdapterLine.start.dy).abs();
+    Offset beamOffset;
+    Offset trackOffset;
 
-    Offset newOffsetStart = new Offset(
-        trackAdapterLine.start.dx - deltaX, trackAdapterLine.start.dy - deltaY);
+    beamAdapterLine.start.dy > beamAdapterLine.end.dy
+        ? beamOffset = beamAdapterLine.start
+        : beamOffset = beamAdapterLine.end;
 
-    Line newLine = trackAdapterLine.copyWith(start: newOffsetStart);
+    trackAdapterLine.start.dy > trackAdapterLine.end.dy
+        ? trackOffset = trackAdapterLine.start
+        : trackOffset = trackAdapterLine.end;
 
-    List<Line> lines = track.lines;
-    int index = lines.indexOf(trackAdapterLine);
+    Offset newOffset = beamOffset - trackOffset;
 
-    lines
-      ..removeAt(index)
-      ..insert(index, newLine);
+    Tool newTool = _moveTool(track, newOffset);
 
-    return track.copyWith(lines: lines);
+    return newTool;
+  }
+
+  /// Move a tool.
+  /// The tool is moved by the given [offset].
+  Tool _moveTool(Tool tool, Offset offset) {
+    List<Line> lines = tool.lines;
+    List<Line> newLines = [];
+    lines.forEach((line) {
+      newLines.add(
+          line.copyWith(start: line.start + offset, end: line.end + offset));
+    });
+
+    return tool.copyWith(lines: newLines);
   }
 }

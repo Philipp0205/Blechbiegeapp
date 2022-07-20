@@ -20,16 +20,16 @@ class Tool {
   final bool isSelected;
   @HiveField(5)
   final List<Line> adapterLine;
-  @HiveField(6)
-  final ToolCategory category;
 
-  const Tool(
-      {required this.name,
-      required this.lines,
-      required this.type,
-      required this.isSelected,
-      required this.adapterLine,
-      required this.category});
+  const Tool({
+    required this.name,
+    required this.lines,
+    required this.type,
+    required this.isSelected,
+    required this.adapterLine,
+  });
+
+
 
   Tool copyWith({
     String? name,
@@ -45,8 +45,6 @@ class Tool {
       type: type ?? this.type,
       isSelected: isSelected ?? this.isSelected,
       adapterLine: adapterLine ?? this.adapterLine,
-      category: category ?? this.category,
     );
   }
 }
-

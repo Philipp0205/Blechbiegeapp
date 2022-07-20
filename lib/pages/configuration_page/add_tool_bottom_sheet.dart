@@ -174,7 +174,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         name: _nameController.text,
         lines: lines,
         type: type,
-        category: _getToolCategory(type),
         isSelected: false,
         adapterLine: []);
 
