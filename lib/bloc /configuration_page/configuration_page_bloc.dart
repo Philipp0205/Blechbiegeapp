@@ -10,7 +10,7 @@ import '../../model/OffsetAdapter.dart';
 import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/simulation/tool.dart';
-import '../../model/simulation/tool_category.dart';
+import '../../model/simulation/tool_category_enum.dart';
 import '../../model/simulation/tool_type.dart';
 import '../../model/simulation/tool_type2.dart';
 import '../../persistence/repositories/tool_repository.dart';
@@ -75,32 +75,32 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   void _createToolTypes(Emitter<ConfigPageState> emit) {
     ToolType2 lowerBeam = new ToolType2(
         name: 'Unterwange',
-        category: ToolCategory.BEAM,
+        category: ToolCategoryEnum.BEAM,
         type: ToolType.lowerBeam,
         position: PositionEnum.BOTTOM);
     ToolType2 upperBeam = new ToolType2(
         name: 'Oberwange',
-        category: ToolCategory.BEAM,
+        category: ToolCategoryEnum.BEAM,
         type: ToolType.upperBeam,
         position: PositionEnum.TOP);
     ToolType2 bendingBeam = new ToolType2(
         name: 'Biegewange',
-        category: ToolCategory.BEAM,
+        category: ToolCategoryEnum.BEAM,
         type: ToolType.bendingBeam,
         position: PositionEnum.LEFT);
     ToolType2 lowerTrack = new ToolType2(
         name: 'Untere Schiene',
-        category: ToolCategory.TRACK,
+        category: ToolCategoryEnum.TRACK,
         type: ToolType.lowerTrack,
         position: PositionEnum.BOTTOM);
     ToolType2 upperTrack = new ToolType2(
         name: 'Obere Schiene',
         type: ToolType.upperTrack,
-        category: ToolCategory.TRACK,
+        category: ToolCategoryEnum.TRACK,
         position: PositionEnum.TOP);
     ToolType2 bendingTrack = new ToolType2(
         name: 'Biegeschiene',
-        category: ToolCategory.TRACK,
+        category: ToolCategoryEnum.TRACK,
         type: ToolType.bendingTrack,
         position: PositionEnum.LEFT);
 

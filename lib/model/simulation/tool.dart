@@ -1,5 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:open_bsp/model/simulation/tool_category.dart';
+import 'package:open_bsp/model/simulation/tool_category_enum.dart';
 
 import 'tool_type2.dart';
 import '../line.dart';
@@ -37,7 +37,7 @@ class Tool {
     ToolType2? type,
     bool? isSelected,
     List<Line>? adapterLine,
-    ToolCategory? category,
+    ToolCategoryEnum? category,
   }) {
     return Tool(
       name: name ?? this.name,

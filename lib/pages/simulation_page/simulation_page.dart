@@ -5,7 +5,7 @@ import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/simulation/tool.dart';
-import '../../model/simulation/tool_category.dart';
+import '../../model/simulation/tool_category_enum.dart';
 
 class SimulationPage extends StatefulWidget {
   const SimulationPage({Key? key}) : super(key: key);
