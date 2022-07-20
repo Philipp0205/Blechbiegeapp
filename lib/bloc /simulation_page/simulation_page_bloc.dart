@@ -45,7 +45,9 @@ class SimulationPageBloc
       if (selectedTracks.isNotEmpty) {
         Tool newTrack =
             _placeTrackOnBeam(selectedTracks.first, selectedBeams.first);
-        selectedTracks.add(newTrack);
+
+        int index = selectedTracks.indexOf(selectedTracks.first);
+        selectedTracks..removeAt(index)..insert(index, newTrack);
       }
 
       print(
