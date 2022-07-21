@@ -2,7 +2,10 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
+
+import 'package:collection/collection.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
@@ -39,48 +42,65 @@ class SimulationPageBloc
   /// This method is called when the [SimulationToolsChanged] event is emitted.
   void _setTools(
       SimulationToolsChanged event, Emitter<SimulationPageState> emit) {
-    if (event.tools.isNotEmpty) {
-      List<Tool> selectedBeams = event.tools
-          .where((tool) =>
-              tool.isSelected && tool.type.category == ToolCategoryEnum.BEAM)
-          .toList();
+    if (event.tools.isEmpty) return;
 
-      List<Tool> selectedTracks = event.tools
-          .where((tool) =>
-              tool.isSelected && tool.type.category == ToolCategoryEnum.TRACK)
-          .toList();
+    List<Tool> selectedBeams =
+        _getToolsByCategory(event.tools, ToolCategoryEnum.BEAM);
+    List<Tool> selectedTracks =
+        _getToolsByCategory(event.tools, ToolCategoryEnum.TRACK);
+    List<Tool> selectedPlates =
+        _getToolsByCategory(event.tools, ToolCategoryEnum.PLATE_PROFILE);
 
-      List<Tool> selectedPlates = event.tools
-          .where((tool) => tool.type.category == ToolCategoryEnum.PLATE_PROFILE)
-          .toList();
+    Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
+    Tool? lowerBeam = _getToolByType(event.tools, ToolType.lowerBeam);
+    Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
+    Tool? lowerTrack = _getToolByType(event.tools, ToolType.lowerTrack);
+    Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
-      if (selectedTracks.isNotEmpty) {
-        Tool newTrack =
-            _placeTrackOnBeam(selectedTracks.first, selectedBeams.first);
-        selectedTracks
-          ..remove(selectedTracks.first)
-          ..add(newTrack);
+    if (selectedBeams.isNotEmpty) {
+      selectedBeams.addAll(_placeLowerBeam(selectedBeams));
+
+      if (upperBeam != null && upperTrack != null) {
+        selectedBeams.add(upperBeam);
+        // _placeUpperBeamAndTrackOnPlate(upperBeam, upperTrack, upperTrack);
       }
-
-      if (selectedPlates.isNotEmpty) {
-        Tool placesPlate =
-            _placePlateOnTrack(selectedPlates.first, selectedTracks.first);
-
-        selectedPlates
-          ..remove(selectedPlates.first)
-          ..add(placesPlate);
-
-        print('plates: ${selectedPlates.length}');
-      }
-
-      emit(state
-          .copyWith(selectedBeams: [], selectedTracks: [], selectedPlates: []));
-
-      emit(state.copyWith(
-          selectedBeams: selectedBeams,
-          selectedTracks: selectedTracks,
-          selectedPlates: selectedPlates));
     }
+
+    if (lowerTrack != null && lowerBeam != null) {
+      Tool newTrack = _placeTrackOnBeam(lowerTrack, lowerBeam);
+
+      int index = selectedTracks.indexOf(lowerTrack);
+      selectedTracks
+        ..removeAt(index)
+        ..insert(index, newTrack);
+    }
+
+    if (lowerTrack != null && plate != null) {
+      Tool placesPlate = _placePlateOnTrack(plate, lowerTrack);
+
+      // Should only contain one item anyway.
+      selectedPlates
+        ..removeLast()
+        ..add(placesPlate);
+    }
+
+    emit(state
+        .copyWith(selectedBeams: [], selectedTracks: [], selectedPlates: []));
+    emit(state.copyWith(
+        selectedBeams: selectedBeams,
+        selectedTracks: selectedTracks,
+        selectedPlates: selectedPlates));
+  }
+
+  /// Places the lower beam in the simulation.
+  /// This method is called when the [SimulationBeamsChanged] event is emitted.
+  List<Tool> _placeLowerBeam(List<Tool> beams) {
+    List<Tool> placedBeams = [];
+    Tool lowerBeam =
+        beams.firstWhere((beam) => beam.type.type == ToolType.lowerBeam);
+
+    placedBeams.add(lowerBeam);
+    return placedBeams;
   }
 
   /// Place a track on a beam.
@@ -132,16 +152,13 @@ class SimulationPageBloc
   Tool _placePlateOnTrack(Tool plate, Tool lowerTrack) {
     print('placePlateOnTrack');
 
-    Line adapterLine = lowerTrack.lines.where((line) => line.isSelected).first;
-
     List<Offset> trackOffsets =
         lowerTrack.lines.map((line) => line.start).toList() +
             lowerTrack.lines.map((line) => line.end).toList();
 
     List<Offset> lowestXOffsets = _calculationsService.getLowestX(trackOffsets);
 
-    Offset trackOffset =
-        _calculationsService.getLowestY(lowestXOffsets).first;
+    Offset trackOffset = _calculationsService.getLowestY(lowestXOffsets).first;
 
     Offset plateOffset = plate.lines.first.start.dx > plate.lines.first.end.dx
         ? plate.lines.first.end
@@ -151,5 +168,38 @@ class SimulationPageBloc
 
     Tool newTool = _moveTool(plate, newOffset, false);
     return newTool;
+  }
+
+  List<Tool> _getToolsByCategory(List<Tool> tools, ToolCategoryEnum category) {
+    return tools.where((tool) => tool.type.category == category).toList();
+  }
+
+  /// When the lower beam, lower track and the plat are already placed,
+  /// the the upper beam and upper track are placed above them.
+  /// This method is called when the [SimulationToolsChanged] event is emitted.
+  Tool _placeUpperBeamAndTrackOnPlate(
+      Tool upperBeam, Tool upperTrack, Tool plate) {
+    print('placeUpperBeamOnPlate');
+
+    List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
+        plate.lines.map((line) => line.end).toList();
+
+    List<Offset> lowestXOffsets = _calculationsService.getLowestX(plateOffsets);
+    Offset plateOffset = _calculationsService.getLowestY(lowestXOffsets).first;
+
+    Offset upperBeamOffset =
+        upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
+            ? upperBeam.lines.first.end
+            : upperBeam.lines.first.start;
+
+    Offset newOffset = upperBeamOffset - plateOffset;
+
+    Tool newTool = _moveTool(upperBeam, newOffset, false);
+    return newTool;
+  }
+
+  Tool? _getToolByType(List<Tool> tools, ToolType type) {
+    return tools
+        .firstWhereOrNull((tool) => tool.type.type == ToolType.lowerTrack);
   }
 }

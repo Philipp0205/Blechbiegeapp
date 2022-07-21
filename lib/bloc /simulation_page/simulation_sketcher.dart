@@ -41,6 +41,7 @@ class SimulationSketcher extends CustomPainter {
     // path.lineTo(testLine.end.dx, testLine.end.dy);
 
     if (beams.isNotEmpty) {
+      print('beams.length: ${beams.length}');
       beams.forEach((tool) {
         beamsPath.moveTo(tool.lines.first.start.dx, tool.lines.first.start.dy);
         tool.lines.forEach((line) {
