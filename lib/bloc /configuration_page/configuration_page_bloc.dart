@@ -34,7 +34,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
             showEdgeLengths: false,
             showAngles: false,
             s: 5,
-            r: 20,
+            r: 0,
             toolTypes: [])) {
     on<ConfigPageCreated>(_initializePage);
     on<ConfigCoordinatesShown>(_showCoordinates);

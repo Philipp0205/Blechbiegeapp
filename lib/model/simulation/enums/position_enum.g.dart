@@ -19,6 +19,8 @@ class PositionEnumAdapter extends TypeAdapter<PositionEnum> {
         return PositionEnum.BOTTOM;
       case 3:
         return PositionEnum.LEFT;
+      case 4:
+        return PositionEnum.RIGHT;
       default:
         return PositionEnum.TOP;
     }
@@ -35,6 +37,9 @@ class PositionEnumAdapter extends TypeAdapter<PositionEnum> {
         break;
       case PositionEnum.LEFT:
         writer.writeByte(3);
+        break;
+      case PositionEnum.RIGHT:
+        writer.writeByte(4);
         break;
     }
   }

@@ -10,11 +10,10 @@ import '../model/simulation/tool.dart';
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
 class GeometricCalculationsService {
-
   /// Returns sorted Map according to distance of [offset] to each element
   /// in [offsets].
-  Map<Offset, double> _getOffsetsByDistance(Offset offset,
-      List<Offset> offsets) {
+  Map<Offset, double> _getOffsetsByDistance(
+      Offset offset, List<Offset> offsets) {
     Map<Offset, double> distances = {};
     offsets.forEach((currentOffset) {
       distances.addEntries(
@@ -32,8 +31,8 @@ class GeometricCalculationsService {
 
   /// Returns nearest nearest offsets of [offset] in [offsets].
   /// Number of nearest offsets is determined by [numberOfOffsets].
-  List<Offset> getNNearestOffsets(Offset offset, List<Offset> offsets,
-      int numberOfOffsets) {
+  List<Offset> getNNearestOffsets(
+      Offset offset, List<Offset> offsets, int numberOfOffsets) {
     return _getOffsetsByDistance(offset, offsets)
         .keys
         .toList()
@@ -57,8 +56,8 @@ class GeometricCalculationsService {
   ///
   /// Always two offsets are returned. Only one end got shorted one of the
   /// results will be  the same offset.
-  List<Offset> changeLengthOfSegment(Offset start, Offset end, double length,
-      bool shortStart, bool shortEnd) {
+  List<Offset> changeLengthOfSegment(
+      Offset start, Offset end, double length, bool shortStart, bool shortEnd) {
     List<Offset> result = [];
 
     Offset newStart = _changeLengthOfOffset(start, end, length);
@@ -82,11 +81,11 @@ class GeometricCalculationsService {
   */
   double getDistanceToSegment(DragDownDetails details, Segment segment) {
     Point currentPoint =
-    new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
+        new Point(details.globalPosition.dx, details.globalPosition.dy - 80);
     Point startPoint =
-    new Point(segment.path.first.offset.dx, segment.path.first.offset.dy);
+        new Point(segment.path.first.offset.dx, segment.path.first.offset.dy);
     Point endPoint =
-    new Point(segment.path.last.offset.dx, segment.path.last.offset.dy);
+        new Point(segment.path.last.offset.dx, segment.path.last.offset.dy);
 
     return startPoint.distanceTo(currentPoint) +
         currentPoint.distanceTo(endPoint) -
@@ -147,7 +146,7 @@ class GeometricCalculationsService {
   /// https://stackoverflow.com/questions/33960924/is-arc-clockwise-or-counter-clockwise
   bool getDirection(Offset start, Offset end, Offset middle) {
     return ((end.dx - start.dx) * (middle.dy - start.dy) -
-        (end.dy - start.dy) * (middle.dx - start.dx)) >
+            (end.dy - start.dy) * (middle.dx - start.dx)) >
         0;
   }
 
@@ -217,4 +216,37 @@ class GeometricCalculationsService {
     return lines.where((line) => line.isSelected).toList();
   }
 
+  /// Returns [Offset]s with lowest x.
+  /// If there are multiple lowest x all are returned.
+  List<Offset> getLowestX(List<Offset> offsets) {
+    List<Offset> lowestX = [];
+    double lowestXValue = double.infinity;
+
+    for (Offset offset in offsets) {
+      if (offset.dx < lowestXValue) {
+        lowestXValue = offset.dx;
+        lowestX = [offset];
+      } else if (offset.dx == lowestXValue) {
+        lowestX.add(offset);
+      }
+    }
+    return lowestX;
+  }
+
+  /// Returns [Offset]s with lowest y.
+  /// If there are multiple lowest y, all are returned.
+  List<Offset> getLowestY(List<Offset> offsets) {
+    List<Offset> lowestY = [];
+    double lowestYValue = double.infinity;
+
+    for (Offset offset in offsets) {
+      if (offset.dy < lowestYValue) {
+        lowestYValue = offset.dy;
+        lowestY = [offset];
+      } else if (offset.dy == lowestYValue) {
+        lowestY.add(offset);
+      }
+    }
+    return lowestY;
+  }
 }

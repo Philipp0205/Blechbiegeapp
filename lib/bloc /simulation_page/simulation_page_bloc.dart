@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
@@ -16,10 +17,17 @@ class SimulationPageBloc
     extends Bloc<SimulationPageEvent, SimulationPageState> {
   SimulationPageBloc()
       : super(SimulationPageInitial(
-            tools: [], lines: [], selectedBeams: [], selectedTracks: [])) {
+            tools: [],
+            lines: [],
+            selectedBeams: [],
+            selectedTracks: [],
+            selectedPlates: [])) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
   }
+
+  GeometricCalculationsService _calculationsService =
+      new GeometricCalculationsService();
 
   /// Set the initial lines of the simulation.
   void _setInitialLines(
@@ -42,18 +50,36 @@ class SimulationPageBloc
               tool.isSelected && tool.type.category == ToolCategoryEnum.TRACK)
           .toList();
 
+      List<Tool> selectedPlates = event.tools
+          .where((tool) => tool.type.category == ToolCategoryEnum.PLATE_PROFILE)
+          .toList();
+
       if (selectedTracks.isNotEmpty) {
         Tool newTrack =
             _placeTrackOnBeam(selectedTracks.first, selectedBeams.first);
-        selectedTracks.add(newTrack);
+        selectedTracks
+          ..remove(selectedTracks.first)
+          ..add(newTrack);
       }
 
-      print(
-          'selectedBeams: ${selectedBeams.length}, selectedTracks: ${selectedTracks.length}');
+      if (selectedPlates.isNotEmpty) {
+        Tool placesPlate =
+            _placePlateOnTrack(selectedPlates.first, selectedTracks.first);
 
-      emit(state.copyWith(selectedBeams: [], selectedTracks: []));
+        selectedPlates
+          ..remove(selectedPlates.first)
+          ..add(placesPlate);
+
+        print('plates: ${selectedPlates.length}');
+      }
+
+      emit(state
+          .copyWith(selectedBeams: [], selectedTracks: [], selectedPlates: []));
+
       emit(state.copyWith(
-          selectedBeams: selectedBeams, selectedTracks: selectedTracks));
+          selectedBeams: selectedBeams,
+          selectedTracks: selectedTracks,
+          selectedPlates: selectedPlates));
     }
   }
 
@@ -79,21 +105,51 @@ class SimulationPageBloc
 
     Offset newOffset = beamOffset - trackOffset;
 
-    Tool newTool = _moveTool(track, newOffset);
+    Tool newTool = _moveTool(track, newOffset, true);
 
     return newTool;
   }
 
   /// Move a tool.
   /// The tool is moved by the given [offset].
-  Tool _moveTool(Tool tool, Offset offset) {
+  Tool _moveTool(Tool tool, Offset offset, bool positiveDirection) {
     List<Line> lines = tool.lines;
     List<Line> newLines = [];
     lines.forEach((line) {
-      newLines.add(
-          line.copyWith(start: line.start + offset, end: line.end + offset));
+      if (positiveDirection) {
+        newLines.add(
+            line.copyWith(start: line.start + offset, end: line.end + offset));
+      } else {
+        newLines.add(
+            line.copyWith(start: line.start - offset, end: line.end - offset));
+      }
     });
 
     return tool.copyWith(lines: newLines);
+  }
+
+  /// Place plate on lower track.
+  Tool _placePlateOnTrack(Tool plate, Tool lowerTrack) {
+    print('placePlateOnTrack');
+
+    Line adapterLine = lowerTrack.lines.where((line) => line.isSelected).first;
+
+    List<Offset> trackOffsets =
+        lowerTrack.lines.map((line) => line.start).toList() +
+            lowerTrack.lines.map((line) => line.end).toList();
+
+    List<Offset> lowestXOffsets = _calculationsService.getLowestX(trackOffsets);
+
+    Offset trackOffset =
+        _calculationsService.getLowestY(lowestXOffsets).first;
+
+    Offset plateOffset = plate.lines.first.start.dx > plate.lines.first.end.dx
+        ? plate.lines.first.end
+        : plate.lines.first.start;
+
+    Offset newOffset = plateOffset - trackOffset;
+
+    Tool newTool = _moveTool(plate, newOffset, false);
+    return newTool;
   }
 }

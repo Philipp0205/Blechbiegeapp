@@ -82,7 +82,9 @@ class _SimulationPageState extends State<SimulationPage> {
             builder: (context, state) {
           return CustomPaint(
             painter: SimulationSketcher(
-                beams: state.selectedBeams, tracks: state.selectedTracks),
+                beams: state.selectedBeams,
+                tracks: state.selectedTracks,
+                plates: state.selectedPlates),
           );
         }));
   }
