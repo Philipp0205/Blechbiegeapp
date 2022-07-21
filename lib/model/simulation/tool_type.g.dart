@@ -25,6 +25,8 @@ class ToolTypeAdapter extends TypeAdapter<ToolType> {
         return ToolType.upperTrack;
       case 6:
         return ToolType.bendingTrack;
+      case 7:
+        return ToolType.plateProfile;
       default:
         return ToolType.lowerBeam;
     }
@@ -50,6 +52,9 @@ class ToolTypeAdapter extends TypeAdapter<ToolType> {
         break;
       case ToolType.bendingTrack:
         writer.writeByte(6);
+        break;
+      case ToolType.plateProfile:
+        writer.writeByte(7);
         break;
     }
   }

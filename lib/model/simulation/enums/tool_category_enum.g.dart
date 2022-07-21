@@ -17,6 +17,8 @@ class ToolCategoryEnumAdapter extends TypeAdapter<ToolCategoryEnum> {
         return ToolCategoryEnum.BEAM;
       case 2:
         return ToolCategoryEnum.TRACK;
+      case 3:
+        return ToolCategoryEnum.PLATE_PROFILE;
       default:
         return ToolCategoryEnum.BEAM;
     }
@@ -30,6 +32,9 @@ class ToolCategoryEnumAdapter extends TypeAdapter<ToolCategoryEnum> {
         break;
       case ToolCategoryEnum.TRACK:
         writer.writeByte(2);
+        break;
+      case ToolCategoryEnum.PLATE_PROFILE:
+        writer.writeByte(3);
         break;
     }
   }

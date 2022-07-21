@@ -108,7 +108,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
     return Row(
       children: [
         Container(
-          width: 150,
+          width: 200,
           height: 50,
           child: TextField(
             controller: _nameController,
