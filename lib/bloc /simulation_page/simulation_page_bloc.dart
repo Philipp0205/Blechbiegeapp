@@ -53,8 +53,8 @@ class SimulationPageBloc
 
     Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
     Tool? lowerBeam = _getToolByType(event.tools, ToolType.lowerBeam);
-    Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
     Tool? lowerTrack = _getToolByType(event.tools, ToolType.lowerTrack);
+    Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
     Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
     if (selectedBeams.isNotEmpty) {
@@ -73,15 +73,18 @@ class SimulationPageBloc
       selectedTracks
         ..removeAt(index)
         ..insert(index, newTrack);
+
+      lowerTrack = lowerTrack.copyWith(lines: newTrack.lines);
     }
 
     if (lowerTrack != null && plate != null) {
-      Tool placesPlate = _placePlateOnTrack(plate, lowerTrack);
+      print('placePlateOnTrack CALLED');
+      Tool placedPlate = _placePlateOnTrack(plate, lowerTrack);
 
       // Should only contain one item anyway.
       selectedPlates
         ..removeLast()
-        ..add(placesPlate);
+        ..add(placedPlate);
     }
 
     emit(state
@@ -130,24 +133,6 @@ class SimulationPageBloc
     return newTool;
   }
 
-  /// Move a tool.
-  /// The tool is moved by the given [offset].
-  Tool _moveTool(Tool tool, Offset offset, bool positiveDirection) {
-    List<Line> lines = tool.lines;
-    List<Line> newLines = [];
-    lines.forEach((line) {
-      if (positiveDirection) {
-        newLines.add(
-            line.copyWith(start: line.start + offset, end: line.end + offset));
-      } else {
-        newLines.add(
-            line.copyWith(start: line.start - offset, end: line.end - offset));
-      }
-    });
-
-    return tool.copyWith(lines: newLines);
-  }
-
   /// Place plate on lower track.
   Tool _placePlateOnTrack(Tool plate, Tool lowerTrack) {
     print('placePlateOnTrack');
@@ -156,18 +141,44 @@ class SimulationPageBloc
         lowerTrack.lines.map((line) => line.start).toList() +
             lowerTrack.lines.map((line) => line.end).toList();
 
-    List<Offset> lowestXOffsets = _calculationsService.getLowestX(trackOffsets);
+    List<Offset> plateOffsets =
+        plate.lines.map((plate) => plate.start).toList() +
+            plate.lines.map((plate) => plate.end).toList();
 
-    Offset trackOffset = _calculationsService.getLowestY(lowestXOffsets).first;
 
-    Offset plateOffset = plate.lines.first.start.dx > plate.lines.first.end.dx
-        ? plate.lines.first.end
-        : plate.lines.first.start;
 
-    Offset newOffset = plateOffset - trackOffset;
+    List<Offset> lowestTrackXOffsets = _calculationsService.getLowestX(trackOffsets);
 
-    Tool newTool = _moveTool(plate, newOffset, false);
-    return newTool;
+    Offset trackOffset = _calculationsService.getLowestY(lowestTrackXOffsets).first;
+
+    Offset plateOffset = _calculationsService.getLowestX(plateOffsets).first;
+
+    double x = plateOffset.dx - trackOffset.dx;
+    double y = plateOffset.dy - trackOffset.dy;
+
+    Tool movedTool = _moveTool(plate, new Offset(x, y), false);
+
+    return movedTool;
+  }
+
+  /// Move a tool.
+  /// The tool is moved by the given [offset].
+  Tool _moveTool(Tool tool, Offset offset, bool positiveDirection) {
+    List<Line> lines = tool.lines;
+    List<Line> newLines = [];
+    lines.forEach((line) {
+      if (positiveDirection) {
+        print('positiveDirection');
+        newLines.add(
+            line.copyWith(start: line.start + offset, end: line.end + offset));
+      } else {
+        print('negative direction');
+        newLines.add(
+            line.copyWith(start: line.start - offset, end: line.end - offset));
+      }
+    });
+
+    return tool.copyWith(lines: newLines);
   }
 
   List<Tool> _getToolsByCategory(List<Tool> tools, ToolCategoryEnum category) {
@@ -194,12 +205,11 @@ class SimulationPageBloc
 
     Offset newOffset = upperBeamOffset - plateOffset;
 
-    Tool newTool = _moveTool(upperBeam, newOffset, false);
-    return newTool;
+    Tool movedTool = _moveTool(upperBeam, newOffset, false);
+    return movedTool;
   }
 
   Tool? _getToolByType(List<Tool> tools, ToolType type) {
-    return tools
-        .firstWhereOrNull((tool) => tool.type.type == ToolType.lowerTrack);
+    return tools.firstWhereOrNull((tool) => tool.type.type == type);
   }
 }
