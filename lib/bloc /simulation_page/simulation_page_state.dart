@@ -6,17 +6,19 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedBeams;
   final List<Tool> selectedTracks;
   final List<Tool> selectedPlates;
+  final double s;
 
   const SimulationPageState(
       {required this.shapes,
       required this.lines,
       required this.selectedPlates,
       required this.selectedBeams,
-      required this.selectedTracks});
+      required this.selectedTracks,
+      required this.s});
 
   @override
   List<Object> get props =>
-      [shapes, lines, selectedBeams, selectedTracks, selectedPlates];
+      [shapes, lines, selectedBeams, selectedTracks, selectedPlates, s];
 
   SimulationPageState copyWith({
     List<Tool>? shapes,
@@ -24,6 +26,7 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedBeams,
     List<Tool>? selectedTracks,
     List<Tool>? selectedPlates,
+    double? s,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -31,6 +34,7 @@ class SimulationPageState extends Equatable {
       selectedBeams: selectedBeams ?? this.selectedBeams,
       selectedTracks: selectedTracks ?? this.selectedTracks,
       selectedPlates: selectedPlates ?? this.selectedPlates,
+      s: s ?? this.s,
     );
   }
 }
@@ -43,10 +47,13 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Tool> selectedTracks,
     required List<Tool> selectedPlates,
     required List<Line> lines,
+    required double s,
   }) : super(
-            shapes: tools,
-            lines: lines,
-            selectedPlates: selectedPlates,
-            selectedBeams: selectedBeams,
-            selectedTracks: selectedTracks);
+          shapes: tools,
+          lines: lines,
+          selectedPlates: selectedPlates,
+          selectedBeams: selectedBeams,
+          selectedTracks: selectedTracks,
+          s: s,
+        );
 }

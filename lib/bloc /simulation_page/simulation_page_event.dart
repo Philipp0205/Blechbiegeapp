@@ -22,4 +22,11 @@ class SimulationToolsChanged extends SimulationPageEvent {
   const SimulationToolsChanged({required this.tools});
 }
 
+/// The event contains the new s value.
+/// The event is used to change the s value in the [SimulationPageState].
+class SimulationSChanged extends SimulationPageEvent {
+  final double s;
+  const SimulationSChanged({required this.s});
+}
+
 

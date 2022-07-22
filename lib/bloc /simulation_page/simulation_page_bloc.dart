@@ -24,7 +24,8 @@ class SimulationPageBloc
             lines: [],
             selectedBeams: [],
             selectedTracks: [],
-            selectedPlates: [])) {
+            selectedPlates: [],
+            s: 5)) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
   }
@@ -145,11 +146,11 @@ class SimulationPageBloc
         plate.lines.map((plate) => plate.start).toList() +
             plate.lines.map((plate) => plate.end).toList();
 
+    List<Offset> lowestTrackXOffsets =
+        _calculationsService.getLowestX(trackOffsets);
 
-
-    List<Offset> lowestTrackXOffsets = _calculationsService.getLowestX(trackOffsets);
-
-    Offset trackOffset = _calculationsService.getLowestY(lowestTrackXOffsets).first;
+    Offset trackOffset =
+        _calculationsService.getLowestY(lowestTrackXOffsets).first;
 
     Offset plateOffset = _calculationsService.getLowestX(plateOffsets).first;
 

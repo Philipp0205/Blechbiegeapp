@@ -112,6 +112,9 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                     context
                         .read<ConfigPageBloc>()
                         .add(ConfigSChanged(s: angle));
+                    context
+                        .read<SimulationPageBloc>()
+                        .add(SimulationSChanged(s: angle));
                   }
                 }),
           ),
@@ -219,8 +222,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   /// Creates a new [Tool] using a [ModalBottomSheet]
   void _createShape(ConfigPageState state) {
-    ToolPageBloc(context.read<ToolRepository>())
-        .add(ToolPageCreated());
+    ToolPageBloc(context.read<ToolRepository>()).add(ToolPageCreated());
 
     showModalBottomSheet(
       context: context,
