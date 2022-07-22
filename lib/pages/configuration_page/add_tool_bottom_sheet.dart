@@ -174,7 +174,8 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         lines: lines,
         type: type,
         isSelected: false,
-        adapterLine: []);
+        adapterLine: [],
+        s: context.read<ConfigPageBloc>().state.s,);
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
