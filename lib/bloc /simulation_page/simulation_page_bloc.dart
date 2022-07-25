@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -24,9 +25,11 @@ class SimulationPageBloc
             lines: [],
             selectedBeams: [],
             selectedTracks: [],
-            selectedPlates: [])) {
+            selectedPlates: [],
+            rotationAngle: 0)) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
+    on<SimulationToolRotate>(_rotateTool);
   }
 
   GeometricCalculationsService _calculationsService =
@@ -59,8 +62,9 @@ class SimulationPageBloc
 
     if (selectedBeams.isNotEmpty) {
       selectedBeams.addAll(_placeLowerBeam(selectedBeams));
-
     }
+
+    if (plate != null) {}
 
     if (lowerTrack != null && lowerBeam != null) {
       Tool newTrack = _placeTrackOnBeam(lowerTrack, lowerBeam);
@@ -82,24 +86,29 @@ class SimulationPageBloc
         ..add(placedPlate);
 
       plate = plate.copyWith(lines: placedPlate.lines);
-
     }
 
     if (upperTrack != null && plate != null) {
       Tool placedTrack = _placeUpperTrackOnPlate(upperTrack, plate);
 
-      Tool currentUpperTrack = selectedTracks.firstWhere((tool) => tool.type.type == ToolType.upperTrack);
-      selectedTracks..remove(currentUpperTrack)..add(placedTrack);
+      Tool currentUpperTrack = selectedTracks
+          .firstWhere((tool) => tool.type.type == ToolType.upperTrack);
+      selectedTracks
+        ..remove(currentUpperTrack)
+        ..add(placedTrack);
 
       upperTrack = upperTrack.copyWith(lines: placedTrack.lines);
     }
 
     if (upperTrack != null && upperBeam != null) {
       print('place upperBeam on upperTrack');
-      Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack) ;
+      Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack);
 
-      Tool currentUpperBeam = selectedBeams.firstWhere((tool) => tool.type.type == ToolType.upperBeam);
-      selectedBeams..remove(currentUpperBeam)..add(placedBeam);
+      Tool currentUpperBeam = selectedBeams
+          .firstWhere((tool) => tool.type.type == ToolType.upperBeam);
+      selectedBeams
+        ..remove(currentUpperBeam)
+        ..add(placedBeam);
     }
 
     emit(state
@@ -147,7 +156,6 @@ class SimulationPageBloc
 
     return newTool;
   }
-
 
   /// Place plate on lower track.
   Tool _placePlateOnTrack(Tool plate, Tool lowerTrack) {
@@ -229,8 +237,6 @@ class SimulationPageBloc
     return tools.firstWhereOrNull((tool) => tool.type.type == type);
   }
 
-
-
   /// Place upper track on plate with distance s.
   /// The upper track is aligned with the plate.
   /// This method is called when the [SimulationToolsChanged] event is emitted.
@@ -241,23 +247,25 @@ class SimulationPageBloc
     List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
         plate.lines.map((line) => line.end).toList();
 
-    List<Offset> trackOffsets = upperTrack.lines.map((line) => line.start).toList() +
-        plate.lines.map((line) => line.end).toList();
+    List<Offset> trackOffsets =
+        upperTrack.lines.map((line) => line.start).toList() +
+            plate.lines.map((line) => line.end).toList();
 
-    List<Offset> lowestPlateXOffset = _calculationsService.getLowestX(plateOffsets);
-    Offset plateOffset = _calculationsService.getLowestY(lowestPlateXOffset).first;
+    List<Offset> lowestPlateXOffset =
+        _calculationsService.getLowestX(plateOffsets);
+    Offset plateOffset =
+        _calculationsService.getLowestY(lowestPlateXOffset).first;
 
+    List<Offset> lowestXTrackOffset =
+        _calculationsService.getLowestX(trackOffsets);
+    Offset trackOffset =
+        _calculationsService.getLowestY(lowestXTrackOffset).first;
 
-    List<Offset> lowestXTrackOffset = _calculationsService.getLowestX(trackOffsets);
-    Offset trackOffset = _calculationsService.getLowestY(lowestXTrackOffset).first;
-
-    Offset newOffset = trackOffset - plateOffset + new Offset(0, s-2);
-
+    Offset newOffset = trackOffset - plateOffset + new Offset(0, s - 2);
 
     Tool movedTool = _moveTool(upperTrack, newOffset, false);
     return movedTool;
   }
-
 
   /// Place upper Beam on plate with distance s.
   /// The upper beam is aligned with the plate.
@@ -266,16 +274,18 @@ class SimulationPageBloc
   Tool _placeUpperBeamOnUpperTrack(Tool upperBeam, Tool upperTrack) {
     print('placeUpperBeamOnPlate');
 
-    List<Offset> upperBeamOffsets = upperBeam.lines.map((line) => line.start).toList() +
-        upperBeam.lines.map((line) => line.end).toList();
+    List<Offset> upperBeamOffsets =
+        upperBeam.lines.map((line) => line.start).toList() +
+            upperBeam.lines.map((line) => line.end).toList();
 
-    List<Offset> lowestXOffsets = _calculationsService.getLowestX(upperBeamOffsets);
+    List<Offset> lowestXOffsets =
+        _calculationsService.getLowestX(upperBeamOffsets);
     Offset plateOffset = _calculationsService.getLowestY(lowestXOffsets).first;
 
     Offset upperBeamOffset =
-    upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
-        ? upperBeam.lines.first.end
-        : upperBeam.lines.first.start;
+        upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
+            ? upperBeam.lines.first.end
+            : upperBeam.lines.first.start;
 
     Offset newOffset = upperBeamOffset - plateOffset;
 
@@ -283,5 +293,29 @@ class SimulationPageBloc
     return movedTool;
   }
 
-
+  /// Rotate a tool clockwise or anti-clockwise in a 90 degree angle.
+  void _rotateTool(
+      SimulationToolRotate event, Emitter<SimulationPageState> emit) {
+    print('_rotateTool');
+    // if (event.clockwise) {
+    int angle = state.rotationAngle.toInt();
+    switch (angle) {
+      case 0:
+        emit(state.copyWith(rotationAngle: 90));
+        break;
+      case 90:
+        emit(state.copyWith(rotationAngle: 180));
+        break;
+      case 180:
+        emit(state.copyWith(rotationAngle: 270));
+        break;
+      case 270:
+        emit(state.copyWith(rotationAngle: 0));
+        break;
+      default:
+        emit(state.copyWith(rotationAngle: 0));
+        break;
+    }
+    // }
+  }
 }

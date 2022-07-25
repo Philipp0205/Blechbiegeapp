@@ -249,4 +249,56 @@ class GeometricCalculationsService {
     }
     return lowestY;
   }
+
+  /// Returns [Offset]s with highest x.
+/// If there are multiple highest x, all are returned.
+  List<Offset> getHighestX(List<Offset> offsets) {
+    List<Offset> highestX = [];
+    double highestXValue = double.negativeInfinity;
+
+    for (Offset offset in offsets) {
+      if (offset.dx > highestXValue) {
+        highestXValue = offset.dx;
+        highestX = [offset];
+      } else if (offset.dx == highestXValue) {
+        highestX.add(offset);
+      }
+    }
+    return highestX;
+  }
+
+  /// Returns [Offset]s with highest y.
+  /// If there are multiple highest y, all are returned.
+  List<Offset> getHighestY(List<Offset> offsets) {
+    List<Offset> highestY = [];
+    double highestYValue = double.negativeInfinity;
+
+    for (Offset offset in offsets) {
+      if (offset.dy > highestYValue) {
+        highestYValue = offset.dy;
+        highestY = [offset];
+      } else if (offset.dy == highestYValue) {
+        highestY.add(offset);
+      }
+    }
+    return highestY;
+  }
+
+  /// Returns [Offset]s with lowest x.
+  /// If there are multiple lowest x, all are returned.
+  List<Offset> getLowerstX(List<Offset> offsets) {
+    List<Offset> lowestX = [];
+    double lowestXValue = double.negativeInfinity;
+
+    for (Offset offset in offsets) {
+      if (offset.dx < lowestXValue) {
+        lowestXValue = offset.dx;
+        lowestX = [offset];
+      } else if (offset.dx == lowestXValue) {
+        lowestX.add(offset);
+      }
+    }
+    return lowestX;
+  }
+
 }
