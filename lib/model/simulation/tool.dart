@@ -1,7 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../line.dart';
-import 'enums/tool_category_enum.dart';
 import 'tool_type2.dart';
 
 part 'tool.g.dart';
@@ -20,6 +19,8 @@ class Tool {
   final bool isSelected;
   @HiveField(5)
   final List<Line> adapterLine;
+  @HiveField(6)
+  final double s;
 
   const Tool({
     required this.name,
@@ -27,9 +28,8 @@ class Tool {
     required this.type,
     required this.isSelected,
     required this.adapterLine,
+    required this.s,
   });
-
-
 
   Tool copyWith({
     String? name,
@@ -37,7 +37,7 @@ class Tool {
     ToolType2? type,
     bool? isSelected,
     List<Line>? adapterLine,
-    ToolCategoryEnum? category,
+    double? s,
   }) {
     return Tool(
       name: name ?? this.name,
@@ -45,6 +45,7 @@ class Tool {
       type: type ?? this.type,
       isSelected: isSelected ?? this.isSelected,
       adapterLine: adapterLine ?? this.adapterLine,
+      s: s ?? this.s,
     );
   }
 }

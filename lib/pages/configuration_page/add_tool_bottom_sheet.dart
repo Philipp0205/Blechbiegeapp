@@ -174,7 +174,10 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         lines: lines,
         type: type,
         isSelected: false,
-        adapterLine: []);
+        adapterLine: [],
+        s: context.read<ConfigPageBloc>().state.s,);
+
+    print('thickness of new Tool: ${context.read<ConfigPageBloc>().state.s}');
 
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
@@ -183,5 +186,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
       Navigator.pop(context);
       context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
     }
+
   }
 }

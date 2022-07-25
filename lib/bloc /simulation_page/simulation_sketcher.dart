@@ -60,7 +60,6 @@ class SimulationSketcher extends CustomPainter {
     }
 
     if (plates.isNotEmpty) {
-      print('plates.length: ${plates.length}');
       plates.forEach((plate) {
         platesPath.moveTo(
             plate.lines.first.start.dx, plate.lines.first.start.dy);

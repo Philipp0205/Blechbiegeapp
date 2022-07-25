@@ -7,12 +7,13 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedTracks;
   final List<Tool> selectedPlates;
 
-  const SimulationPageState(
-      {required this.shapes,
-      required this.lines,
-      required this.selectedPlates,
-      required this.selectedBeams,
-      required this.selectedTracks});
+  const SimulationPageState({
+    required this.shapes,
+    required this.lines,
+    required this.selectedPlates,
+    required this.selectedBeams,
+    required this.selectedTracks,
+  });
 
   @override
   List<Object> get props =>
@@ -44,9 +45,10 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Tool> selectedPlates,
     required List<Line> lines,
   }) : super(
-            shapes: tools,
-            lines: lines,
-            selectedPlates: selectedPlates,
-            selectedBeams: selectedBeams,
-            selectedTracks: selectedTracks);
+          shapes: tools,
+          lines: lines,
+          selectedPlates: selectedPlates,
+          selectedBeams: selectedBeams,
+          selectedTracks: selectedTracks,
+        );
 }
