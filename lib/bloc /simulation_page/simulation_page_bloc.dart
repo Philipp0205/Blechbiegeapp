@@ -60,10 +60,6 @@ class SimulationPageBloc
     if (selectedBeams.isNotEmpty) {
       selectedBeams.addAll(_placeLowerBeam(selectedBeams));
 
-      if (upperBeam != null && plate != null) {
-        selectedBeams.add(upperBeam);
-        _placeUpperBeamOnPlate(upperBeam, plate);
-      }
     }
 
     if (lowerTrack != null && lowerBeam != null) {
@@ -78,13 +74,32 @@ class SimulationPageBloc
     }
 
     if (lowerTrack != null && plate != null) {
-      print('placePlateOnTrack CALLED');
       Tool placedPlate = _placePlateOnTrack(plate, lowerTrack);
 
       // Should only contain one item anyway.
       selectedPlates
         ..removeLast()
         ..add(placedPlate);
+
+      plate = plate.copyWith(lines: placedPlate.lines);
+
+    }
+
+    if (upperTrack != null && plate != null) {
+      Tool placedTrack = _placeUpperTrackOnPlate(upperTrack, plate);
+
+      Tool currentUpperTrack = selectedTracks.firstWhere((tool) => tool.type.type == ToolType.upperTrack);
+      selectedTracks..remove(currentUpperTrack)..add(placedTrack);
+
+      upperTrack = upperTrack.copyWith(lines: placedTrack.lines);
+    }
+
+    if (upperTrack != null && upperBeam != null) {
+      print('place upperBeam on upperTrack');
+      Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack) ;
+
+      Tool currentUpperBeam = selectedBeams.firstWhere((tool) => tool.type.type == ToolType.upperBeam);
+      selectedBeams..remove(currentUpperBeam)..add(placedBeam);
     }
 
     emit(state
@@ -132,6 +147,7 @@ class SimulationPageBloc
 
     return newTool;
   }
+
 
   /// Place plate on lower track.
   Tool _placePlateOnTrack(Tool plate, Tool lowerTrack) {
@@ -213,23 +229,53 @@ class SimulationPageBloc
     return tools.firstWhereOrNull((tool) => tool.type.type == type);
   }
 
+
+
+  /// Place upper track on plate with distance s.
+  /// The upper track is aligned with the plate.
+  /// This method is called when the [SimulationToolsChanged] event is emitted.
+  /// The upper track is placed on the plate at the same position as the plate.
+  Tool _placeUpperTrackOnPlate(Tool upperTrack, Tool plate) {
+    print('placeUpperTrackOnPlate');
+    double s = plate.s;
+    List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
+        plate.lines.map((line) => line.end).toList();
+
+    List<Offset> trackOffsets = upperTrack.lines.map((line) => line.start).toList() +
+        plate.lines.map((line) => line.end).toList();
+
+    List<Offset> lowestPlateXOffset = _calculationsService.getLowestX(plateOffsets);
+    Offset plateOffset = _calculationsService.getLowestY(lowestPlateXOffset).first;
+
+
+    List<Offset> lowestXTrackOffset = _calculationsService.getLowestX(trackOffsets);
+    Offset trackOffset = _calculationsService.getLowestY(lowestXTrackOffset).first;
+
+    Offset newOffset = trackOffset - plateOffset + new Offset(0, s-2);
+
+
+    Tool movedTool = _moveTool(upperTrack, newOffset, false);
+    return movedTool;
+  }
+
+
   /// Place upper Beam on plate with distance s.
   /// The upper beam is aligned with the plate.
   /// This method is called when the [SimulationToolsChanged] event is emitted.
   /// The upper beam is placed on the plate at the same position as the plate.
-  Tool _placeUpperBeamOnPlate(Tool upperBeam, Tool plate) {
+  Tool _placeUpperBeamOnUpperTrack(Tool upperBeam, Tool upperTrack) {
     print('placeUpperBeamOnPlate');
 
-    List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
-        plate.lines.map((line) => line.end).toList();
+    List<Offset> upperBeamOffsets = upperBeam.lines.map((line) => line.start).toList() +
+        upperBeam.lines.map((line) => line.end).toList();
 
-    List<Offset> lowestXOffsets = _calculationsService.getLowestX(plateOffsets);
+    List<Offset> lowestXOffsets = _calculationsService.getLowestX(upperBeamOffsets);
     Offset plateOffset = _calculationsService.getLowestY(lowestXOffsets).first;
 
     Offset upperBeamOffset =
-        upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
-            ? upperBeam.lines.first.end
-            : upperBeam.lines.first.start;
+    upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
+        ? upperBeam.lines.first.end
+        : upperBeam.lines.first.start;
 
     Offset newOffset = upperBeamOffset - plateOffset;
 
@@ -237,27 +283,5 @@ class SimulationPageBloc
     return movedTool;
   }
 
-  /// Place upper beam on plate with distance s.
-  /// The upper beam is aligned with the plate.
-  /// This method is called when the [SimulationToolsChanged] event is emitted.
-  /// The upper beam is placed on the plate at the same position as the plate.
-  Tool _placeUpperBeamOnPlate(Tool upperBeam, Tool plate) {
-    print('placeUpperBeamOnPlateWithDistance');
 
-    List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
-        plate.lines.map((line) => line.end).toList();
-
-    List<Offset> lowestXOffsets = _calculationsService.getLowestX(plateOffsets);
-    Offset plateOffset = _calculationsService.getLowestY(lowestXOffsets).first;
-
-    Offset upperBeamOffset =
-        upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
-            ? upperBeam.lines.first.end
-            : upperBeam.lines.first.start;
-
-    Offset newOffset = upperBeamOffset - plateOffset;
-
-    Tool movedTool = _moveTool(upperBeam, newOffset, false);
-    return movedTool;
-  }
 }

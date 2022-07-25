@@ -41,7 +41,6 @@ class SimulationSketcher extends CustomPainter {
     // path.lineTo(testLine.end.dx, testLine.end.dy);
 
     if (beams.isNotEmpty) {
-      print('beams.length: ${beams.length}');
       beams.forEach((tool) {
         beamsPath.moveTo(tool.lines.first.start.dx, tool.lines.first.start.dy);
         tool.lines.forEach((line) {
@@ -61,7 +60,6 @@ class SimulationSketcher extends CustomPainter {
     }
 
     if (plates.isNotEmpty) {
-      print('plates.length: ${plates.length}');
       plates.forEach((plate) {
         platesPath.moveTo(
             plate.lines.first.start.dx, plate.lines.first.start.dy);
