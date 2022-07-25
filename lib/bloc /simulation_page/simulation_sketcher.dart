@@ -1,5 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:image/image.dart';
+import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
@@ -8,9 +10,16 @@ class SimulationSketcher extends CustomPainter {
   final List<Tool> beams;
   final List<Tool> tracks;
   final List<Tool> plates;
+  final double rotateAngle;
 
   SimulationSketcher(
-      {required this.beams, required this.tracks, required this.plates});
+      {required this.beams,
+      required this.tracks,
+      required this.plates,
+      required this.rotateAngle});
+
+  GeometricCalculationsService _calculationsService =
+      new GeometricCalculationsService();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -26,7 +35,6 @@ class SimulationSketcher extends CustomPainter {
       ..strokeWidth = 5.0
       ..style = PaintingStyle.fill;
 
-
     Paint redPaint = Paint()
       ..color = Colors.red
       ..strokeCap = StrokeCap.round
@@ -36,6 +44,8 @@ class SimulationSketcher extends CustomPainter {
     Path beamsPath = new Path();
     Path tracksPath = new Path();
     Path platesPath = new Path();
+
+
 
     // path.moveTo(testLine.start.dx, testLine.start.dy);
     // path.lineTo(testLine.end.dx, testLine.end.dy);
@@ -59,7 +69,26 @@ class SimulationSketcher extends CustomPainter {
       });
     }
 
+    canvas.drawPath(beamsPath, blackPaint);
+    canvas.drawPath(tracksPath, greyPaint);
+
+
     if (plates.isNotEmpty) {
+      List<Offset> plateOffsets =
+          plates.first.lines.map((line) => line.start).toList() +
+              plates.first.lines.map((line) => line.end).toList();
+
+      Line middleLine = plates.first.lines[plates.first.lines.length ~/ 2];
+      Offset center =
+      _calculationsService.getMiddle(middleLine.start, middleLine.end);
+      print('rotateAngle: $rotateAngle');
+
+      canvas
+        ..save()
+        ..translate(center.dx, center.dy)
+        ..rotate(_calculationsService.degreesToRadians(rotateAngle))
+        ..translate(-center.dx, -center.dy);
+
       plates.forEach((plate) {
         platesPath.moveTo(
             plate.lines.first.start.dx, plate.lines.first.start.dy);
@@ -67,11 +96,12 @@ class SimulationSketcher extends CustomPainter {
           platesPath.lineTo(line.end.dx, line.end.dy);
         });
       });
+
+      canvas.drawPath(platesPath, redPaint);
+
+      canvas.restore();
     }
 
-    canvas.drawPath(beamsPath, blackPaint);
-    canvas.drawPath(tracksPath, greyPaint);
-    canvas.drawPath(platesPath, redPaint);
 
     // shapes.forEach((shape) {
     // Move to first offset to start drawing

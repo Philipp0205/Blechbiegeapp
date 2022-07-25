@@ -57,9 +57,10 @@ class _SimulationPageState extends State<SimulationPage> {
         ElevatedButton(
             onPressed: () => _openSelectToolPage(),
             child: Text('Wangen & Schienen')),
-        // Container(width: 10),
-        // ElevatedButton(
-        //     onPressed: () => _openSelectTrackPage(), child: Text('Schienen')),
+        IconButton(
+            onPressed: () => _rotateLeft(), icon: new Icon(Icons.rotate_left)),
+        IconButton(
+            onPressed: () => _rotateRight(), icon: new Icon(Icons.rotate_right))
       ],
     );
   }
@@ -84,7 +85,8 @@ class _SimulationPageState extends State<SimulationPage> {
             painter: SimulationSketcher(
                 beams: state.selectedBeams,
                 tracks: state.selectedTracks,
-                plates: state.selectedPlates),
+                plates: state.selectedPlates,
+                rotateAngle: state.rotationAngle),
           );
         }));
   }
@@ -116,5 +118,17 @@ class _SimulationPageState extends State<SimulationPage> {
     context
         .read<SimulationPageBloc>()
         .add(SimulationToolsChanged(tools: selectedTools));
+  }
+
+  void _rotateLeft() {
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationToolRotate(clockwise: false));
+  }
+
+  void _rotateRight() {
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationToolRotate(clockwise: true));
   }
 }
