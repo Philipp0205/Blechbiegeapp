@@ -283,22 +283,4 @@ class GeometricCalculationsService {
     }
     return highestY;
   }
-
-  /// Returns [Offset]s with lowest x.
-  /// If there are multiple lowest x, all are returned.
-  List<Offset> getLowerstX(List<Offset> offsets) {
-    List<Offset> lowestX = [];
-    double lowestXValue = double.negativeInfinity;
-
-    for (Offset offset in offsets) {
-      if (offset.dx < lowestXValue) {
-        lowestXValue = offset.dx;
-        lowestX = [offset];
-      } else if (offset.dx == lowestXValue) {
-        lowestX.add(offset);
-      }
-    }
-    return lowestX;
-  }
-
 }

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -26,10 +25,12 @@ class SimulationPageBloc
             selectedBeams: [],
             selectedTracks: [],
             selectedPlates: [],
-            rotationAngle: 0)) {
+            rotationAngle: 0,
+            debugOffsets: [])) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
+    on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
   }
 
   GeometricCalculationsService _calculationsService =
@@ -45,6 +46,7 @@ class SimulationPageBloc
   /// This method is called when the [SimulationToolsChanged] event is emitted.
   void _setTools(
       SimulationToolsChanged event, Emitter<SimulationPageState> emit) {
+    print('setTools');
     if (event.tools.isEmpty) return;
 
     List<Tool> selectedBeams =
@@ -78,7 +80,7 @@ class SimulationPageBloc
     }
 
     if (lowerTrack != null && plate != null) {
-      Tool placedPlate = _placePlateOnTrack(plate, lowerTrack);
+      Tool placedPlate = _placePlateOnTrack(emit, plate, lowerTrack);
 
       // Should only contain one item anyway.
       selectedPlates
@@ -157,17 +159,52 @@ class SimulationPageBloc
     return newTool;
   }
 
+  /// Place the plate on the track with the next edge.
+  void _nextLineOfPlate(SimulationSelectedPlateLineChanged event,
+      Emitter<SimulationPageState> emit) {
+    print('nextLineOfPlate');
+
+    Tool plate = state.selectedPlates.first;
+
+    List<Line> lines = plate.lines;
+    Line? currentlyPlacedLine =
+        lines.firstWhereOrNull((line) => line.isSelected);
+
+    if (currentlyPlacedLine == null) {
+      currentlyPlacedLine = lines.first;
+    }
+
+    int index = plate.lines.indexOf(currentlyPlacedLine);
+
+    lines[index].isSelected = false;
+
+    index < lines.length - 1
+        ? lines[index + 1].isSelected = true
+        : lines.first.isSelected = true;
+
+    Tool lowerTrack = state.selectedTracks
+        .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
+
+    Tool placedPlate = _placePlateOnTrack(emit, state.selectedPlates.first, lowerTrack);
+
+    // emit(state.copyWith(selectedPlates: []));
+    // emit(state.copyWith(selectedPlates: [placedPlate]));
+  }
+
   /// Place plate on lower track.
-  Tool _placePlateOnTrack(Tool plate, Tool lowerTrack) {
+  Tool _placePlateOnTrack(Emitter<SimulationPageState> emit,  Tool plate, Tool lowerTrack) {
     print('placePlateOnTrack');
 
     List<Offset> trackOffsets =
         lowerTrack.lines.map((line) => line.start).toList() +
             lowerTrack.lines.map((line) => line.end).toList();
 
-    List<Offset> plateOffsets =
-        plate.lines.map((plate) => plate.start).toList() +
-            plate.lines.map((plate) => plate.end).toList();
+    Line? selectedLine =
+        plate.lines.firstWhereOrNull((line) => line.isSelected);
+
+    if (selectedLine == null) {
+      selectedLine = plate.lines.first;
+    }
 
     List<Offset> lowestTrackXOffsets =
         _calculationsService.getLowestX(trackOffsets);
@@ -175,12 +212,19 @@ class SimulationPageBloc
     Offset trackOffset =
         _calculationsService.getLowestY(lowestTrackXOffsets).first;
 
-    Offset plateOffset = _calculationsService.getLowestX(plateOffsets).first;
+    // Offset plateOffset = _calculationsService
+    //     .getLowestX([selectedLine.start, selectedLine.end]).first;
+    Offset plateOffset = selectedLine.start;
 
-    double x = plateOffset.dx - trackOffset.dx;
-    double y = plateOffset.dy - trackOffset.dy;
+    Offset moveOffset = plateOffset - trackOffset;
 
-    Tool movedTool = _moveTool(plate, new Offset(x, y), false);
+    // Tool movedTool = _moveTool(plate, moveOffset, false);
+    Tool movedTool = plate;
+    List<Offset> debugOffsets = movedTool.lines.map((line) => line.start).toList() +
+        movedTool.lines.map((line) => line.end).toList();
+    // debugOffsets.add(plateOffset);
+
+    emit(state.copyWith(debugOffsets: [trackOffset, plateOffset], selectedPlates: [plate]));
 
     return movedTool;
   }
@@ -192,11 +236,9 @@ class SimulationPageBloc
     List<Line> newLines = [];
     lines.forEach((line) {
       if (positiveDirection) {
-        print('positiveDirection');
         newLines.add(
             line.copyWith(start: line.start + offset, end: line.end + offset));
       } else {
-        print('negative direction');
         newLines.add(
             line.copyWith(start: line.start - offset, end: line.end - offset));
       }
@@ -214,8 +256,6 @@ class SimulationPageBloc
   /// This method is called when the [SimulationToolsChanged] event is emitted.
   Tool _placeUpperBeamAndTrackOnPlate(
       Tool upperBeam, Tool upperTrack, Tool plate) {
-    print('placeUpperBeamOnPlate');
-
     List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
         plate.lines.map((line) => line.end).toList();
 
@@ -237,6 +277,20 @@ class SimulationPageBloc
     return tools.firstWhereOrNull((tool) => tool.type.type == type);
   }
 
+  void _setToolByType(Tool tool) {
+    ToolType type = tool.type.type;
+    ToolCategoryEnum category = tool.type.category;
+
+    switch (category) {
+      case ToolCategoryEnum.BEAM:
+        break;
+      case ToolCategoryEnum.TRACK:
+        break;
+      case ToolCategoryEnum.PLATE_PROFILE:
+        break;
+    }
+  }
+
   /// Place upper track on plate with distance s.
   /// The upper track is aligned with the plate.
   /// This method is called when the [SimulationToolsChanged] event is emitted.
@@ -247,17 +301,26 @@ class SimulationPageBloc
     List<Offset> plateOffsets = plate.lines.map((line) => line.start).toList() +
         plate.lines.map((line) => line.end).toList();
 
+    Line selectedLine = plate.lines.firstWhere((line) => line.isSelected);
+
     List<Offset> trackOffsets =
         upperTrack.lines.map((line) => line.start).toList() +
             plate.lines.map((line) => line.end).toList();
 
-    List<Offset> lowestPlateXOffset =
-        _calculationsService.getLowestX(plateOffsets);
-    Offset plateOffset =
-        _calculationsService.getLowestY(lowestPlateXOffset).first;
+    // List<Offset> lowestPlateXOffset =
+    // _calculationsService.getLowestX([selectedLine.start, selectedLine.end]);
+    //
+    // Offset plateOffset =
+    //     _calculationsService
+    //         .getLowestY(lowestPlateXOffset)
+    //         .first;
+
+    Offset plateOffset = _calculationsService
+        .getLowestX([selectedLine.start, selectedLine.end]).first;
 
     List<Offset> lowestXTrackOffset =
         _calculationsService.getLowestX(trackOffsets);
+
     Offset trackOffset =
         _calculationsService.getLowestY(lowestXTrackOffset).first;
 

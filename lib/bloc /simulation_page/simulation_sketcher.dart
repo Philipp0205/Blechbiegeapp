@@ -10,13 +10,15 @@ class SimulationSketcher extends CustomPainter {
   final List<Tool> beams;
   final List<Tool> tracks;
   final List<Tool> plates;
+  final List<Offset> debugOffsets;
   final double rotateAngle;
 
   SimulationSketcher(
       {required this.beams,
       required this.tracks,
       required this.plates,
-      required this.rotateAngle});
+      required this.rotateAngle,
+      required this.debugOffsets});
 
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
@@ -35,8 +37,14 @@ class SimulationSketcher extends CustomPainter {
       ..strokeWidth = 5.0
       ..style = PaintingStyle.fill;
 
-    Paint redPaint = Paint()
+    Paint redStroke = Paint()
       ..color = Colors.red
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0
+      ..style = PaintingStyle.stroke;
+
+    Paint blueStroke = Paint()
+      ..color = Colors.blue
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
       ..style = PaintingStyle.stroke;
@@ -44,8 +52,6 @@ class SimulationSketcher extends CustomPainter {
     Path beamsPath = new Path();
     Path tracksPath = new Path();
     Path platesPath = new Path();
-
-
 
     // path.moveTo(testLine.start.dx, testLine.start.dy);
     // path.lineTo(testLine.end.dx, testLine.end.dy);
@@ -72,16 +78,20 @@ class SimulationSketcher extends CustomPainter {
     canvas.drawPath(beamsPath, blackPaint);
     canvas.drawPath(tracksPath, greyPaint);
 
-
     if (plates.isNotEmpty) {
       List<Offset> plateOffsets =
           plates.first.lines.map((line) => line.start).toList() +
               plates.first.lines.map((line) => line.end).toList();
 
-      Line middleLine = plates.first.lines[plates.first.lines.length ~/ 2];
+      Line selectedLine =
+          plates.first.lines.firstWhere((line) => line.isSelected);
+      // Line middleLine = plates.first.lines[plates.first.lines.length ~/ 2];
       Offset center =
-      _calculationsService.getMiddle(middleLine.start, middleLine.end);
-      print('rotateAngle: $rotateAngle');
+          _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+
+      canvas.drawCircle(center, 4, redStroke);
+
+      List<Line> selectedLines = [];
 
       canvas
         ..save()
@@ -94,28 +104,27 @@ class SimulationSketcher extends CustomPainter {
             plate.lines.first.start.dx, plate.lines.first.start.dy);
         plate.lines.forEach((line) {
           platesPath.lineTo(line.end.dx, line.end.dy);
+
+          if (line.isSelected) {
+            selectedLines.add(line);
+          }
         });
       });
 
-      canvas.drawPath(platesPath, redPaint);
+      canvas.drawPath(platesPath, blueStroke);
+
+      selectedLines.forEach((line) {
+        canvas.drawLine(line.start, line.end, redStroke);
+      });
 
       canvas.restore();
+
+      // Debugging
+      debugOffsets.forEach((offset) {
+        canvas.drawCircle(offset, 4, redStroke);
+      });
+
     }
-
-
-    // shapes.forEach((shape) {
-    // Move to first offset to start drawing
-    // path.moveTo(shape.path.first.dx, shape.path.first.dy);
-    //
-    // shape.path.removeAt(0);
-    //
-    // shape.path.forEach((offset) {
-    //   path.lineTo(offset.dx, offset.dy);
-    // });
-    // });
-    //
-    // canvas.drawPath(path, paint);
-    // }
   }
 
   @override
