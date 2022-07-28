@@ -37,6 +37,16 @@ class SimulationToolRotate extends SimulationPageEvent {
   const SimulationToolRotate({required this.clockwise});
 }
 
+/// The event contains if the [Tool] should be rotated clockswise or
+/// anti-clockwise.
+/// The event is used to change the [Tool]s in the [SimulationPageState].
+class SimulationToolRotate2 extends SimulationPageEvent {
+  final Tool tool;
+  final double degrees;
+
+  const SimulationToolRotate2({required this.tool, required this.degrees});
+}
+
 /// The event contains nothing.
 /// The event is called when the next line of a plate is placed on the lower
 /// track.

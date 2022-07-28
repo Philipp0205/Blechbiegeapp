@@ -251,7 +251,7 @@ class GeometricCalculationsService {
   }
 
   /// Returns [Offset]s with highest x.
-/// If there are multiple highest x, all are returned.
+  /// If there are multiple highest x, all are returned.
   List<Offset> getHighestX(List<Offset> offsets) {
     List<Offset> highestX = [];
     double highestXValue = double.negativeInfinity;
@@ -282,5 +282,50 @@ class GeometricCalculationsService {
       }
     }
     return highestY;
+  }
+
+  /// Rotate given [offsets] around the given [center] by [angle] degrees.
+  /// Returns the rotated [offsets].
+  List<Offset> rotateOffsets(
+      List<Offset> offsets, Offset center, double degrees) {
+    List<Offset> rotatedOffsets = [];
+    offsets.forEach((offset) {
+      // var newx = (x - centerx) * Math.cos(degrees * Math.PI / 180) - (y - centery) * Math.sin(degrees * math.PI / 180) + centerx;
+      // var newy = (x - centerx) * Math.sin(degrees * Math.PI / 180) + (y - centery) * Math.cos(degrees * math.PI / 180) + centery;
+      double newX = (offset.dx - center.dx) * cos(degreesToRadians(degrees)) -
+          (offset.dy - center.dy) * sin(degreesToRadians(degrees)) +
+          center.dx;
+      double newY = (offset.dx - center.dx) * sin(degreesToRadians(degrees)) +
+          (offset.dy - center.dy) * cos(degreesToRadians(degrees)) +
+          center.dy;
+      rotatedOffsets.add(Offset(newX, newY));
+    });
+    return rotatedOffsets;
+  }
+
+  /// Rotate [offet] around the given [center] by [angle] degrees.
+  /// Returns the rotated [offset].
+  Offset rotateOffset(Offset offset, Offset center, double degrees) {
+    double newX = (offset.dx - center.dx) * cos(degreesToRadians(degrees)) -
+        (offset.dy - center.dy) * sin(degreesToRadians(degrees)) +
+        center.dx;
+    double newY = (offset.dx - center.dx) * sin(degreesToRadians(degrees)) +
+        (offset.dy - center.dy) * cos(degreesToRadians(degrees)) +
+        center.dy;
+    return Offset(newX, newY);
+  }
+
+
+ /// Rotate given [lines] around the given [center] by [angle] degrees.
+  List<Line> rotateLines(List<Line> lines, Offset center, double degrees) {
+    List<Line> rotatedLines = [];
+    lines.forEach((line) {
+      rotatedLines.add(Line(
+        start: rotateOffset(line.start, center, degrees),
+        end: rotateOffset(line.end, center, degrees),
+        isSelected: line.isSelected,
+      ));
+    });
+    return rotatedLines;
   }
 }

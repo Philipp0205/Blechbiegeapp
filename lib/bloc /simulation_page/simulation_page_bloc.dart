@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
@@ -30,6 +32,7 @@ class SimulationPageBloc
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
+    on<SimulationToolRotate2>(_rotateTool3);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
   }
 
@@ -162,7 +165,6 @@ class SimulationPageBloc
   /// Place the plate on the track with the next edge.
   void _nextLineOfPlate(SimulationSelectedPlateLineChanged event,
       Emitter<SimulationPageState> emit) {
-    print('nextLineOfPlate');
 
     Tool plate = state.selectedPlates.first;
 
@@ -177,23 +179,28 @@ class SimulationPageBloc
     int index = plate.lines.indexOf(currentlyPlacedLine);
 
     lines[index].isSelected = false;
+    print('index $index');
 
     index < lines.length - 1
         ? lines[index + 1].isSelected = true
         : lines.first.isSelected = true;
 
+    plate = plate.copyWith(lines: lines);
+    plate = _rotateUntilSelectedLineHasAngle(plate, 0);
+
     Tool lowerTrack = state.selectedTracks
         .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
 
-    Tool placedPlate = _placePlateOnTrack(emit, state.selectedPlates.first, lowerTrack);
+    Tool placedPlate =
+        _placePlateOnTrack(emit, plate, lowerTrack);
 
-    // emit(state.copyWith(selectedPlates: []));
-    // emit(state.copyWith(selectedPlates: [placedPlate]));
+    emit(state.copyWith(selectedPlates: []));
+    emit(state.copyWith(selectedPlates: [placedPlate]));
   }
 
   /// Place plate on lower track.
-  Tool _placePlateOnTrack(Emitter<SimulationPageState> emit,  Tool plate, Tool lowerTrack) {
-    print('placePlateOnTrack');
+  Tool _placePlateOnTrack(
+      Emitter<SimulationPageState> emit, Tool plate, Tool lowerTrack) {
 
     List<Offset> trackOffsets =
         lowerTrack.lines.map((line) => line.start).toList() +
@@ -218,13 +225,15 @@ class SimulationPageBloc
 
     Offset moveOffset = plateOffset - trackOffset;
 
-    // Tool movedTool = _moveTool(plate, moveOffset, false);
-    Tool movedTool = plate;
-    List<Offset> debugOffsets = movedTool.lines.map((line) => line.start).toList() +
-        movedTool.lines.map((line) => line.end).toList();
+    Tool movedTool = _moveTool(plate, moveOffset, false);
+    List<Offset> debugOffsets =
+        movedTool.lines.map((line) => line.start).toList() +
+            movedTool.lines.map((line) => line.end).toList();
     // debugOffsets.add(plateOffset);
 
-    emit(state.copyWith(debugOffsets: [trackOffset, plateOffset], selectedPlates: [plate]));
+    Line debugLine = movedTool.lines.firstWhere((line) => line.isSelected);
+
+    // emit(state.copyWith(selectedPlates: [movedTool]));
 
     return movedTool;
   }
@@ -359,26 +368,63 @@ class SimulationPageBloc
   /// Rotate a tool clockwise or anti-clockwise in a 90 degree angle.
   void _rotateTool(
       SimulationToolRotate event, Emitter<SimulationPageState> emit) {
-    print('_rotateTool');
-    // if (event.clockwise) {
-    int angle = state.rotationAngle.toInt();
-    switch (angle) {
-      case 0:
-        emit(state.copyWith(rotationAngle: 90));
-        break;
-      case 90:
-        emit(state.copyWith(rotationAngle: 180));
-        break;
-      case 180:
-        emit(state.copyWith(rotationAngle: 270));
-        break;
-      case 270:
-        emit(state.copyWith(rotationAngle: 0));
-        break;
-      default:
-        emit(state.copyWith(rotationAngle: 0));
-        break;
-    }
+    // print('_rotateTool');
+    // // if (event.clockwise) {
+    // int angle = state.rotationAngle.toInt();
+    // switch (angle) {
+    //   case 0:
+    //     emit(state.copyWith(rotationAngle: 90));
+    //     break;
+    //   case 90:
+    //     emit(state.copyWith(rotationAngle: 180));
+    //     break;
+    //   case 180:
+    //     emit(state.copyWith(rotationAngle: 270));
+    //     break;
+    //   case 270:
+    //     emit(state.copyWith(rotationAngle: 0));
+    //     break;
+    //   default:
+    //     emit(state.copyWith(rotationAngle: 0));
+    //     break;
     // }
+    // }
+  }
+
+  /// Rotate a [tool] clockwise around [center] by [angle].
+  Tool _rotateTool2(Tool tool, Offset center, double degrees) {
+    return tool.copyWith(
+        lines: _calculationsService.rotateLines(tool.lines, center, 90));
+  }
+
+  void _rotateTool3(
+      SimulationToolRotate2 event, Emitter<SimulationPageState> emit) {
+    print('_rotateTool3');
+    Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
+    Offset center =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+    Tool rotatedTool = event.tool.copyWith(
+        lines: _calculationsService.rotateLines(
+            event.tool.lines, center, event.degrees));
+
+    emit(state.copyWith(selectedPlates: []));
+    emit(state.copyWith(selectedPlates: [rotatedTool], debugOffsets: []));
+  }
+
+  Tool _rotateUntilSelectedLineHasAngle(Tool tool, double angle) {
+    Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
+    Offset center =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+
+    while (true) {
+      tool = _rotateTool2(tool, center, 90);
+      Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
+      double currentAngle =
+          _calculationsService.getAngle(selectedLine.start, selectedLine.end);
+      if (currentAngle == angle) {
+        print('currentAngle found');
+        return tool;
+      }
+    }
   }
 }
