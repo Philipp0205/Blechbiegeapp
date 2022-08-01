@@ -33,18 +33,10 @@ class SimulationSChanged extends SimulationPageEvent {
 /// anti-clockwise.
 /// The event is used to change the [Tool]s in the [SimulationPageState].
 class SimulationToolRotate extends SimulationPageEvent {
-  final bool clockwise;
-  const SimulationToolRotate({required this.clockwise});
-}
-
-/// The event contains if the [Tool] should be rotated clockswise or
-/// anti-clockwise.
-/// The event is used to change the [Tool]s in the [SimulationPageState].
-class SimulationToolRotate2 extends SimulationPageEvent {
   final Tool tool;
   final double degrees;
 
-  const SimulationToolRotate2({required this.tool, required this.degrees});
+  const SimulationToolRotate({required this.tool, required this.degrees});
 }
 
 /// The event contains nothing.

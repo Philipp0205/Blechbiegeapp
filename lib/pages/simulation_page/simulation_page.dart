@@ -132,6 +132,6 @@ class _SimulationPageState extends State<SimulationPage> {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
     context
         .read<SimulationPageBloc>()
-        .add(SimulationToolRotate2(tool: state.selectedPlates.first, degrees: 90));
+        .add(SimulationToolRotate(tool: state.selectedPlates.first, degrees: 90));
   }
 }

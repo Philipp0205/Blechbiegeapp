@@ -1,10 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
+
+import 'package:collection/collection.dart';
 
 class SimulationSketcher extends CustomPainter {
   final List<Tool> beams;
@@ -83,8 +83,12 @@ class SimulationSketcher extends CustomPainter {
           plates.first.lines.map((line) => line.start).toList() +
               plates.first.lines.map((line) => line.end).toList();
 
-      Line selectedLine =
-          plates.first.lines.firstWhere((line) => line.isSelected);
+      Line? selectedLine =
+          plates.first.lines.firstWhereOrNull((line) => line.isSelected);
+
+      if (selectedLine == null) {
+        selectedLine = plates.first.lines.first;
+      }
       // Line middleLine = plates.first.lines[plates.first.lines.length ~/ 2];
       Offset center =
           _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
@@ -92,12 +96,12 @@ class SimulationSketcher extends CustomPainter {
       canvas.drawCircle(center, 4, redStroke);
 
       List<Line> selectedLines = [];
-
-      canvas
-        ..save()
-        ..translate(center.dx, center.dy)
-        ..rotate(_calculationsService.degreesToRadians(rotateAngle))
-        ..translate(-center.dx, -center.dy);
+      //
+      // canvas
+      //   ..save()
+      //   ..translate(center.dx, center.dy)
+      //   ..rotate(_calculationsService.degreesToRadians(rotateAngle))
+      //   ..translate(-center.dx, -center.dy);
 
       plates.forEach((plate) {
         platesPath.moveTo(
@@ -117,12 +121,12 @@ class SimulationSketcher extends CustomPainter {
         canvas.drawLine(line.start, line.end, redStroke);
       });
 
-      canvas.restore();
+      // canvas.restore();
 
       // Debugging
-      debugOffsets.forEach((offset) {
-        canvas.drawCircle(offset, 4, redStroke);
-      });
+      // debugOffsets.forEach((offset) {
+      //   canvas.drawCircle(offset, 4, redStroke);
+      // });
 
     }
   }
