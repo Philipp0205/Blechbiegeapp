@@ -58,7 +58,8 @@ class _SimulationPageState extends State<SimulationPage> {
             onPressed: () => _openSelectToolPage(),
             child: Text('Wangen & Schienen')),
         IconButton(
-            onPressed: () => _rotateLeft(), icon: new Icon(Icons.rotate_left)),
+            onPressed: () => _nextLineOfPlate(),
+            icon: new Icon(Icons.navigate_next)),
         IconButton(
             onPressed: () => _rotateRight(), icon: new Icon(Icons.rotate_right))
       ],
@@ -86,7 +87,8 @@ class _SimulationPageState extends State<SimulationPage> {
                 beams: state.selectedBeams,
                 tracks: state.selectedTracks,
                 plates: state.selectedPlates,
-                rotateAngle: state.rotationAngle),
+                rotateAngle: state.rotationAngle,
+                debugOffsets: state.debugOffsets),
           );
         }));
   }
@@ -120,15 +122,16 @@ class _SimulationPageState extends State<SimulationPage> {
         .add(SimulationToolsChanged(tools: selectedTools));
   }
 
-  void _rotateLeft() {
+  void _nextLineOfPlate() {
     context
         .read<SimulationPageBloc>()
-        .add(SimulationToolRotate(clockwise: false));
+        .add(SimulationSelectedPlateLineChanged());
   }
 
   void _rotateRight() {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
     context
         .read<SimulationPageBloc>()
-        .add(SimulationToolRotate(clockwise: true));
+        .add(SimulationToolRotate(tool: state.selectedPlates.first, degrees: 90));
   }
 }
