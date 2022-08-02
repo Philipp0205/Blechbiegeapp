@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:image/image.dart' as img;
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/line.dart';
@@ -97,12 +101,6 @@ class SimulationSketcher extends CustomPainter {
       canvas.drawCircle(center, 4, redStroke);
 
       List<Line> selectedLines = [];
-      //
-      // canvas
-      //   ..save()
-      //   ..translate(center.dx, center.dy)
-      //   ..rotate(_calculationsService.degreesToRadians(rotateAngle))
-      //   ..translate(-center.dx, -center.dy);
 
       plates.forEach((plate) {
         platesPath.moveTo(
@@ -121,15 +119,41 @@ class SimulationSketcher extends CustomPainter {
       selectedLines.forEach((line) {
         canvas.drawLine(line.start, line.end, redStroke);
       });
-
-      // canvas.restore();
-
-      // Debugging
-      // debugOffsets.forEach((offset) {
-      //   canvas.drawCircle(offset, 4, redStroke);
-      // });
-
     }
+
+
+  }
+
+  /// Returns all black pixel of the canvas.
+  Future<List<Offset>> createPicture(
+      Canvas recodingCanvas, Size size, Path path, Paint paint) async {
+    ui.PictureRecorder recorder = new ui.PictureRecorder();
+    Canvas canvas2 = new Canvas(recorder);
+    canvas2.drawPath(path, paint);
+
+    // ui.Picture picture = pictureRecorder.endRecording();
+    ui.Picture picture = recorder.endRecording();
+    ui.Image image =
+    await picture.toImage(size.width.toInt(), size.height.toInt());
+    // ByteData? data = await image.toByteData();
+    ByteData? data2 =
+    await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+
+    List<Offset> blackOffsets = [];
+
+    img.Image newImage = img.Image.fromBytes(
+        size.width.toInt(), size.height.toInt(), data2!.buffer.asUint8List());
+
+    for (int x = 0; x < size.width.toInt(); ++x) {
+      for (int y = 0; y < size.height.toInt(); ++y) {
+        int color = newImage.getPixel(x, y);
+
+        if (Color(color) == Colors.black) {
+          blackOffsets.add(new Offset(x.toDouble(), y.toDouble()));
+        }
+      }
+    }
+    return blackOffsets;
   }
 
   @override
