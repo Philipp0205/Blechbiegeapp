@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -32,6 +33,7 @@ class SimulationPageBloc
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
+    on<SimulationToolMirrored>(_mirrorTool);
   }
 
   GeometricCalculationsService _calculationsService =
@@ -177,7 +179,7 @@ class SimulationPageBloc
         : lines.first.isSelected = true;
 
     plate = plate.copyWith(lines: lines);
-    plate = _rotateUntilSelectedLineHasAngle(plate, [0,360], 1);
+    plate = _rotateUntilSelectedLineHasAngle(plate, [0, 360], 1);
 
     Tool lowerTrack = state.selectedTracks
         .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
@@ -368,7 +370,6 @@ class SimulationPageBloc
       Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
       double currentAngle =
           _calculationsService.getAngle(selectedLine.start, selectedLine.end);
-      // print('currentAngle: ${currentAngle.round()}');
       if (angles.contains(currentAngle.round())) {
         print('currentAngle found');
         return tool;
@@ -377,16 +378,34 @@ class SimulationPageBloc
 
     print('no angle found');
     return tool;
+  }
 
-    // while (true) {
-    //   tool = _rotateTool2(tool, center, stepSize);
-    //   Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
-    //   double currentAngle =
-    //       _calculationsService.getAngle(selectedLine.start, selectedLine.end);
-    //   if (currentAngle == angle) {
-    //     print('currentAngle found');
-    //     return tool;
-    //   }
-    // }
+  /// Mirror a [tool].
+  void _mirrorTool(
+      SimulationToolMirrored event, Emitter<SimulationPageState> emit) {
+    print('_mirrorTool');
+
+    Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
+
+    Offset middle =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+
+    List<Line> mirroredLines =
+        _calculationsService.mirrorLines(event.tool.lines, middle.dx);
+
+    Tool mirroredTool = event.tool.copyWith(lines: mirroredLines);
+
+    Tool lowerTrack = state.selectedTracks
+        .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
+
+    Tool placedPlate = _placePlateOnTrack(emit, mirroredTool, lowerTrack);
+
+    List<Tool> selectedPlates = state.selectedPlates;
+    selectedPlates
+      ..removeLast()
+      ..add(placedPlate);
+
+    emit(state.copyWith(selectedPlates: []));
+    emit(state.copyWith(selectedPlates: [mirroredTool]));
   }
 }
