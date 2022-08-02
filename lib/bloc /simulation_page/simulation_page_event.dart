@@ -19,6 +19,7 @@ class SimulationPageCreated extends SimulationPageEvent {
 /// The event is used to change the [Tool]s in the [SimulationPageState].
 class SimulationToolsChanged extends SimulationPageEvent {
   final List<Tool> tools;
+
   const SimulationToolsChanged({required this.tools});
 }
 
@@ -26,6 +27,7 @@ class SimulationToolsChanged extends SimulationPageEvent {
 /// The event is used to change the s value in the [SimulationPageState].
 class SimulationSChanged extends SimulationPageEvent {
   final double s;
+
   const SimulationSChanged({required this.s});
 }
 
@@ -46,4 +48,11 @@ class SimulationSelectedPlateLineChanged extends SimulationPageEvent {
   const SimulationSelectedPlateLineChanged();
 }
 
+/// The event contains nothing.
+/// The event is called when the current tool is mirrored.
+/// The event is used to change the [Tool]s in the [SimulationPageState].
+class SimulationToolMirrored extends SimulationPageEvent {
+  final Tool tool;
 
+  const SimulationToolMirrored({required this.tool});
+}

@@ -61,7 +61,9 @@ class _SimulationPageState extends State<SimulationPage> {
             onPressed: () => _nextLineOfPlate(),
             icon: new Icon(Icons.navigate_next)),
         IconButton(
-            onPressed: () => _rotateRight(), icon: new Icon(Icons.rotate_right))
+            onPressed: () => _rotateRight(), icon: new Icon(Icons.rotate_right)),
+        IconButton(
+            onPressed: () => _mirrorCurrentPlate(), icon: new Icon(Icons.compare_arrows))
       ],
     );
   }
@@ -133,5 +135,11 @@ class _SimulationPageState extends State<SimulationPage> {
     context
         .read<SimulationPageBloc>()
         .add(SimulationToolRotate(tool: state.selectedPlates.first, degrees: 90));
+  }
+
+  void _mirrorCurrentPlate() {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+    context.read<SimulationPageBloc>().add(SimulationToolMirrored(tool: state.selectedPlates.first));
+
   }
 }

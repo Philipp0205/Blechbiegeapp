@@ -315,8 +315,7 @@ class GeometricCalculationsService {
     return Offset(newX, newY);
   }
 
-
- /// Rotate given [lines] around the given [center] by [angle] degrees.
+  /// Rotate given [lines] around the given [center] by [angle] degrees.
   List<Line> rotateLines(List<Line> lines, Offset center, double degrees) {
     List<Line> rotatedLines = [];
     lines.forEach((line) {
@@ -327,5 +326,35 @@ class GeometricCalculationsService {
       ));
     });
     return rotatedLines;
+  }
+
+  List<Line> mirrorLines(List<Line> lines, double mirrorX) {
+    List<Line> mirroredLines = [];
+
+    print('mirrorX: $mirrorX');
+
+    lines.forEach((line) {
+      Line mirroredLine = line;
+
+      Offset mirroredStart = _mirrorOffset(line.start, mirrorX);
+      Offset mirroredEnd = _mirrorOffset(line.end, mirrorX);
+
+      mirroredLines
+          .add(mirroredLine.copyWith(start: mirroredStart, end: mirroredEnd));
+    });
+
+    return mirroredLines;
+  }
+
+  Offset _mirrorOffset(Offset offset, double mirrorX) {
+    print('mirrorX: $mirrorX, offset.dx: ${offset.dx}');
+    double distance = (mirrorX - offset.dx).abs();
+    if (offset.dx < mirrorX) {
+      return Offset(mirrorX + distance, offset.dy);
+    } else if (offset.dx > mirrorX) {
+      return Offset(mirrorX - distance, offset.dy);
+    } else {
+      return offset;
+    }
   }
 }

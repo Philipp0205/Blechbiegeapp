@@ -92,6 +92,7 @@ class SimulationSketcher extends CustomPainter {
       // Line middleLine = plates.first.lines[plates.first.lines.length ~/ 2];
       Offset center =
           _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+      print('sketcher center: $center');
 
       canvas.drawCircle(center, 4, redStroke);
 
