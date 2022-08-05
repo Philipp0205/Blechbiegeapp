@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
@@ -28,7 +29,12 @@ class SimulationSketcher extends CustomPainter {
       new GeometricCalculationsService();
 
   @override
-  void paint(Canvas canvas, Size size) {
+  Future<void> paint(Canvas canvas, Size size) async {
+    ui.PictureRecorder machineRecorder = new ui.PictureRecorder();
+    ui.PictureRecorder plateRecorder = new ui.PictureRecorder();
+    Canvas machineCanvas = new Canvas(machineRecorder);
+    Canvas plateCanvas = new Canvas(plateRecorder);
+
     Paint blackPaint = Paint()
       ..color = Colors.black
       ..strokeCap = StrokeCap.round
@@ -42,6 +48,12 @@ class SimulationSketcher extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     Paint redStroke = Paint()
+      ..color = Colors.red
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0
+      ..style = PaintingStyle.stroke;
+
+    Paint blackStroke = Paint()
       ..color = Colors.red
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
@@ -81,6 +93,8 @@ class SimulationSketcher extends CustomPainter {
 
     canvas.drawPath(beamsPath, blackPaint);
     canvas.drawPath(tracksPath, greyPaint);
+    machineCanvas.drawPath(beamsPath, blackPaint);
+    machineCanvas.drawPath(tracksPath, greyPaint);
 
     if (plates.isNotEmpty) {
       List<Offset> plateOffsets =
@@ -96,7 +110,6 @@ class SimulationSketcher extends CustomPainter {
       // Line middleLine = plates.first.lines[plates.first.lines.length ~/ 2];
       Offset center =
           _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
-      print('sketcher center: $center');
 
       canvas.drawCircle(center, 4, redStroke);
 
@@ -115,31 +128,47 @@ class SimulationSketcher extends CustomPainter {
       });
 
       canvas.drawPath(platesPath, blueStroke);
+      // recordingCanvas.drawPath(platesPath, blueStroke);
+      // 1752
 
       selectedLines.forEach((line) {
         canvas.drawLine(line.start, line.end, redStroke);
+        // recordingCanvas.drawLine(line.start, line.end, redStroke);
       });
     }
 
+    Path allPaths = new Path();
+    allPaths.addPath(beamsPath, new Offset(0, 0));
+    allPaths.addPath(tracksPath, new Offset(0, 0));
 
+    Path collPlatesPath = new Path();
+    allPaths.addPath(platesPath, new Offset(0, 0));
+
+    ui.Picture picture = machineRecorder.endRecording();
+    List<Offset> collisionOffsets =
+        await createPicture(picture, machineRecorder, size, allPaths, Colors.black);
+
+    List<Offset> plateOffsets = await createPicture(
+        picture, machineRecorder, size, collPlatesPath, Colors.blue);
+
+    print('collisisonOffsets: ${collisionOffsets.length}');
+    print('plateOffsets: ${plateOffsets.length}');
+    bool isCollision = _detectCollision(collisionOffsets, plateOffsets);
+    print(isCollision);
   }
 
   /// Returns all black pixel of the canvas.
-  Future<List<Offset>> createPicture(
-      Canvas recodingCanvas, Size size, Path path, Paint paint) async {
-    ui.PictureRecorder recorder = new ui.PictureRecorder();
-    Canvas canvas2 = new Canvas(recorder);
-    canvas2.drawPath(path, paint);
+  Future<List<Offset>> createPicture(Picture picture,
+      ui.PictureRecorder recorder, Size size, Path path, Color checkedColor) async {
 
     // ui.Picture picture = pictureRecorder.endRecording();
-    ui.Picture picture = recorder.endRecording();
     ui.Image image =
-    await picture.toImage(size.width.toInt(), size.height.toInt());
+        await picture.toImage(size.width.toInt(), size.height.toInt());
     // ByteData? data = await image.toByteData();
     ByteData? data2 =
-    await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
-    List<Offset> blackOffsets = [];
+    List<Offset> collisionOffsets = [];
 
     img.Image newImage = img.Image.fromBytes(
         size.width.toInt(), size.height.toInt(), data2!.buffer.asUint8List());
@@ -148,12 +177,26 @@ class SimulationSketcher extends CustomPainter {
       for (int y = 0; y < size.height.toInt(); ++y) {
         int color = newImage.getPixel(x, y);
 
-        if (Color(color) == Colors.black) {
-          blackOffsets.add(new Offset(x.toDouble(), y.toDouble()));
+        // print(Color(color));
+
+        // print('checked Color $checkedColor');
+        if (Color(color) == checkedColor) {
+          collisionOffsets.add(new Offset(x.toDouble(), y.toDouble()));
         }
       }
     }
-    return blackOffsets;
+
+    return collisionOffsets;
+  }
+
+  bool _detectCollision(
+      List<Offset> collisionOffsets, List<Offset> plateOffsets) {
+    for (int i = 0; i < plateOffsets.length; i++) {
+      if (collisionOffsets.contains(plateOffsets[i])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @override

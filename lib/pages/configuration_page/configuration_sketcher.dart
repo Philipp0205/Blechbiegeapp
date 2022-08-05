@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 
 import '../../model/line.dart';
@@ -42,7 +40,6 @@ class ConfigurationSketcher extends CustomPainter {
   // Class variables
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
-  ui.PictureRecorder pictureRecorder = new ui.PictureRecorder();
 
   /// Paints on current canvas. Called whenever the object needs to paint.
   ///
