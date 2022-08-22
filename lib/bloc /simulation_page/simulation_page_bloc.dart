@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -28,7 +27,8 @@ class SimulationPageBloc
             selectedTracks: [],
             selectedPlates: [],
             rotationAngle: 0,
-            debugOffsets: [])) {
+            debugOffsets: [],
+            inCollision: false)) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);

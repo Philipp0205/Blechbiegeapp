@@ -61,9 +61,11 @@ class _SimulationPageState extends State<SimulationPage> {
             onPressed: () => _nextLineOfPlate(),
             icon: new Icon(Icons.navigate_next)),
         IconButton(
-            onPressed: () => _rotateRight(), icon: new Icon(Icons.rotate_right)),
+            onPressed: () => _rotateRight(),
+            icon: new Icon(Icons.rotate_right)),
         IconButton(
-            onPressed: () => _mirrorCurrentPlate(), icon: new Icon(Icons.compare_arrows))
+            onPressed: () => _mirrorCurrentPlate(),
+            icon: new Icon(Icons.compare_arrows))
       ],
     );
   }
@@ -83,14 +85,17 @@ class _SimulationPageState extends State<SimulationPage> {
               bottomRight: Radius.circular(10)),
         ),
         child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
+            // buildWhen: (prev, current) => prev.lines != current.lines,
             builder: (context, state) {
-          return CustomPaint(
-            painter: SimulationSketcher(
-                beams: state.selectedBeams,
-                tracks: state.selectedTracks,
-                plates: state.selectedPlates,
-                rotateAngle: state.rotationAngle,
-                debugOffsets: state.debugOffsets),
+          return RepaintBoundary(
+            child: CustomPaint(
+              painter: SimulationSketcher(
+                  beams: state.selectedBeams,
+                  tracks: state.selectedTracks,
+                  plates: state.selectedPlates,
+                  rotateAngle: state.rotationAngle,
+                  debugOffsets: state.debugOffsets),
+            ),
           );
         }));
   }
@@ -100,7 +105,11 @@ class _SimulationPageState extends State<SimulationPage> {
     return AppBar(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text('Simulation')],
+        children: [
+          Text('Simulation'),
+          _setCollisionLabel(
+              context.read<SimulationPageBloc>().state.inCollision)
+        ],
       ),
     );
   }
@@ -132,14 +141,23 @@ class _SimulationPageState extends State<SimulationPage> {
 
   void _rotateRight() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
-    context
-        .read<SimulationPageBloc>()
-        .add(SimulationToolRotate(tool: state.selectedPlates.first, degrees: 90));
+    context.read<SimulationPageBloc>().add(
+        SimulationToolRotate(tool: state.selectedPlates.first, degrees: 90));
   }
 
   void _mirrorCurrentPlate() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
-    context.read<SimulationPageBloc>().add(SimulationToolMirrored(tool: state.selectedPlates.first));
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationToolMirrored(tool: state.selectedPlates.first));
+  }
 
+  Text _setCollisionLabel(bool isColliding) {
+    print('isColliding: $isColliding');
+    if (isColliding) {
+      return Text('Kollision', style: TextStyle(color: Colors.red));
+    } else {
+      return Text('Keine Kollision', style: TextStyle(color: Colors.green));
+    }
   }
 }

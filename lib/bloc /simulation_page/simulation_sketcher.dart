@@ -41,6 +41,8 @@ class SimulationSketcher extends CustomPainter {
       ..strokeWidth = 5.0
       ..style = PaintingStyle.fill;
 
+
+
     Paint greyPaint = Paint()
       ..color = Colors.grey
       ..strokeCap = StrokeCap.round
@@ -54,7 +56,7 @@ class SimulationSketcher extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     Paint blackStroke = Paint()
-      ..color = Colors.red
+      ..color = Colors.black
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
       ..style = PaintingStyle.stroke;
@@ -68,10 +70,12 @@ class SimulationSketcher extends CustomPainter {
     Path beamsPath = new Path();
     Path tracksPath = new Path();
     Path platesPath = new Path();
+    Path platesPath2 = new Path();
 
     // path.moveTo(testLine.start.dx, testLine.start.dy);
     // path.lineTo(testLine.end.dx, testLine.end.dy);
 
+    // Create beams path
     if (beams.isNotEmpty) {
       beams.forEach((tool) {
         beamsPath.moveTo(tool.lines.first.start.dx, tool.lines.first.start.dy);
@@ -81,6 +85,7 @@ class SimulationSketcher extends CustomPainter {
       });
     }
 
+    // Create tracks path
     if (tracks.isNotEmpty) {
       tracks.forEach((track) {
         tracksPath.moveTo(
@@ -91,10 +96,21 @@ class SimulationSketcher extends CustomPainter {
       });
     }
 
-    canvas.drawPath(beamsPath, blackPaint);
-    canvas.drawPath(tracksPath, greyPaint);
-    machineCanvas.drawPath(beamsPath, blackPaint);
-    machineCanvas.drawPath(tracksPath, greyPaint);
+    if (plates.isNotEmpty) {
+      platesPath2.moveTo(
+          plates.first.lines.first.start.dx, plates.first.lines.first.start.dy);
+      plates.first.lines.forEach((line) {
+        platesPath2.lineTo(line.end.dx, line.end.dy);
+      });
+    }
+
+    // Create plates path
+    // if (plates.isNotEmpty) {
+    //   plates.first.lines.forEach((line) {
+    //     platesPath.moveTo(line.start.dx, line.start.dy);
+    //     platesPath.lineTo(line.end.dx, line.end.dy);
+    //   });
+    // }
 
     if (plates.isNotEmpty) {
       List<Offset> plateOffsets =
@@ -127,7 +143,15 @@ class SimulationSketcher extends CustomPainter {
         });
       });
 
+      canvas.drawPath(beamsPath, blackPaint);
+      canvas.drawPath(tracksPath, greyPaint);
       canvas.drawPath(platesPath, blueStroke);
+
+      machineCanvas.drawPath(beamsPath, blackPaint);
+      machineCanvas.drawPath(tracksPath, greyPaint);
+      plateCanvas.drawPath(platesPath, blackStroke);
+      // plateCanvas.drawPath(platesPath2, blackPaint);
+
       // recordingCanvas.drawPath(platesPath, blueStroke);
       // 1752
 
@@ -142,25 +166,29 @@ class SimulationSketcher extends CustomPainter {
     allPaths.addPath(tracksPath, new Offset(0, 0));
 
     Path collPlatesPath = new Path();
-    allPaths.addPath(platesPath, new Offset(0, 0));
+    // allPaths.addPath(platesPath, new Offset(0, 0));
 
-    ui.Picture picture = machineRecorder.endRecording();
-    List<Offset> collisionOffsets =
-        await createPicture(picture, machineRecorder, size, allPaths, Colors.black);
+    ui.Picture machinePicture = machineRecorder.endRecording();
+    List<Offset> collisionOffsets = await createPicture(
+        machinePicture, machineRecorder, size, allPaths, Colors.black);
 
+    ui.Picture platePicture = plateRecorder.endRecording();
     List<Offset> plateOffsets = await createPicture(
-        picture, machineRecorder, size, collPlatesPath, Colors.blue);
+        platePicture, plateRecorder, size, platesPath2, Colors.black);
 
-    print('collisisonOffsets: ${collisionOffsets.length}');
-    print('plateOffsets: ${plateOffsets.length}');
+    // print('collisisonOffsets: ${collisionOffsets.length}');
+    // print('plateOffsets: ${plateOffsets.length}');
     bool isCollision = _detectCollision(collisionOffsets, plateOffsets);
-    print(isCollision);
+    // print(isCollision);
   }
 
   /// Returns all black pixel of the canvas.
-  Future<List<Offset>> createPicture(Picture picture,
-      ui.PictureRecorder recorder, Size size, Path path, Color checkedColor) async {
-
+  Future<List<Offset>> createPicture(
+      Picture picture,
+      ui.PictureRecorder recorder,
+      Size size,
+      Path path,
+      Color checkedColor) async {
     // ui.Picture picture = pictureRecorder.endRecording();
     ui.Image image =
         await picture.toImage(size.width.toInt(), size.height.toInt());
@@ -193,10 +221,10 @@ class SimulationSketcher extends CustomPainter {
       List<Offset> collisionOffsets, List<Offset> plateOffsets) {
     for (int i = 0; i < plateOffsets.length; i++) {
       if (collisionOffsets.contains(plateOffsets[i])) {
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   @override

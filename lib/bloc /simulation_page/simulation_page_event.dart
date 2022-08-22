@@ -56,3 +56,10 @@ class SimulationToolMirrored extends SimulationPageEvent {
 
   const SimulationToolMirrored({required this.tool});
 }
+
+// The event is called when after a collision test.
+class SimulationCollisionDetected extends SimulationPageEvent {
+  final bool inCollision;
+
+  const SimulationCollisionDetected({required this.inCollision});
+}
