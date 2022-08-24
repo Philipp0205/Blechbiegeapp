@@ -94,7 +94,8 @@ class _SimulationPageState extends State<SimulationPage> {
                   tracks: state.selectedTracks,
                   plates: state.selectedPlates,
                   rotateAngle: state.rotationAngle,
-                  debugOffsets: state.debugOffsets),
+                  debugOffsets: state.debugOffsets,
+                  context: context),
             ),
           );
         }));

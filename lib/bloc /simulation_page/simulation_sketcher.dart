@@ -2,8 +2,10 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:ui' as ui;
 import 'package:image/image.dart' as img;
+import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/line.dart';
@@ -17,13 +19,15 @@ class SimulationSketcher extends CustomPainter {
   final List<Tool> plates;
   final List<Offset> debugOffsets;
   final double rotateAngle;
+  final BuildContext context;
 
   SimulationSketcher(
       {required this.beams,
       required this.tracks,
       required this.plates,
       required this.rotateAngle,
-      required this.debugOffsets});
+      required this.debugOffsets,
+      required this.context});
 
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
@@ -40,8 +44,6 @@ class SimulationSketcher extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
       ..style = PaintingStyle.fill;
-
-
 
     Paint greyPaint = Paint()
       ..color = Colors.grey
@@ -131,54 +133,75 @@ class SimulationSketcher extends CustomPainter {
 
       List<Line> selectedLines = [];
 
-      plates.forEach((plate) {
-        platesPath.moveTo(
-            plate.lines.first.start.dx, plate.lines.first.start.dy);
-        plate.lines.forEach((line) {
-          platesPath.lineTo(line.end.dx, line.end.dy);
+      Tool selectedPlate = plates.first;
 
-          if (line.isSelected) {
-            selectedLines.add(line);
-          }
-        });
+      print('selectedLine ${selectedPlate.lines.length}');
+
+      selectedPlate.lines.forEach((line) {
+        platesPath.moveTo(line.start.dx, line.start.dy);
+        platesPath.lineTo(line.end.dx, line.end.dy);
+
+        if (line.isSelected) {
+          selectedLines.add(line);
+        }
       });
 
-      canvas.drawPath(beamsPath, blackPaint);
-      canvas.drawPath(tracksPath, greyPaint);
-      canvas.drawPath(platesPath, blueStroke);
+      // plates.first.lines.forEach((line) {
+      //   if (line.isSelected) {
+      //     selectedLines.add(line);
+      //   }
+      // });
+      //
+      // plates.forEach((plate) {
+      //   platesPath.moveTo(
+      //       plate.lines.first.start.dx, plate.lines.first.start.dy);
+      //   plate.lines.forEach((line) {
+      //     platesPath.lineTo(line.end.dx, line.end.dy);
+      //
+      //     if (line.isSelected) {
+      //       selectedLines.add(line);
+      //     }
+      //   });
+      // });
 
-      machineCanvas.drawPath(beamsPath, blackPaint);
-      machineCanvas.drawPath(tracksPath, greyPaint);
-      plateCanvas.drawPath(platesPath, blackStroke);
-      // plateCanvas.drawPath(platesPath2, blackPaint);
+      // canvas.drawPath(beamsPath, blackPaint);
+      // canvas.drawPath(tracksPath, greyPaint);
+      // canvas.drawPath(platesPath, blueStroke);
+
+
 
       // recordingCanvas.drawPath(platesPath, blueStroke);
       // 1752
 
       selectedLines.forEach((line) {
         canvas.drawLine(line.start, line.end, redStroke);
-        // recordingCanvas.drawLine(line.start, line.end, redStroke);
       });
     }
 
-    Path allPaths = new Path();
-    allPaths.addPath(beamsPath, new Offset(0, 0));
-    allPaths.addPath(tracksPath, new Offset(0, 0));
 
-    Path collPlatesPath = new Path();
-    // allPaths.addPath(platesPath, new Offset(0, 0));
+    Path machinePath = new Path();
+    machinePath.addPath(beamsPath, new Offset(0, 0));
+    machinePath.addPath(tracksPath, new Offset(0, 0));
+
+    machineCanvas.drawPath(beamsPath, blackPaint);
+    machineCanvas.drawPath(tracksPath, blackPaint);
+    plateCanvas.drawPath(platesPath, blackStroke);
+    // plateCanvas.drawPath(platesPath2, blackPaint);
+
+    canvas.drawPath(machinePath, blackPaint);
+    canvas.drawPath(platesPath, redStroke);
 
     ui.Picture machinePicture = machineRecorder.endRecording();
-    List<Offset> collisionOffsets = await createPicture(
-        machinePicture, machineRecorder, size, allPaths, Colors.black);
+    List<Offset> machineOffsets = await createPicture(
+        machinePicture, machineRecorder, size, machinePath, Colors.black);
 
     ui.Picture platePicture = plateRecorder.endRecording();
     List<Offset> plateOffsets = await createPicture(
-        platePicture, plateRecorder, size, platesPath2, Colors.black);
+        platePicture, plateRecorder, size, platesPath, Colors.black);
 
-    // print('collisisonOffsets: ${collisionOffsets.length}');
-    // print('plateOffsets: ${plateOffsets.length}');
-    bool isCollision = _detectCollision(collisionOffsets, plateOffsets);
+    print('collisisonOffsets: ${machineOffsets.length}');
+    print('plateOffsets: ${plateOffsets.length}');
+    _detectCollision(machineOffsets, plateOffsets);
     // print(isCollision);
   }
 
@@ -217,14 +240,10 @@ class SimulationSketcher extends CustomPainter {
     return collisionOffsets;
   }
 
-  bool _detectCollision(
+  void _detectCollision(
       List<Offset> collisionOffsets, List<Offset> plateOffsets) {
-    for (int i = 0; i < plateOffsets.length; i++) {
-      if (collisionOffsets.contains(plateOffsets[i])) {
-        return false;
-      }
-    }
-    return true;
+    this.context.read<SimulationPageBloc>().add(SimulationCollisionDetected(
+        collisionOffsets: collisionOffsets, plateOffsets: plateOffsets));
   }
 
   @override
