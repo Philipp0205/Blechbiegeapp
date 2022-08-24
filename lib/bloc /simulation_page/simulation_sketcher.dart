@@ -146,24 +146,6 @@ class SimulationSketcher extends CustomPainter {
         }
       });
 
-      // plates.first.lines.forEach((line) {
-      //   if (line.isSelected) {
-      //     selectedLines.add(line);
-      //   }
-      // });
-      //
-      // plates.forEach((plate) {
-      //   platesPath.moveTo(
-      //       plate.lines.first.start.dx, plate.lines.first.start.dy);
-      //   plate.lines.forEach((line) {
-      //     platesPath.lineTo(line.end.dx, line.end.dy);
-      //
-      //     if (line.isSelected) {
-      //       selectedLines.add(line);
-      //     }
-      //   });
-      // });
-
       // canvas.drawPath(beamsPath, blackPaint);
       // canvas.drawPath(tracksPath, greyPaint);
       // canvas.drawPath(platesPath, blueStroke);

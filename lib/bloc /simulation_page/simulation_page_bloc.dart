@@ -40,6 +40,8 @@ class SimulationPageBloc
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
 
+  List<Offset> debugOffsets = [];
+
   /// Set the initial lines of the simulation.
   void _setInitialLines(
       SimulationPageCreated event, Emitter<SimulationPageState> emit) {
@@ -70,7 +72,7 @@ class SimulationPageBloc
       selectedBeams.addAll(_placeLowerBeam(selectedBeams));
     }
 
-
+    // Place lower track on lower beam
     if (lowerTrack != null && lowerBeam != null) {
       Tool newTrack = _placeTrackOnBeam(lowerTrack, lowerBeam);
 
@@ -80,23 +82,29 @@ class SimulationPageBloc
         ..insert(index, newTrack);
 
       lowerTrack = lowerTrack.copyWith(lines: newTrack.lines);
+
+
     }
 
+    // Place plate on lower track
     if (lowerTrack != null && plate != null) {
       List<Line> initialLines = plate.lines;
       initialLines.first.isSelected = true;
 
-      Tool placedPlate = _placePlateOnTrack(emit, plate.copyWith(lines: initialLines), lowerTrack);
+      Tool placedPlate = _placePlateOnTrack(
+          emit, plate.copyWith(lines: initialLines), lowerTrack);
 
-      // Should only contain one item anyway.
-      // selectedPlates
-      //   ..removeLast()
-      //   ..add(placedPlate);
+      selectedPlates
+        ..removeLast()
+        ..add(placedPlate);
 
       plate = plate.copyWith(lines: placedPlate.lines);
-      selectedPlates..removeLast()..add(placedPlate);
+      selectedPlates
+        ..clear()
+        ..add(placedPlate);
     }
 
+    // Place upper Track on Plate
     if (upperTrack != null && plate != null) {
       Tool placedTrack = _placeUpperTrackOnPlate(upperTrack, plate);
 
@@ -109,6 +117,7 @@ class SimulationPageBloc
       upperTrack = upperTrack.copyWith(lines: placedTrack.lines);
     }
 
+    // Place upper beam on upper track
     if (upperTrack != null && upperBeam != null) {
       print('place upperBeam on upperTrack');
       Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack);
@@ -123,9 +132,11 @@ class SimulationPageBloc
     emit(state
         .copyWith(selectedBeams: [], selectedTracks: [], selectedPlates: []));
     emit(state.copyWith(
-        selectedBeams: selectedBeams,
-        selectedTracks: selectedTracks,
-        selectedPlates: selectedPlates));
+      selectedBeams: selectedBeams,
+      selectedTracks: selectedTracks,
+      selectedPlates: selectedPlates,
+      debugOffsets: debugOffsets,
+    ));
   }
 
   /// Places the lower beam in the simulation.
@@ -171,6 +182,13 @@ class SimulationPageBloc
       Emitter<SimulationPageState> emit) {
     Tool plate = state.selectedPlates.first;
 
+    _selectNextLineOfPlateAndPlace(plate, emit);
+  }
+
+  /// TODO
+  void _selectNextLineOfPlateAndPlace(
+      Tool plate, Emitter<SimulationPageState> emit) {
+    print('selectNextLineOfPlateAndPlace');
     List<Line> lines = plate.lines;
     Line? currentlyPlacedLine =
         lines.firstWhereOrNull((line) => line.isSelected) ?? lines.first;
@@ -208,20 +226,27 @@ class SimulationPageBloc
     List<Offset> lowestTrackXOffsets =
         _calculationsService.getLowestX(trackOffsets);
 
+
     Offset trackOffset =
         _calculationsService.getLowestY(lowestTrackXOffsets).first;
 
-    // Offset plateOffset = _calculationsService
-    //     .getLowestX([selectedLine.start, selectedLine.end]).first;
+
+    Offset plateOffset = _calculationsService
+        .getLowestX([selectedLine.start, selectedLine.end]).first;
 
     // Offset plateOffset = selectedLine.start;
-    Offset plateOffset = new Offset(selectedLine.start.dx, selectedLine.start.dy + (plate.s / 2));
+    // Offset plateOffset = new Offset(
+    //     selectedLine.start.dx, selectedLine.start.dy + (plate.s / 2));
+
+
+    debugOffsets.clear();
+    debugOffsets.addAll([plateOffset, trackOffset]);
 
     Offset moveOffset = plateOffset - trackOffset;
 
     Tool movedTool = _moveTool(plate, moveOffset, false);
-
     return movedTool;
+    
   }
 
   /// Move a tool.
@@ -257,7 +282,7 @@ class SimulationPageBloc
     List<Offset> lowestXOffsets = _calculationsService.getLowestX(plateOffsets);
     // Offset plateOffset = _calculationsService.getLowestY(lowestXOffsets).first;
     Offset lowestY = _calculationsService.getLowestY(lowestXOffsets).first;
-    Offset plateOffset = new Offset(lowestY.dx, lowestY.dy + 50) ;
+    Offset plateOffset = new Offset(lowestY.dx, lowestY.dy + 50);
 
     Offset upperBeamOffset =
         upperBeam.lines.first.start.dx > upperBeam.lines.first.end.dx
