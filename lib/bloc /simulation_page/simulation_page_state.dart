@@ -10,7 +10,7 @@ class SimulationPageState extends Equatable {
   final bool inCollision;
 
   // Will be removed later.
-  final List<Offset> debugOffsets;
+  final List<Offset> collisionOffsets;
 
   const SimulationPageState({
     required this.shapes,
@@ -19,7 +19,7 @@ class SimulationPageState extends Equatable {
     required this.selectedBeams,
     required this.selectedTracks,
     required this.rotationAngle,
-    required this.debugOffsets,
+    required this.collisionOffsets,
     required this.inCollision,
   });
 
@@ -31,7 +31,7 @@ class SimulationPageState extends Equatable {
         selectedTracks,
         selectedPlates,
         rotationAngle,
-        debugOffsets,
+        collisionOffsets,
         inCollision,
       ];
 
@@ -53,7 +53,7 @@ class SimulationPageState extends Equatable {
       selectedPlates: selectedPlates ?? this.selectedPlates,
       rotationAngle: rotationAngle ?? this.rotationAngle,
       inCollision: inCollision ?? this.inCollision,
-      debugOffsets: debugOffsets ?? this.debugOffsets,
+      collisionOffsets: debugOffsets ?? this.collisionOffsets,
     );
   }
 }
@@ -76,7 +76,7 @@ class SimulationPageInitial extends SimulationPageState {
           selectedBeams: selectedBeams,
           selectedTracks: selectedTracks,
           rotationAngle: rotationAngle,
-          debugOffsets: debugOffsets,
+          collisionOffsets: debugOffsets,
           inCollision: inCollision,
         );
 }

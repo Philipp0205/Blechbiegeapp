@@ -13,7 +13,6 @@ import '../../model/simulation/tool.dart';
 import '../../model/simulation/enums/tool_category_enum.dart';
 
 part 'simulation_page_event.dart';
-
 part 'simulation_page_state.dart';
 
 /// Business logic for the [SimulationPage].
@@ -231,13 +230,6 @@ class SimulationPageBloc
         .getLowestX([selectedLine.start, selectedLine.end]).first;
 
     plateOffset = new Offset(plateOffset.dx, plateOffset.dy + (plate.s / 2));
-
-    // Offset plateOffset = selectedLine.start;
-    // Offset plateOffset = new Offset(
-    //     selectedLine.start.dx, selectedLine.start.dy + (plate.s / 2));
-
-    collisionOffsets.clear();
-    collisionOffsets.addAll([plateOffset, trackOffset]);
 
     Offset moveOffset = plateOffset - trackOffset;
 
