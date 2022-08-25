@@ -127,8 +127,6 @@ class SimulationSketcher extends CustomPainter {
 
       Tool selectedPlate = plates.first;
 
-      print('selectedLine ${selectedPlate.lines.length}');
-
       selectedPlate.lines.forEach((line) {
         platesPath.moveTo(line.start.dx, line.start.dy);
         platesPath.lineTo(line.end.dx, line.end.dy);
@@ -138,16 +136,14 @@ class SimulationSketcher extends CustomPainter {
         }
       });
 
-      print('debugOffsets: ${debugOffsets.length}');
 
-      canvas.drawPath(beamsPath, blackPaint);
-      canvas.drawPath(tracksPath, greyPaint);
-      canvas.drawPath(platesPath, blueStroke);
 
       // selectedLines.forEach((line) {
       //   canvas.drawLine(line.start, line.end, redStroke);
       // });
     }
+
+
 
     Path machinePath = new Path();
     machinePath.addPath(beamsPath, new Offset(0, 0));
@@ -164,6 +160,11 @@ class SimulationSketcher extends CustomPainter {
     // canvas.drawPath(machinePath, blackPaint);
     // canvas.drawPath(pPath, blueStroke);
 
+    canvas.drawPath(beamsPath, blackPaint);
+
+    canvas.drawPath(tracksPath, greyPaint);
+    canvas.drawPath(platesPath2, blueStroke);
+
     debugOffsets.forEach((offset) {
       canvas.drawCircle(offset, 1, redStroke);
     });
@@ -177,7 +178,6 @@ class SimulationSketcher extends CustomPainter {
         platePicture, plateRecorder, size, pPath, Colors.black);
 
     _detectCollision(machineOffsets, plateOffsets);
-    // print(isCollision);
   }
 
   /// Returns all black pixel of the canvas.
