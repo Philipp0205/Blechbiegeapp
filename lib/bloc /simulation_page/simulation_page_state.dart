@@ -7,9 +7,10 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedTracks;
   final List<Tool> selectedPlates;
   final double rotationAngle;
+  final bool inCollision;
 
   // Will be removed later.
-  final List<Offset> debugOffsets;
+  final List<Offset> collisionOffsets;
 
   const SimulationPageState({
     required this.shapes,
@@ -18,7 +19,8 @@ class SimulationPageState extends Equatable {
     required this.selectedBeams,
     required this.selectedTracks,
     required this.rotationAngle,
-    required this.debugOffsets,
+    required this.collisionOffsets,
+    required this.inCollision,
   });
 
   @override
@@ -29,7 +31,8 @@ class SimulationPageState extends Equatable {
         selectedTracks,
         selectedPlates,
         rotationAngle,
-        debugOffsets,
+        collisionOffsets,
+        inCollision,
       ];
 
   SimulationPageState copyWith({
@@ -39,6 +42,7 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedTracks,
     List<Tool>? selectedPlates,
     double? rotationAngle,
+    bool? inCollision,
     List<Offset>? debugOffsets,
   }) {
     return SimulationPageState(
@@ -48,7 +52,8 @@ class SimulationPageState extends Equatable {
       selectedTracks: selectedTracks ?? this.selectedTracks,
       selectedPlates: selectedPlates ?? this.selectedPlates,
       rotationAngle: rotationAngle ?? this.rotationAngle,
-      debugOffsets: debugOffsets ?? this.debugOffsets,
+      inCollision: inCollision ?? this.inCollision,
+      collisionOffsets: debugOffsets ?? this.collisionOffsets,
     );
   }
 }
@@ -63,6 +68,7 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Line> lines,
     required double rotationAngle,
     required List<Offset> debugOffsets,
+    required bool inCollision,
   }) : super(
           shapes: tools,
           lines: lines,
@@ -70,6 +76,7 @@ class SimulationPageInitial extends SimulationPageState {
           selectedBeams: selectedBeams,
           selectedTracks: selectedTracks,
           rotationAngle: rotationAngle,
-          debugOffsets: debugOffsets,
+          collisionOffsets: debugOffsets,
+          inCollision: inCollision,
         );
 }

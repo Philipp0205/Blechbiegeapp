@@ -23,6 +23,13 @@ class SimulationToolsChanged extends SimulationPageEvent {
   const SimulationToolsChanged({required this.tools});
 }
 
+/// Do I need that?
+class SimulationPlatePlaced extends SimulationPageEvent {
+  final List<Tool> selectedPlates;
+
+  const SimulationPlatePlaced({required this.selectedPlates});
+}
+
 /// The event contains the new s value.
 /// The event is used to change the s value in the [SimulationPageState].
 class SimulationSChanged extends SimulationPageEvent {
@@ -56,3 +63,14 @@ class SimulationToolMirrored extends SimulationPageEvent {
 
   const SimulationToolMirrored({required this.tool});
 }
+
+// The event is called when after a collision test.
+class SimulationCollisionDetected extends SimulationPageEvent {
+  final List<Offset> collisionOffsets;
+  final List<Offset> plateOffsets;
+
+  const SimulationCollisionDetected(
+      {required this.collisionOffsets, required this.plateOffsets});
+}
+
+
