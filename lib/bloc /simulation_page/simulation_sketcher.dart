@@ -143,8 +143,6 @@ class SimulationSketcher extends CustomPainter {
       // });
     }
 
-
-
     Path machinePath = new Path();
     machinePath.addPath(beamsPath, new Offset(0, 0));
     machinePath.addPath(tracksPath, new Offset(0, 0));

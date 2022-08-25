@@ -175,9 +175,6 @@ class SimulationPageBloc
     Offset plateOffset = _calculationsService
         .getLowestX([selectedLine.start, selectedLine.end]).first;
 
-    collisionOffsets.clear();
-    collisionOffsets.addAll([trackOffset, plateOffset]);
-
     plateOffset = new Offset(plateOffset.dx, plateOffset.dy + (plate.s / 2));
 
 
