@@ -54,7 +54,7 @@ class SimulationSketcher extends CustomPainter {
     Paint redStroke = Paint()
       ..color = Colors.red
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0
+      ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
     Paint blackStroke = Paint()
@@ -65,7 +65,7 @@ class SimulationSketcher extends CustomPainter {
 
     Paint blueStroke = Paint()
       ..color = Colors.blue
-      ..strokeCap = StrokeCap.round
+      ..strokeCap = StrokeCap.square
       ..strokeWidth = 5.0
       ..style = PaintingStyle.stroke;
 
@@ -106,14 +106,6 @@ class SimulationSketcher extends CustomPainter {
       });
     }
 
-    // Create plates path
-    // if (plates.isNotEmpty) {
-    //   plates.first.lines.forEach((line) {
-    //     platesPath.moveTo(line.start.dx, line.start.dy);
-    //     platesPath.lineTo(line.end.dx, line.end.dy);
-    //   });
-    // }
-
     if (plates.isNotEmpty) {
       List<Offset> plateOffsets =
           plates.first.lines.map((line) => line.start).toList() +
@@ -129,7 +121,7 @@ class SimulationSketcher extends CustomPainter {
       Offset center =
           _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
 
-      canvas.drawCircle(center, 4, redStroke);
+      // canvas.drawCircle(center, 4, redStroke);
 
       List<Line> selectedLines = [];
 
@@ -146,32 +138,35 @@ class SimulationSketcher extends CustomPainter {
         }
       });
 
-      // canvas.drawPath(beamsPath, blackPaint);
-      // canvas.drawPath(tracksPath, greyPaint);
-      // canvas.drawPath(platesPath, blueStroke);
+      print('debugOffsets: ${debugOffsets.length}');
 
+      canvas.drawPath(beamsPath, blackPaint);
+      canvas.drawPath(tracksPath, greyPaint);
+      canvas.drawPath(platesPath, blueStroke);
 
-
-      // recordingCanvas.drawPath(platesPath, blueStroke);
-      // 1752
-
-      selectedLines.forEach((line) {
-        canvas.drawLine(line.start, line.end, redStroke);
-      });
+      // selectedLines.forEach((line) {
+      //   canvas.drawLine(line.start, line.end, redStroke);
+      // });
     }
-
 
     Path machinePath = new Path();
     machinePath.addPath(beamsPath, new Offset(0, 0));
     machinePath.addPath(tracksPath, new Offset(0, 0));
+
+    Path pPath = new Path();
+    pPath.addPath(platesPath, new Offset(0, 0));
 
     machineCanvas.drawPath(beamsPath, blackPaint);
     machineCanvas.drawPath(tracksPath, blackPaint);
     plateCanvas.drawPath(platesPath, blackStroke);
     // plateCanvas.drawPath(platesPath2, blackPaint);
 
-    canvas.drawPath(machinePath, blackPaint);
-    canvas.drawPath(platesPath, redStroke);
+    // canvas.drawPath(machinePath, blackPaint);
+    // canvas.drawPath(pPath, blueStroke);
+
+    debugOffsets.forEach((offset) {
+      canvas.drawCircle(offset, 1, redStroke);
+    });
 
     ui.Picture machinePicture = machineRecorder.endRecording();
     List<Offset> machineOffsets = await createPicture(
@@ -179,10 +174,8 @@ class SimulationSketcher extends CustomPainter {
 
     ui.Picture platePicture = plateRecorder.endRecording();
     List<Offset> plateOffsets = await createPicture(
-        platePicture, plateRecorder, size, platesPath, Colors.black);
+        platePicture, plateRecorder, size, pPath, Colors.black);
 
-    print('collisisonOffsets: ${machineOffsets.length}');
-    print('plateOffsets: ${plateOffsets.length}');
     _detectCollision(machineOffsets, plateOffsets);
     // print(isCollision);
   }
@@ -210,9 +203,6 @@ class SimulationSketcher extends CustomPainter {
       for (int y = 0; y < size.height.toInt(); ++y) {
         int color = newImage.getPixel(x, y);
 
-        // print(Color(color));
-
-        // print('checked Color $checkedColor');
         if (Color(color) == checkedColor) {
           collisionOffsets.add(new Offset(x.toDouble(), y.toDouble()));
         }

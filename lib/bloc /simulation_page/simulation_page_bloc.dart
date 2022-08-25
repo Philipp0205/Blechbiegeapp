@@ -40,7 +40,7 @@ class SimulationPageBloc
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
 
-  List<Offset> debugOffsets = [];
+  List<Offset> collisionOffsets = [];
 
   /// Set the initial lines of the simulation.
   void _setInitialLines(
@@ -82,8 +82,6 @@ class SimulationPageBloc
         ..insert(index, newTrack);
 
       lowerTrack = lowerTrack.copyWith(lines: newTrack.lines);
-
-
     }
 
     // Place plate on lower track
@@ -135,7 +133,7 @@ class SimulationPageBloc
       selectedBeams: selectedBeams,
       selectedTracks: selectedTracks,
       selectedPlates: selectedPlates,
-      debugOffsets: debugOffsets,
+      debugOffsets: collisionOffsets,
     ));
   }
 
@@ -226,27 +224,25 @@ class SimulationPageBloc
     List<Offset> lowestTrackXOffsets =
         _calculationsService.getLowestX(trackOffsets);
 
-
     Offset trackOffset =
         _calculationsService.getLowestY(lowestTrackXOffsets).first;
 
-
     Offset plateOffset = _calculationsService
         .getLowestX([selectedLine.start, selectedLine.end]).first;
+
+    plateOffset = new Offset(plateOffset.dx, plateOffset.dy + (plate.s / 2));
 
     // Offset plateOffset = selectedLine.start;
     // Offset plateOffset = new Offset(
     //     selectedLine.start.dx, selectedLine.start.dy + (plate.s / 2));
 
-
-    debugOffsets.clear();
-    debugOffsets.addAll([plateOffset, trackOffset]);
+    collisionOffsets.clear();
+    collisionOffsets.addAll([plateOffset, trackOffset]);
 
     Offset moveOffset = plateOffset - trackOffset;
 
     Tool movedTool = _moveTool(plate, moveOffset, false);
     return movedTool;
-    
   }
 
   /// Move a tool.
@@ -304,7 +300,6 @@ class SimulationPageBloc
   /// This method is called when the [SimulationToolsChanged] event is emitted.
   /// The upper track is placed on the plate at the same position as the plate.
   Tool _placeUpperTrackOnPlate(Tool upperTrack, Tool plate) {
-    print('placeUpperTrackOnPlate');
     double s = plate.s;
 
     Line selectedLine =
@@ -324,7 +319,7 @@ class SimulationPageBloc
     Offset trackOffset =
         _calculationsService.getLowestY(lowestXTrackOffset).first;
 
-    Offset newOffset = trackOffset - plateOffset + new Offset(0, s - 3);
+    Offset newOffset = trackOffset - plateOffset + new Offset(s - 7, s - 3);
 
     Tool movedTool = _moveTool(upperTrack, newOffset, false);
     return movedTool;
@@ -444,14 +439,19 @@ class SimulationPageBloc
       SimulationCollisionDetected event, Emitter<SimulationPageState> emit) {
     bool result = false;
 
+    collisionOffsets.clear();
     for (int i = 0; i < event.plateOffsets.length; i++) {
       if (event.collisionOffsets.contains(event.plateOffsets[i])) {
-        result = true;
-      } else {
-        result = false;
+        collisionOffsets.add(event.plateOffsets[i]);
       }
     }
 
-    emit(state.copyWith(inCollision: result));
+    collisionOffsets.isNotEmpty ? result = true : result = false;
+
+    print('collisionOffsets: ${event.collisionOffsets.length}');
+    print('plateOffsets: ${event.plateOffsets.length}');
+    print('_detectCollision: $result');
+
+    emit(state.copyWith(inCollision: result, debugOffsets: collisionOffsets));
   }
 }
