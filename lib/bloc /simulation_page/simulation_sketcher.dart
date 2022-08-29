@@ -137,10 +137,6 @@ class SimulationSketcher extends CustomPainter {
       });
 
 
-
-      // selectedLines.forEach((line) {
-      //   canvas.drawLine(line.start, line.end, redStroke);
-      // });
     }
 
     Path machinePath = new Path();

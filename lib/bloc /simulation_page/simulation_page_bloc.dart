@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/pages/simulation_page/ticker.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
@@ -19,8 +23,9 @@ part 'simulation_page_state.dart';
 /// Business logic for the [SimulationPage].
 class SimulationPageBloc
     extends Bloc<SimulationPageEvent, SimulationPageState> {
-  SimulationPageBloc()
-      : super(SimulationPageInitial(
+  SimulationPageBloc({required Ticker ticker})
+      : _ticker = ticker,
+        super(SimulationPageInitial(
             tools: [],
             lines: [],
             selectedBeams: [],
@@ -28,19 +33,29 @@ class SimulationPageBloc
             selectedPlates: [],
             rotationAngle: 0,
             debugOffsets: [],
-            inCollision: false)) {
+            inCollision: false,
+            isSimulationRunning: false,
+            duration: 0)) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
     on<SimulationToolMirrored>(_mirrorTool);
     on<SimulationCollisionDetected>(_detectCollision);
+    on<SimulationStarted>(_startSimulation);
+    on<SimulationStopped>(_stopSimulation);
+    on<SimulationTicked>(_onTicked);
   }
 
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
 
   List<Offset> collisionOffsets = [];
+
+  final Ticker _ticker;
+  Timer? timer;
+
+  StreamSubscription<int>? _tickerSubscription;
 
   /// Set the initial lines of the simulation.
   void _setInitialLines(
@@ -67,7 +82,8 @@ class SimulationPageBloc
     _placePlateOnLowerTrack(event, emit, selectedPlates);
 
     _placeUpperTrackOnPlate2(event, emit, selectedTracks);
-    _placeUpperBeamOnUpperTack2(event, emit, selectedTracks, selectedBeams);
+    _placeUpperBeamOnUpperTack2(
+        event, emit, selectedTracks, selectedBeams);
 
     // emit(state
     //     .copyWith(selectedBeams: [], selectedTracks: [], selectedPlates: []));
@@ -177,9 +193,7 @@ class SimulationPageBloc
 
     plateOffset = new Offset(plateOffset.dx, plateOffset.dy + (plate.s / 2));
 
-
     Offset moveOffset = plateOffset - trackOffset;
-
 
     Tool movedTool = _moveTool(plate, moveOffset, false);
     print('movedTool: ${movedTool.lines.first.start}');
@@ -250,23 +264,21 @@ class SimulationPageBloc
 
   void _rotateTool(
       SimulationToolRotate event, Emitter<SimulationPageState> emit) {
-    Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
-    Offset center =
-        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
-    List<Line> rotatedLines = _calculationsService.rotateLines(
-        event.tool.lines, center, event.degrees);
-
-    // Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
-    // Offset center =
-    //     _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
-    // Tool rotatedTool = event.tool.copyWith(
-    //     lines: _calculationsService.rotateLines(
-    //         event.tool.lines, center, event.degrees));
+    Tool rotatedTool = _rotTool(event.tool, event.degrees);
 
     emit(state.copyWith(selectedPlates: []));
-    emit(state.copyWith(
-        selectedPlates: [event.tool.copyWith(lines: rotatedLines)],
-        debugOffsets: []));
+    emit(state.copyWith(selectedPlates: [rotatedTool], collisionOffsets: []));
+  }
+
+  // TODO
+  Tool _rotTool(Tool tool, double degrees) {
+    Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
+    Offset center =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+    List<Line> rotatedLines =
+        _calculationsService.rotateLines(tool.lines, center, degrees);
+
+    return tool.copyWith(lines: rotatedLines);
   }
 
   /// Rotate the given [tool] around the center of the selected line of that
@@ -290,7 +302,6 @@ class SimulationPageBloc
         return tool;
       }
     }
-
 
     return tool;
   }
@@ -337,7 +348,8 @@ class SimulationPageBloc
 
     collisionOffsets.isNotEmpty ? result = true : result = false;
 
-    emit(state.copyWith(inCollision: result, debugOffsets: collisionOffsets));
+    emit(state.copyWith(
+        inCollision: result, collisionOffsets: collisionOffsets));
   }
 
   /// Places the lower track on the on the lower beam.
@@ -408,7 +420,8 @@ class SimulationPageBloc
   void _placeUpperTrackOnPlate2(SimulationToolsChanged event,
       Emitter<SimulationPageState> emit, List<Tool> selectedTracks) {
     Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
-    Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
+    Tool? plate = state.selectedPlates.first;
+    // Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
     if (upperTrack == null || plate == null) {
       return;
@@ -417,13 +430,15 @@ class SimulationPageBloc
     Tool currentUpperTrack = selectedTracks
         .firstWhere((tool) => tool.type.type == ToolType.upperTrack);
 
-    // selectedTracks
-    //   ..remove(currentUpperTrack)
-    //   ..add(placedTrack);
-    //
+    Tool placedTrack = _placeUpperTrackOnPlate(currentUpperTrack, plate);
+
+    selectedTracks
+      ..remove(currentUpperTrack)
+      ..add(placedTrack);
+
     // upperTrack = upperTrack.copyWith(lines: placedTrack.lines);
-    //
-    // emit(state.copyWith(selectedTracks: [placedTrack]));
+
+    emit(state.copyWith(selectedTracks: selectedTracks));
   }
 
   /// Places the upper beam on upper track.
@@ -438,14 +453,16 @@ class SimulationPageBloc
       Emitter<SimulationPageState> emit,
       List<Tool> selectedTracks,
       selectedBeams) {
-    Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
-    Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
+    // Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
+    // Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
+
+    Tool? upperBeam = _getToolByType(selectedBeams, ToolType.upperBeam);
+    Tool? upperTrack = _getToolByType(selectedTracks, ToolType.upperTrack);
 
     if (upperBeam == null || upperTrack == null) {
       return;
     }
 
-    print('place upperBeam on upperTrack');
     Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack);
 
     Tool currentUpperBeam = selectedBeams
@@ -456,5 +473,51 @@ class SimulationPageBloc
       ..add(placedBeam);
 
     emit(state.copyWith(selectedBeams: selectedBeams));
+  }
+
+  /// Starts the simulation
+  void _startSimulation(
+      SimulationStarted event, Emitter<SimulationPageState> emit) {
+    _tickerSubscription?.cancel();
+    _tickerSubscription = _ticker
+        .tick(ticks: event.timeInterval.toInt())
+        .listen((duration) => add(SimulationTicked(duration: duration)));
+    // _initSimulation(
+    //     state.selectedPlates.first, emit, event.timeInterval.toInt());
+
+    // emit(state.copyWith(isSimulationRunning: true));
+  }
+
+  /// Stops the simulation
+  void _stopSimulation(
+      SimulationStopped event, Emitter<SimulationPageState> emit) {
+    print('stop simulation');
+    timer?.cancel();
+    emit(state.copyWith(isSimulationRunning: false));
+  }
+
+  void _initSimulation(
+      Tool tool, Emitter<SimulationPageState> emit, int timeInterval) {
+    timer = Timer.periodic(Duration(seconds: timeInterval),
+        (Timer t) => {_nextStepInSimulation(tool, emit)});
+  }
+
+  Future<void> _nextStepInSimulation(
+      Tool tool, Emitter<SimulationPageState> emit) async {}
+
+  void _nextCollision(
+      SimulationTicked event, Emitter<SimulationPageState> emit) {
+    // print('next collision');
+    // Tool plate = state.selectedPlates.first;
+    // Tool rotatedPlate = _rotTool(plate, 90);
+    // emit(state.copyWith(selectedPlates: [rotatedPlate]));
+  }
+
+  void _onTicked(SimulationTicked event, Emitter<SimulationPageState> emit) {
+    // emit(
+    //   event.duration > 0
+    //       ? TimerRunInProgress(event.duration)
+    //       : TimerRunComplete(),
+    // );
   }
 }

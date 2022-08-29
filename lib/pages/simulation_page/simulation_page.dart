@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
+import 'package:open_bsp/pages/simulation_page/ticker_widget.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/simulation/tool.dart';
@@ -14,6 +15,15 @@ class SimulationPage extends StatefulWidget {
 }
 
 class _SimulationPageState extends State<SimulationPage> {
+  final _timeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _timeController.text = '1';
+  }
+
   @override
   Widget build(BuildContext context) {
     // Listens for changes in the tool selection.
@@ -24,6 +34,13 @@ class _SimulationPageState extends State<SimulationPage> {
             listener: (context, state) {
               // _setSelectedBeams(context, state.tools);
               _setSelectedTools(context, state.tools);
+            }),
+        BlocListener<SimulationPageBloc, SimulationPageState>(
+            listenWhen: (prev, current) => _requestNextCollision(current.isSimulationRunning, prev, current),
+            listener: (context, state) {
+              // context
+              //     .read<SimulationPageBloc>()
+              //     .add(SimulationNextCollisionRequested());
             }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
@@ -38,13 +55,28 @@ class _SimulationPageState extends State<SimulationPage> {
     );
   }
 
+  bool _requestNextCollision(bool isRunning, SimulationPageState prev, SimulationPageState current) {
+    print('requestNextCollision');
+    if (isRunning) {
+      // return prev.inCollision != current.inCollision;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   /// Builds the body of the app.
   Container buildBody() {
     return Container(
       child: Padding(
         padding: const EdgeInsets.all(4.0),
         child: Column(
-          children: [buildSketcher(), buildButtonRow()],
+          children: [
+            buildSketcher(),
+            buildButtonRow(),
+            Divider(),
+            buildSimulationControlsRow()
+          ],
         ),
       ),
     );
@@ -66,6 +98,35 @@ class _SimulationPageState extends State<SimulationPage> {
         IconButton(
             onPressed: () => _mirrorCurrentPlate(),
             icon: new Icon(Icons.compare_arrows))
+      ],
+    );
+  }
+
+  /// Build a row containing the controls for the simulation.
+  Row buildSimulationControlsRow() {
+    return Row(
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          child: TextField(
+            keyboardType: TextInputType.number,
+            controller: _timeController,
+            onChanged: (value) {
+              print('test');
+            },
+          ),
+        ),
+        Text('Zeit'),
+        IconButton(
+            onPressed: () =>
+                context.read<SimulationPageBloc>().state.isSimulationRunning
+                    ? _stopSimulation()
+                    : _startSimulation(),
+            icon: context.read<SimulationPageBloc>().state.isSimulationRunning
+                ? new Icon(Icons.pause)
+                : new Icon(Icons.play_arrow)),
+        TimerWidget(),
       ],
     );
   }
@@ -154,11 +215,37 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   Text _setCollisionLabel(bool isColliding) {
-    print('isColliding: $isColliding');
     if (isColliding) {
       return Text('Kollision', style: TextStyle(color: Colors.red));
     } else {
       return Text('Keine Kollision', style: TextStyle(color: Colors.green));
     }
+  }
+
+  void _startSimulation() {
+    context.read<SimulationPageBloc>().add(
+        // SimulationStarted(timeInterval: double.parse(_timeController.text)));
+        SimulationStarted(timeInterval: 10));
+  }
+
+  void _stopSimulation() {
+    context.read<SimulationPageBloc>().add(SimulationStopped());
+  }
+}
+
+class TimerText extends StatelessWidget {
+  const TimerText({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final duration =
+    context.select((SimulationPageBloc bloc) => bloc.state.duration);
+    final minutesStr =
+    ((duration / 60) % 60).floor().toString().padLeft(2, '0');
+    final secondsStr = (duration % 60).floor().toString().padLeft(2, '0');
+    return Text(
+      '$minutesStr:$secondsStr',
+      style: Theme.of(context).textTheme.bodyText1,
+    );
   }
 }

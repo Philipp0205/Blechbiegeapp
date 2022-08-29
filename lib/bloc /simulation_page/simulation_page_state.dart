@@ -8,20 +8,23 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedPlates;
   final double rotationAngle;
   final bool inCollision;
+  final bool isSimulationRunning;
+  final double duration;
 
   // Will be removed later.
   final List<Offset> collisionOffsets;
 
-  const SimulationPageState({
-    required this.shapes,
-    required this.lines,
-    required this.selectedPlates,
-    required this.selectedBeams,
-    required this.selectedTracks,
-    required this.rotationAngle,
-    required this.collisionOffsets,
-    required this.inCollision,
-  });
+  const SimulationPageState(
+      {required this.shapes,
+      required this.lines,
+      required this.selectedPlates,
+      required this.selectedBeams,
+      required this.selectedTracks,
+      required this.rotationAngle,
+      required this.collisionOffsets,
+      required this.inCollision,
+      required this.isSimulationRunning,
+      required this.duration});
 
   @override
   List<Object> get props => [
@@ -33,6 +36,8 @@ class SimulationPageState extends Equatable {
         rotationAngle,
         collisionOffsets,
         inCollision,
+        isSimulationRunning,
+        duration,
       ];
 
   SimulationPageState copyWith({
@@ -43,7 +48,9 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedPlates,
     double? rotationAngle,
     bool? inCollision,
-    List<Offset>? debugOffsets,
+    bool? isSimulationRunning,
+    double? duration,
+    List<Offset>? collisionOffsets,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -53,7 +60,9 @@ class SimulationPageState extends Equatable {
       selectedPlates: selectedPlates ?? this.selectedPlates,
       rotationAngle: rotationAngle ?? this.rotationAngle,
       inCollision: inCollision ?? this.inCollision,
-      collisionOffsets: debugOffsets ?? this.collisionOffsets,
+      isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
+      duration: duration ?? this.duration,
+      collisionOffsets: collisionOffsets ?? this.collisionOffsets,
     );
   }
 }
@@ -69,6 +78,8 @@ class SimulationPageInitial extends SimulationPageState {
     required double rotationAngle,
     required List<Offset> debugOffsets,
     required bool inCollision,
+    required bool isSimulationRunning,
+    required double duration,
   }) : super(
           shapes: tools,
           lines: lines,
@@ -78,5 +89,8 @@ class SimulationPageInitial extends SimulationPageState {
           rotationAngle: rotationAngle,
           collisionOffsets: debugOffsets,
           inCollision: inCollision,
+          isSimulationRunning: isSimulationRunning,
+          duration: duration,
         );
 }
+
