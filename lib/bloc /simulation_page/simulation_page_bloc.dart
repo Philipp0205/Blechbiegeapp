@@ -45,6 +45,11 @@ class SimulationPageBloc
     on<SimulationStarted>(_startSimulation);
     on<SimulationStopped>(_stopSimulation);
     on<SimulationTicked>(_onTicked);
+
+    // fakeStream.listen((_) {
+    //   print('fakestream');
+    //   add(SimulationTicked());
+    // });
   }
 
   GeometricCalculationsService _calculationsService =
@@ -53,9 +58,14 @@ class SimulationPageBloc
   List<Offset> collisionOffsets = [];
 
   final Ticker _ticker;
-  Timer? timer;
+  StreamSubscription<int>? _streamSubscription;
 
-  StreamSubscription<int>? _tickerSubscription;
+  // StreamController<int> fakeStream = StreamController<int>.broadcast();
+
+  // var fakeStream =
+  //     Stream<int>.periodic(const Duration(seconds: 1), (x) => x).take(15);
+
+  Timer? _timer;
 
   /// Set the initial lines of the simulation.
   void _setInitialLines(
@@ -82,8 +92,7 @@ class SimulationPageBloc
     _placePlateOnLowerTrack(event, emit, selectedPlates);
 
     _placeUpperTrackOnPlate2(event, emit, selectedTracks);
-    _placeUpperBeamOnUpperTack2(
-        event, emit, selectedTracks, selectedBeams);
+    _placeUpperBeamOnUpperTack2(event, emit, selectedTracks, selectedBeams);
 
     // emit(state
     //     .copyWith(selectedBeams: [], selectedTracks: [], selectedPlates: []));
@@ -147,7 +156,6 @@ class SimulationPageBloc
   /// TODO
   void _selectNextLineOfPlateAndPlace(
       Tool plate, Emitter<SimulationPageState> emit) {
-    print('selectNextLineOfPlateAndPlace');
     List<Line> lines = plate.lines;
     Line? currentlyPlacedLine =
         lines.firstWhereOrNull((line) => line.isSelected) ?? lines.first;
@@ -196,7 +204,6 @@ class SimulationPageBloc
     Offset moveOffset = plateOffset - trackOffset;
 
     Tool movedTool = _moveTool(plate, moveOffset, false);
-    print('movedTool: ${movedTool.lines.first.start}');
     return movedTool;
   }
 
@@ -478,46 +485,27 @@ class SimulationPageBloc
   /// Starts the simulation
   void _startSimulation(
       SimulationStarted event, Emitter<SimulationPageState> emit) {
-    _tickerSubscription?.cancel();
-    _tickerSubscription = _ticker
-        .tick(ticks: event.timeInterval.toInt())
-        .listen((duration) => add(SimulationTicked(duration: duration)));
-    // _initSimulation(
-    //     state.selectedPlates.first, emit, event.timeInterval.toInt());
-
-    // emit(state.copyWith(isSimulationRunning: true));
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      add(SimulationTicked());
+    });
   }
 
   /// Stops the simulation
   void _stopSimulation(
       SimulationStopped event, Emitter<SimulationPageState> emit) {
-    print('stop simulation');
-    timer?.cancel();
+    // _streamSubscription?.cancel();
+    _timer?.cancel();
     emit(state.copyWith(isSimulationRunning: false));
-  }
-
-  void _initSimulation(
-      Tool tool, Emitter<SimulationPageState> emit, int timeInterval) {
-    timer = Timer.periodic(Duration(seconds: timeInterval),
-        (Timer t) => {_nextStepInSimulation(tool, emit)});
   }
 
   Future<void> _nextStepInSimulation(
       Tool tool, Emitter<SimulationPageState> emit) async {}
 
-  void _nextCollision(
-      SimulationTicked event, Emitter<SimulationPageState> emit) {
-    // print('next collision');
-    // Tool plate = state.selectedPlates.first;
-    // Tool rotatedPlate = _rotTool(plate, 90);
-    // emit(state.copyWith(selectedPlates: [rotatedPlate]));
-  }
-
   void _onTicked(SimulationTicked event, Emitter<SimulationPageState> emit) {
-    // emit(
-    //   event.duration > 0
-    //       ? TimerRunInProgress(event.duration)
-    //       : TimerRunComplete(),
-    // );
+    Tool plate = state.selectedPlates.first;
+    Tool rotatedPlate = _rotTool(plate, 90);
+
+    emit(state.copyWith(selectedPlates: [rotatedPlate], collisionOffsets: []));
+
   }
 }

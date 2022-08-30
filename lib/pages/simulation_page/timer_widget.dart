@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/ticker_widget/timer_widget_bloc.dart';
 
+import '../../bloc /simulation_page/simulation_page_bloc.dart';
+
 class TimerWidget extends StatefulWidget {
   const TimerWidget({Key? key}) : super(key: key);
 
@@ -29,6 +31,10 @@ class TimerText extends StatelessWidget {
     final minutesStr =
     ((duration / 60) % 60).floor().toString().padLeft(2, '0');
     final secondsStr = (duration % 60).floor().toString().padLeft(2, '0');
+    // context.read<SimulationPageBloc>().add(SimulationTicked());
+
+
+
     return Text(
       '$minutesStr:$secondsStr',
       style: Theme.of(context).textTheme.bodyMedium,

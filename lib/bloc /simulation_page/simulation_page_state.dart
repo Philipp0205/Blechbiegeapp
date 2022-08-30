@@ -14,6 +14,8 @@ class SimulationPageState extends Equatable {
   // Will be removed later.
   final List<Offset> collisionOffsets;
 
+  /// In what states can the simulation page be in?
+  /// -
   const SimulationPageState(
       {required this.shapes,
       required this.lines,

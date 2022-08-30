@@ -37,7 +37,8 @@ class _SimulationPageState extends State<SimulationPage> {
               _setSelectedTools(context, state.tools);
             }),
         BlocListener<SimulationPageBloc, SimulationPageState>(
-            listenWhen: (prev, current) => _requestNextCollision(current.isSimulationRunning, prev, current),
+            listenWhen: (prev, current) => _requestNextCollision(
+                current.isSimulationRunning, prev, current),
             listener: (context, state) {
               // context
               //     .read<SimulationPageBloc>()
@@ -56,8 +57,8 @@ class _SimulationPageState extends State<SimulationPage> {
     );
   }
 
-  bool _requestNextCollision(bool isRunning, SimulationPageState prev, SimulationPageState current) {
-    print('requestNextCollision');
+  bool _requestNextCollision(
+      bool isRunning, SimulationPageState prev, SimulationPageState current) {
     if (isRunning) {
       // return prev.inCollision != current.inCollision;
       return true;
@@ -104,31 +105,59 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   /// Build a row containing the controls for the simulation.
-  Row buildSimulationControlsRow() {
-    return Row(
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          child: TextField(
-            keyboardType: TextInputType.number,
-            controller: _timeController,
-            onChanged: (value) {
-              print('test');
-            },
-          ),
-        ),
-        Text('Zeit'),
-        IconButton(
-            onPressed: () =>
-                context.read<SimulationPageBloc>().state.isSimulationRunning
-                    ? _stopSimulation()
-                    : _startSimulation(),
-            icon: context.read<SimulationPageBloc>().state.isSimulationRunning
-                ? new Icon(Icons.pause)
-                : new Icon(Icons.play_arrow)),
-        TimerWidget(),
-      ],
+  Widget buildSimulationControlsRow() {
+    return BlocBuilder<TimerWidgetBloc, TimerWidgetState>(
+      buildWhen: (prev, current) => prev.runtimeType != current.runtimeType,
+      builder: (context, state) {
+        return Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              child: TextField(
+                keyboardType: TextInputType.number,
+                controller: _timeController,
+                onChanged: (value) {
+                  print('test');
+                },
+              ),
+            ),
+            Text('Zeit'),
+            if (state is TimerWidgetInitial)
+              IconButton(
+                  onPressed: () => {
+                        context
+                            .read<TimerWidgetBloc>()
+                            .add(TimerStarted(duration: 60)),
+                        context
+                            .read<SimulationPageBloc>()
+                            .add(SimulationStarted(timeInterval: 2)),
+                      },
+                  icon: new Icon(Icons.play_arrow)),
+            if (state is TimerRunInProgress) ...[
+              IconButton(
+                  onPressed: () => {
+                        context.read<TimerWidgetBloc>().add(TimerPaused()),
+                        context
+                            .read<SimulationPageBloc>()
+                            .add(SimulationStopped()),
+                      },
+                  icon: new Icon(Icons.pause))
+            ],
+            if (state is TimerRunPause) ...[
+              IconButton(
+                  onPressed: () => {
+                        context.read<TimerWidgetBloc>().add(TimerResumed()),
+                        context
+                            .read<SimulationPageBloc>()
+                            .add(SimulationStarted(timeInterval: 2)),
+                      },
+                  icon: new Icon(Icons.play_arrow))
+            ],
+            TimerWidget(),
+          ],
+        );
+      },
     );
   }
 
@@ -147,7 +176,7 @@ class _SimulationPageState extends State<SimulationPage> {
               bottomRight: Radius.circular(10)),
         ),
         child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
-            // buildWhen: (prev, current) => prev.lines != current.lines,
+            // buildWhen: (prev, current) => prev.selectedPlates != current.selectedPlates,
             builder: (context, state) {
           return RepaintBoundary(
             child: CustomPaint(
@@ -225,12 +254,13 @@ class _SimulationPageState extends State<SimulationPage> {
 
   void _startSimulation() {
     context.read<TimerWidgetBloc>().add(TimerStarted(duration: 60));
-    // context.read<SimulationPageBloc>().add(
-    //     SimulationStarted(timeInterval: double.parse(_timeController.text)));
-        // SimulationStarted(timeInterval: 10));
+    context.read<SimulationPageBloc>().add(
+        SimulationStarted(timeInterval: double.parse(_timeController.text)));
+    // SimulationStarted(timeInterval: 10));
   }
 
   void _stopSimulation() {
+    context.read<TimerWidgetBloc>().add(TimerStopped());
   }
 }
 
@@ -240,9 +270,9 @@ class TimerText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final duration =
-    context.select((SimulationPageBloc bloc) => bloc.state.duration);
+        context.select((SimulationPageBloc bloc) => bloc.state.duration);
     final minutesStr =
-    ((duration / 60) % 60).floor().toString().padLeft(2, '0');
+        ((duration / 60) % 60).floor().toString().padLeft(2, '0');
     final secondsStr = (duration % 60).floor().toString().padLeft(2, '0');
     return Text(
       '$minutesStr:$secondsStr',

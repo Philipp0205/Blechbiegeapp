@@ -18,6 +18,7 @@ class TimerWidgetBloc extends Bloc<TimerWidgetEvent, TimerWidgetState> {
     on<TimerResumed>(_onResumed);
     on<TimerReset>(_onReset);
     on<TimerTicked>(_onTicked);
+    on<TimerStopped>(_onStopped);
   }
 
   final Ticker _ticker;
@@ -64,5 +65,10 @@ class TimerWidgetBloc extends Bloc<TimerWidgetEvent, TimerWidgetState> {
           ? TimerRunInProgress(event.duration)
           : const TimerRunComplete(),
     );
+  }
+
+  void _onStopped(TimerStopped event, Emitter<TimerWidgetState> emit) {
+    _tickerSubscription?.cancel();
+    emit(const TimerWidgetInitial(_duration));
   }
 }

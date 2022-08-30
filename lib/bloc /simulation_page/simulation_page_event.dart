@@ -86,7 +86,5 @@ class SimulationStopped extends SimulationPageEvent {
 }
 
 class SimulationTicked extends SimulationPageEvent {
-  final int duration;
-
-  const SimulationTicked({required this.duration});
+  const SimulationTicked();
 }
