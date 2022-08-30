@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
             create: (context) => ToolPageBloc(context.read<ToolRepository>()),
           ),
           BlocProvider(
-            create: (context) => TimerWidgetBloc(),
+            create: (context) => TimerWidgetBloc(ticker: Ticker()),
           )
         ],
         child: MaterialApp(

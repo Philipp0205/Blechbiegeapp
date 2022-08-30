@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
-import 'package:open_bsp/pages/simulation_page/ticker_widget.dart';
+import 'package:open_bsp/pages/simulation_page/timer_widget.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
+import '../../bloc /ticker_widget/timer_widget_bloc.dart';
 import '../../model/simulation/tool.dart';
 
 class SimulationPage extends StatefulWidget {
@@ -223,13 +224,13 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   void _startSimulation() {
-    context.read<SimulationPageBloc>().add(
-        // SimulationStarted(timeInterval: double.parse(_timeController.text)));
-        SimulationStarted(timeInterval: 10));
+    context.read<TimerWidgetBloc>().add(TimerStarted(duration: 60));
+    // context.read<SimulationPageBloc>().add(
+    //     SimulationStarted(timeInterval: double.parse(_timeController.text)));
+        // SimulationStarted(timeInterval: 10));
   }
 
   void _stopSimulation() {
-    context.read<SimulationPageBloc>().add(SimulationStopped());
   }
 }
 
