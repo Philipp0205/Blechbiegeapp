@@ -32,9 +32,9 @@ class _SimulationPageState extends State<SimulationPage> {
         BlocListener<ToolPageBloc, ToolPageState>(
             // listenWhen: (prev, current) => prev.tools != current.tools,
             listener: (context, state) {
-              // _setSelectedBeams(context, state.tools);
-              _setSelectedTools(context, state.tools);
-            }),
+          // _setSelectedBeams(context, state.tools);
+          _setSelectedTools(context, state.tools);
+        }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
           builder: (context, state) {
@@ -218,9 +218,9 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   void _nextLineOfPlate() {
-    context
-        .read<SimulationPageBloc>()
-        .add(SimulationSelectedPlateLineChanged());
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+    context.read<SimulationPageBloc>().add(
+        SimulationSelectedPlateLineChanged(plate: state.selectedPlates.first));
   }
 
   void _rotateRight() {

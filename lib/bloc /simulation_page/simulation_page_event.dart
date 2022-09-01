@@ -52,7 +52,8 @@ class SimulationToolRotate extends SimulationPageEvent {
 /// The event is called when the next line of a plate is placed on the lower
 /// track.
 class SimulationSelectedPlateLineChanged extends SimulationPageEvent {
-  const SimulationSelectedPlateLineChanged();
+  final Tool plate;
+  const SimulationSelectedPlateLineChanged({required this.plate});
 }
 
 /// The event contains nothing.
