@@ -10,23 +10,26 @@ class SimulationPageState extends Equatable {
   final bool inCollision;
   final bool isSimulationRunning;
   final double duration;
+  final int currentTick;
 
   // Will be removed later.
   final List<Offset> collisionOffsets;
 
   /// In what states can the simulation page be in?
   /// -
-  const SimulationPageState(
-      {required this.shapes,
-      required this.lines,
-      required this.selectedPlates,
-      required this.selectedBeams,
-      required this.selectedTracks,
-      required this.rotationAngle,
-      required this.collisionOffsets,
-      required this.inCollision,
-      required this.isSimulationRunning,
-      required this.duration});
+  const SimulationPageState({
+    required this.shapes,
+    required this.lines,
+    required this.selectedPlates,
+    required this.selectedBeams,
+    required this.selectedTracks,
+    required this.rotationAngle,
+    required this.collisionOffsets,
+    required this.inCollision,
+    required this.isSimulationRunning,
+    required this.duration,
+    required this.currentTick,
+  });
 
   @override
   List<Object> get props => [
@@ -40,6 +43,7 @@ class SimulationPageState extends Equatable {
         inCollision,
         isSimulationRunning,
         duration,
+        currentTick,
       ];
 
   SimulationPageState copyWith({
@@ -52,6 +56,7 @@ class SimulationPageState extends Equatable {
     bool? inCollision,
     bool? isSimulationRunning,
     double? duration,
+    int? currentTick,
     List<Offset>? collisionOffsets,
   }) {
     return SimulationPageState(
@@ -64,6 +69,7 @@ class SimulationPageState extends Equatable {
       inCollision: inCollision ?? this.inCollision,
       isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
       duration: duration ?? this.duration,
+      currentTick: currentTick ?? this.currentTick,
       collisionOffsets: collisionOffsets ?? this.collisionOffsets,
     );
   }
@@ -82,6 +88,7 @@ class SimulationPageInitial extends SimulationPageState {
     required bool inCollision,
     required bool isSimulationRunning,
     required double duration,
+    required int currentTick,
   }) : super(
           shapes: tools,
           lines: lines,
@@ -93,6 +100,6 @@ class SimulationPageInitial extends SimulationPageState {
           inCollision: inCollision,
           isSimulationRunning: isSimulationRunning,
           duration: duration,
+          currentTick: currentTick,
         );
 }
-

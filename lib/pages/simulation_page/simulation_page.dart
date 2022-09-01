@@ -106,8 +106,9 @@ class _SimulationPageState extends State<SimulationPage> {
 
   /// Build a row containing the controls for the simulation.
   Widget buildSimulationControlsRow() {
-    return BlocBuilder<TimerWidgetBloc, TimerWidgetState>(
-      buildWhen: (prev, current) => prev.runtimeType != current.runtimeType,
+    return BlocBuilder<SimulationPageBloc, SimulationPageState>(
+      buildWhen: (prev, current) =>
+          prev.isSimulationRunning != current.isSimulationRunning,
       builder: (context, state) {
         return Row(
           children: [
@@ -123,31 +124,18 @@ class _SimulationPageState extends State<SimulationPage> {
               ),
             ),
             Text('Zeit'),
-            if (state is TimerWidgetInitial)
+            if (context.read<SimulationPageBloc>().state.isSimulationRunning ==
+                true) ...[
               IconButton(
                   onPressed: () => {
-                        context
-                            .read<TimerWidgetBloc>()
-                            .add(TimerStarted(duration: 60)),
-                        context
-                            .read<SimulationPageBloc>()
-                            .add(SimulationStarted(timeInterval: 2)),
-                      },
-                  icon: new Icon(Icons.play_arrow)),
-            if (state is TimerRunInProgress) ...[
-              IconButton(
-                  onPressed: () => {
-                        context.read<TimerWidgetBloc>().add(TimerPaused()),
                         context
                             .read<SimulationPageBloc>()
                             .add(SimulationStopped()),
                       },
-                  icon: new Icon(Icons.pause))
-            ],
-            if (state is TimerRunPause) ...[
+                  icon: new Icon(Icons.pause)),
+            ] else ...[
               IconButton(
                   onPressed: () => {
-                        context.read<TimerWidgetBloc>().add(TimerResumed()),
                         context
                             .read<SimulationPageBloc>()
                             .add(SimulationStarted(timeInterval: 2)),

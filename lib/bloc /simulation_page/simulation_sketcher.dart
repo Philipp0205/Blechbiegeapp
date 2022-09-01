@@ -210,6 +210,7 @@ class SimulationSketcher extends CustomPainter {
       List<Offset> collisionOffsets, List<Offset> plateOffsets) {
     this.context.read<SimulationPageBloc>().add(SimulationCollisionDetected(
         collisionOffsets: collisionOffsets, plateOffsets: plateOffsets));
+    this.context.read<SimulationPageBloc>().add(SimulationTicked());
   }
 
   @override

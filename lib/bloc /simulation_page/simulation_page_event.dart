@@ -88,3 +88,4 @@ class SimulationStopped extends SimulationPageEvent {
 class SimulationTicked extends SimulationPageEvent {
   const SimulationTicked();
 }
+

@@ -331,8 +331,6 @@ class GeometricCalculationsService {
   List<Line> mirrorLines(List<Line> lines, double mirrorX) {
     List<Line> mirroredLines = [];
 
-    print('mirrorX: $mirrorX');
-
     lines.forEach((line) {
       Line mirroredLine = line;
 
@@ -347,7 +345,6 @@ class GeometricCalculationsService {
   }
 
   Offset _mirrorOffset(Offset offset, double mirrorX) {
-    print('mirrorX: $mirrorX, offset.dx: ${offset.dx}');
     double distance = (mirrorX - offset.dx).abs();
     if (offset.dx < mirrorX) {
       return Offset(mirrorX + distance, offset.dy);
