@@ -151,7 +151,7 @@ class SimulationPageBloc
   void _nextLineOfPlate(SimulationSelectedPlateLineChanged event,
       Emitter<SimulationPageState> emit) {
 
-    _selectNextLineOfPlateAndPlace(event.plate, emit);
+    _selectNextLineOfPlateAndPlace(state.selectedPlates.first, emit);
   }
 
   /// TODO
@@ -168,18 +168,14 @@ class SimulationPageBloc
     int index = plate.lines.indexOf(currentlyPlacedLine);
     // int index = lines.indexOf(lines.firstWhere((line) => line.isSelected == true));
 
-    List<Line> newLines = List.from(lines);
+    lines[index].isSelected = false;
 
-     newLines.forEach((line) {
-      line.isSelected = false;
-    });
 
-    if (index < newLines.length - 1 ) {
-      newLines[index + 1].isSelected = true;
+    if (index < lines.length - 1 ) {
+      lines[index + 1].isSelected = true;
     } else {
-      newLines[0].isSelected = true;
+      lines[0].isSelected = true;
     }
-
 
     // index < newLines.length - 1
     //     ? newLines[index + 1].isSelected = true
@@ -187,16 +183,13 @@ class SimulationPageBloc
 
     // lines.indexOf(lines.firstWhere((line) => line.isSelected = true));
 
-
-    plate = plate.copyWith(lines: newLines);
+    plate = plate.copyWith(lines: lines);
     plate = _rotateUntilSelectedLineHasAngle(plate, [0, 360], 1);
 
     Tool lowerTrack = state.selectedTracks
         .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
 
     Tool placedPlate = _placePlateOnTrack(emit, plate, lowerTrack);
-
-    int index2 = newLines.indexOf(newLines.firstWhere((line) => line.isSelected == true));
 
 
     emit(state.copyWith(selectedPlates: []));
@@ -456,7 +449,10 @@ class SimulationPageBloc
     }
 
     List<Line> plateLines = plate.lines;
-    plateLines.first.isSelected = true;
+
+    if (plateLines.firstWhereOrNull((line) => line.isSelected) == null)  {
+      plateLines.first.isSelected = true;
+    }
 
     plate = plate.copyWith(lines: plateLines);
 
