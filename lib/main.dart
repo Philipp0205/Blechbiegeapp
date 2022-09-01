@@ -13,6 +13,8 @@ import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 import 'package:open_bsp/services/color_service.dart';
 
 import 'bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
+import 'bloc /ticker_widget/timer_widget_bloc.dart';
+import 'pages/simulation_page/ticker.dart';
 
 void main() {
   runApp(MyApp());
@@ -40,13 +42,16 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => ConfigPageBloc(context.read<ToolRepository>())
-                ..add(ConfigRegisterAdapters()),
+              ..add(ConfigRegisterAdapters()),
           ),
           BlocProvider(
-            create: (_) => SimulationPageBloc(),
+            create: (_) => SimulationPageBloc(ticker: Ticker()),
           ),
           BlocProvider(
             create: (context) => ToolPageBloc(context.read<ToolRepository>()),
+          ),
+          BlocProvider(
+            create: (context) => TimerWidgetBloc(ticker: Ticker()),
           )
         ],
         child: MaterialApp(

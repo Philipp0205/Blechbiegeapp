@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/pages/simulation_page/ticker.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
@@ -19,28 +23,51 @@ part 'simulation_page_state.dart';
 /// Business logic for the [SimulationPage].
 class SimulationPageBloc
     extends Bloc<SimulationPageEvent, SimulationPageState> {
-  SimulationPageBloc()
-      : super(SimulationPageInitial(
-            tools: [],
-            lines: [],
-            selectedBeams: [],
-            selectedTracks: [],
-            selectedPlates: [],
-            rotationAngle: 0,
-            debugOffsets: [],
-            inCollision: false)) {
+  SimulationPageBloc({required Ticker ticker})
+      : _ticker = ticker,
+        super(SimulationPageInitial(
+          tools: [],
+          lines: [],
+          selectedBeams: [],
+          selectedTracks: [],
+          selectedPlates: [],
+          rotationAngle: 0,
+          debugOffsets: [],
+          inCollision: false,
+          isSimulationRunning: false,
+          duration: 0,
+          currentTick: 0,
+        )) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
-    on<SimulationToolMirrored>(_mirrorTool);
+    on<SimulationToolMirrored>(_onMirrorTool);
     on<SimulationCollisionDetected>(_detectCollision);
+    on<SimulationStarted>(_onSimulationStart);
+    on<SimulationStopped>(_onSimulationStopped);
+    on<SimulationTicked>(_onTicked);
+
+    // fakeStream.listen((_) {
+    //   print('fakestream');
+    //   add(SimulationTicked());
+    // });
   }
 
   GeometricCalculationsService _calculationsService =
       new GeometricCalculationsService();
 
   List<Offset> collisionOffsets = [];
+
+  final Ticker _ticker;
+  StreamSubscription<int>? _streamSubscription;
+
+  // StreamController<int> fakeStream = StreamController<int>.broadcast();
+
+  // var fakeStream =
+  //     Stream<int>.periodic(const Duration(seconds: 1), (x) => x).take(15);
+
+  Timer? _timer;
 
   /// Set the initial lines of the simulation.
   void _setInitialLines(
@@ -131,7 +158,6 @@ class SimulationPageBloc
   /// TODO
   void _selectNextLineOfPlateAndPlace(
       Tool plate, Emitter<SimulationPageState> emit) {
-    print('selectNextLineOfPlateAndPlace');
     List<Line> lines = plate.lines;
     Line? currentlyPlacedLine =
         lines.firstWhereOrNull((line) => line.isSelected) ?? lines.first;
@@ -175,17 +201,11 @@ class SimulationPageBloc
     Offset plateOffset = _calculationsService
         .getLowestX([selectedLine.start, selectedLine.end]).first;
 
-    collisionOffsets.clear();
-    collisionOffsets.addAll([trackOffset, plateOffset]);
-
     plateOffset = new Offset(plateOffset.dx, plateOffset.dy + (plate.s / 2));
-
 
     Offset moveOffset = plateOffset - trackOffset;
 
-
     Tool movedTool = _moveTool(plate, moveOffset, false);
-    print('movedTool: ${movedTool.lines.first.start}');
     return movedTool;
   }
 
@@ -253,23 +273,21 @@ class SimulationPageBloc
 
   void _rotateTool(
       SimulationToolRotate event, Emitter<SimulationPageState> emit) {
-    Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
-    Offset center =
-        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
-    List<Line> rotatedLines = _calculationsService.rotateLines(
-        event.tool.lines, center, event.degrees);
-
-    // Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
-    // Offset center =
-    //     _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
-    // Tool rotatedTool = event.tool.copyWith(
-    //     lines: _calculationsService.rotateLines(
-    //         event.tool.lines, center, event.degrees));
+    Tool rotatedTool = _rotTool(event.tool, event.degrees);
 
     emit(state.copyWith(selectedPlates: []));
-    emit(state.copyWith(
-        selectedPlates: [event.tool.copyWith(lines: rotatedLines)],
-        debugOffsets: []));
+    emit(state.copyWith(selectedPlates: [rotatedTool], collisionOffsets: []));
+  }
+
+  // TODO
+  Tool _rotTool(Tool tool, double degrees) {
+    Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
+    Offset center =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+    List<Line> rotatedLines =
+        _calculationsService.rotateLines(tool.lines, center, degrees);
+
+    return tool.copyWith(lines: rotatedLines);
   }
 
   /// Rotate the given [tool] around the center of the selected line of that
@@ -294,28 +312,16 @@ class SimulationPageBloc
       }
     }
 
-
     return tool;
   }
 
   /// Mirror a [tool].
-  void _mirrorTool(
+  void _onMirrorTool(
       SimulationToolMirrored event, Emitter<SimulationPageState> emit) {
-    print('_mirrorTool');
-
-    Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
-
-    Offset middle =
-        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
-
-    List<Line> mirroredLines =
-        _calculationsService.mirrorLines(event.tool.lines, middle.dx);
-
-    Tool mirroredTool = event.tool.copyWith(lines: mirroredLines);
-
     Tool lowerTrack = state.selectedTracks
         .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
 
+    Tool mirroredTool = _mirrorTool(event.tool);
     Tool placedPlate = _placePlateOnTrack(emit, mirroredTool, lowerTrack);
 
     List<Tool> selectedPlates = state.selectedPlates;
@@ -325,6 +331,18 @@ class SimulationPageBloc
 
     emit(state.copyWith(selectedPlates: []));
     emit(state.copyWith(selectedPlates: [mirroredTool]));
+  }
+
+  Tool _mirrorTool(Tool tool) {
+    Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
+
+    Offset middle =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+
+    List<Line> mirroredLines =
+        _calculationsService.mirrorLines(tool.lines, middle.dx);
+
+    return tool.copyWith(lines: mirroredLines);
   }
 
   void _detectCollision(
@@ -340,7 +358,8 @@ class SimulationPageBloc
 
     collisionOffsets.isNotEmpty ? result = true : result = false;
 
-    emit(state.copyWith(inCollision: result, debugOffsets: collisionOffsets));
+    emit(state.copyWith(
+        inCollision: result, collisionOffsets: collisionOffsets));
   }
 
   /// Places the lower track on the on the lower beam.
@@ -411,7 +430,8 @@ class SimulationPageBloc
   void _placeUpperTrackOnPlate2(SimulationToolsChanged event,
       Emitter<SimulationPageState> emit, List<Tool> selectedTracks) {
     Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
-    Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
+    Tool? plate = state.selectedPlates.first;
+    // Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
     if (upperTrack == null || plate == null) {
       return;
@@ -420,13 +440,15 @@ class SimulationPageBloc
     Tool currentUpperTrack = selectedTracks
         .firstWhere((tool) => tool.type.type == ToolType.upperTrack);
 
-    // selectedTracks
-    //   ..remove(currentUpperTrack)
-    //   ..add(placedTrack);
-    //
+    Tool placedTrack = _placeUpperTrackOnPlate(currentUpperTrack, plate);
+
+    selectedTracks
+      ..remove(currentUpperTrack)
+      ..add(placedTrack);
+
     // upperTrack = upperTrack.copyWith(lines: placedTrack.lines);
-    //
-    // emit(state.copyWith(selectedTracks: [placedTrack]));
+
+    emit(state.copyWith(selectedTracks: selectedTracks));
   }
 
   /// Places the upper beam on upper track.
@@ -441,14 +463,16 @@ class SimulationPageBloc
       Emitter<SimulationPageState> emit,
       List<Tool> selectedTracks,
       selectedBeams) {
-    Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
-    Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
+    // Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
+    // Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
+
+    Tool? upperBeam = _getToolByType(selectedBeams, ToolType.upperBeam);
+    Tool? upperTrack = _getToolByType(selectedTracks, ToolType.upperTrack);
 
     if (upperBeam == null || upperTrack == null) {
       return;
     }
 
-    print('place upperBeam on upperTrack');
     Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack);
 
     Tool currentUpperBeam = selectedBeams
@@ -459,5 +483,67 @@ class SimulationPageBloc
       ..add(placedBeam);
 
     emit(state.copyWith(selectedBeams: selectedBeams));
+  }
+
+  /// Starts the simulation
+  void _onSimulationStart(
+      SimulationStarted event, Emitter<SimulationPageState> emit) {
+    add(SimulationTicked());
+    emit(state.copyWith(isSimulationRunning: true));
+  }
+
+  void _testAllSidesOfPlateForCollision(
+      Tool plate, int currentTick, Emitter<SimulationPageState> emit) {
+    if (currentTick > 4) {
+      add(SimulationTicked());
+    }
+  }
+
+  /// Stops the simulation
+  void _onSimulationStopped(
+      SimulationStopped event, Emitter<SimulationPageState> emit) {
+    emit(state.copyWith(isSimulationRunning: false, currentTick: -1));
+  }
+
+  /// Rudimentary algorithm for the simulation.
+  /// TODO Reduce code duplication and interoperability.
+  ///
+  /// 1. Tests all sites of a plate (tick 1-4)
+  /// 2. Mirrors the tool (tick 5)
+  /// 3. Tests all other sites (tick 6-9)
+  void _onTicked(SimulationTicked event, Emitter<SimulationPageState> emit) {
+    int tick = state.currentTick;
+
+    if (tick < 3 && state.isSimulationRunning) {
+      Tool plate = state.selectedPlates.first;
+      Tool rotatedPlate = _rotTool(plate, 90);
+
+      tick++;
+
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(
+          selectedPlates: [rotatedPlate],
+          collisionOffsets: [],
+          currentTick: tick));
+    }  else if (tick == 3) {
+      Tool mirroredTool = _mirrorTool(state.selectedPlates.first);
+      tick ++;
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(selectedPlates: [mirroredTool], currentTick: tick));
+    }  else if (tick < 8 && state.isSimulationRunning) {
+      Tool plate = state.selectedPlates.first;
+      Tool rotatedPlate = _rotTool(plate, 90);
+
+      tick++;
+
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(
+          selectedPlates: [rotatedPlate],
+          collisionOffsets: [],
+          currentTick: tick));
+    }
+    else {
+      add(SimulationStopped());
+    }
   }
 }

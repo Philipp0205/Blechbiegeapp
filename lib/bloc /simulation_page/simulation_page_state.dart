@@ -8,10 +8,15 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedPlates;
   final double rotationAngle;
   final bool inCollision;
+  final bool isSimulationRunning;
+  final double duration;
+  final int currentTick;
 
   // Will be removed later.
   final List<Offset> collisionOffsets;
 
+  /// In what states can the simulation page be in?
+  /// -
   const SimulationPageState({
     required this.shapes,
     required this.lines,
@@ -21,6 +26,9 @@ class SimulationPageState extends Equatable {
     required this.rotationAngle,
     required this.collisionOffsets,
     required this.inCollision,
+    required this.isSimulationRunning,
+    required this.duration,
+    required this.currentTick,
   });
 
   @override
@@ -33,6 +41,9 @@ class SimulationPageState extends Equatable {
         rotationAngle,
         collisionOffsets,
         inCollision,
+        isSimulationRunning,
+        duration,
+        currentTick,
       ];
 
   SimulationPageState copyWith({
@@ -43,7 +54,10 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedPlates,
     double? rotationAngle,
     bool? inCollision,
-    List<Offset>? debugOffsets,
+    bool? isSimulationRunning,
+    double? duration,
+    int? currentTick,
+    List<Offset>? collisionOffsets,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -53,7 +67,10 @@ class SimulationPageState extends Equatable {
       selectedPlates: selectedPlates ?? this.selectedPlates,
       rotationAngle: rotationAngle ?? this.rotationAngle,
       inCollision: inCollision ?? this.inCollision,
-      collisionOffsets: debugOffsets ?? this.collisionOffsets,
+      isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
+      duration: duration ?? this.duration,
+      currentTick: currentTick ?? this.currentTick,
+      collisionOffsets: collisionOffsets ?? this.collisionOffsets,
     );
   }
 }
@@ -69,6 +86,9 @@ class SimulationPageInitial extends SimulationPageState {
     required double rotationAngle,
     required List<Offset> debugOffsets,
     required bool inCollision,
+    required bool isSimulationRunning,
+    required double duration,
+    required int currentTick,
   }) : super(
           shapes: tools,
           lines: lines,
@@ -78,5 +98,8 @@ class SimulationPageInitial extends SimulationPageState {
           rotationAngle: rotationAngle,
           collisionOffsets: debugOffsets,
           inCollision: inCollision,
+          isSimulationRunning: isSimulationRunning,
+          duration: duration,
+          currentTick: currentTick,
         );
 }

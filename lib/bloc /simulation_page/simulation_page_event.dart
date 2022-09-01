@@ -73,4 +73,19 @@ class SimulationCollisionDetected extends SimulationPageEvent {
       {required this.collisionOffsets, required this.plateOffsets});
 }
 
+/// The event is called when the user starts the simulation.
+class SimulationStarted extends SimulationPageEvent {
+  final double timeInterval;
+
+  const SimulationStarted({required this.timeInterval});
+}
+
+/// The event is called when the user stops the simulation.
+class SimulationStopped extends SimulationPageEvent {
+  const SimulationStopped();
+}
+
+class SimulationTicked extends SimulationPageEvent {
+  const SimulationTicked();
+}
 
