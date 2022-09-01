@@ -68,9 +68,10 @@ class SimulationToolMirrored extends SimulationPageEvent {
 class SimulationCollisionDetected extends SimulationPageEvent {
   final List<Offset> collisionOffsets;
   final List<Offset> plateOffsets;
+  final double rotationAngle;
 
   const SimulationCollisionDetected(
-      {required this.collisionOffsets, required this.plateOffsets});
+      {required this.collisionOffsets, required this.plateOffsets, required this.rotationAngle});
 }
 
 /// The event is called when the user starts the simulation.
@@ -85,6 +86,6 @@ class SimulationStopped extends SimulationPageEvent {
   const SimulationStopped();
 }
 
-class SimulationTicked extends SimulationPageEvent {
-  const SimulationTicked();
+class SimulationTickRotateTool extends SimulationPageEvent {
+  const SimulationTickRotateTool();
 }

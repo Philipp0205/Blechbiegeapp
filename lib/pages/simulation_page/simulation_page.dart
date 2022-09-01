@@ -21,7 +21,6 @@ class _SimulationPageState extends State<SimulationPage> {
   @override
   void initState() {
     super.initState();
-
     _timeController.text = '1';
   }
 
@@ -31,18 +30,10 @@ class _SimulationPageState extends State<SimulationPage> {
     return MultiBlocListener(
       listeners: [
         BlocListener<ToolPageBloc, ToolPageState>(
-            listenWhen: (prev, current) => prev.tools != current.tools,
+            // listenWhen: (prev, current) => prev.tools != current.tools,
             listener: (context, state) {
               // _setSelectedBeams(context, state.tools);
               _setSelectedTools(context, state.tools);
-            }),
-        BlocListener<SimulationPageBloc, SimulationPageState>(
-            listenWhen: (prev, current) => _requestNextCollision(
-                current.isSimulationRunning, prev, current),
-            listener: (context, state) {
-              // context
-              //     .read<SimulationPageBloc>()
-              //     .add(SimulationNextCollisionRequested());
             }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
@@ -185,7 +176,8 @@ class _SimulationPageState extends State<SimulationPage> {
                   tracks: state.selectedTracks,
                   plates: state.selectedPlates,
                   rotateAngle: state.rotationAngle,
-                  debugOffsets: state.collisionOffsets,
+                  collisionOffsets: state.collisionOffsets,
+                  debugOffsets: state.debugOffsets,
                   context: context),
             ),
           );

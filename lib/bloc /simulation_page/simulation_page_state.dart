@@ -10,12 +10,10 @@ class SimulationPageState extends Equatable {
   final bool inCollision;
   final bool isSimulationRunning;
   final double duration;
-
-  // Will be removed later.
   final List<Offset> collisionOffsets;
+  final List<Offset> debugOffsets;
 
   /// In what states can the simulation page be in?
-  /// -
   const SimulationPageState(
       {required this.shapes,
       required this.lines,
@@ -24,6 +22,7 @@ class SimulationPageState extends Equatable {
       required this.selectedTracks,
       required this.rotationAngle,
       required this.collisionOffsets,
+      required this.debugOffsets,
       required this.inCollision,
       required this.isSimulationRunning,
       required this.duration});
@@ -53,6 +52,7 @@ class SimulationPageState extends Equatable {
     bool? isSimulationRunning,
     double? duration,
     List<Offset>? collisionOffsets,
+    List<Offset>? debugOffsets,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -65,6 +65,7 @@ class SimulationPageState extends Equatable {
       isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
       duration: duration ?? this.duration,
       collisionOffsets: collisionOffsets ?? this.collisionOffsets,
+      debugOffsets: debugOffsets ?? this.debugOffsets,
     );
   }
 }
@@ -78,6 +79,7 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Tool> selectedPlates,
     required List<Line> lines,
     required double rotationAngle,
+    required List<Offset> collisionOffsets,
     required List<Offset> debugOffsets,
     required bool inCollision,
     required bool isSimulationRunning,
@@ -89,10 +91,10 @@ class SimulationPageInitial extends SimulationPageState {
           selectedBeams: selectedBeams,
           selectedTracks: selectedTracks,
           rotationAngle: rotationAngle,
-          collisionOffsets: debugOffsets,
+          collisionOffsets: collisionOffsets,
+          debugOffsets: debugOffsets,
           inCollision: inCollision,
           isSimulationRunning: isSimulationRunning,
           duration: duration,
         );
 }
-

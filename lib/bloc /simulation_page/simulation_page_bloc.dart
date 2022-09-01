@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/model/simulation/simulation_tool_result.dart';
 import 'package:open_bsp/pages/simulation_page/ticker.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
@@ -32,6 +33,7 @@ class SimulationPageBloc
             selectedTracks: [],
             selectedPlates: [],
             rotationAngle: 0,
+            collisionOffsets: [],
             debugOffsets: [],
             inCollision: false,
             isSimulationRunning: false,
@@ -44,7 +46,7 @@ class SimulationPageBloc
     on<SimulationCollisionDetected>(_detectCollision);
     on<SimulationStarted>(_startSimulation);
     on<SimulationStopped>(_stopSimulation);
-    on<SimulationTicked>(_onTicked);
+    on<SimulationTickRotateTool>(_onTicked);
 
     // fakeStream.listen((_) {
     //   print('fakestream');
@@ -273,8 +275,17 @@ class SimulationPageBloc
       SimulationToolRotate event, Emitter<SimulationPageState> emit) {
     Tool rotatedTool = _rotTool(event.tool, event.degrees);
 
+
+    Line selectedLine = event.tool.lines.firstWhere((line) => line.isSelected);
+
+    Offset center =
+        _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+
     emit(state.copyWith(selectedPlates: []));
-    emit(state.copyWith(selectedPlates: [rotatedTool], collisionOffsets: []));
+    emit(state.copyWith(
+        selectedPlates: [rotatedTool],
+        collisionOffsets: [],
+        debugOffsets: [center]));
   }
 
   // TODO
@@ -282,6 +293,7 @@ class SimulationPageBloc
     Line selectedLine = tool.lines.firstWhere((line) => line.isSelected);
     Offset center =
         _calculationsService.getMiddle(selectedLine.start, selectedLine.end);
+
     List<Line> rotatedLines =
         _calculationsService.rotateLines(tool.lines, center, degrees);
 
@@ -344,6 +356,11 @@ class SimulationPageBloc
 
   void _detectCollision(
       SimulationCollisionDetected event, Emitter<SimulationPageState> emit) {
+    Tool plate = state.selectedPlates.first;
+
+    SimulationToolResult toolResult = new SimulationToolResult(
+        tool: state.selectedPlates.first, angleCollisionMap: {});
+
     bool result = false;
 
     collisionOffsets.clear();
@@ -354,6 +371,14 @@ class SimulationPageBloc
     }
 
     collisionOffsets.isNotEmpty ? result = true : result = false;
+
+    Line selectedLine =
+        plate.lines.firstWhere((line) => line.isSelected = true);
+
+    double angle =
+        _calculationsService.getAngle(selectedLine.start, selectedLine.end);
+
+    toolResult.addResult(angle, result);
 
     emit(state.copyWith(
         inCollision: result, collisionOffsets: collisionOffsets));
@@ -485,8 +510,17 @@ class SimulationPageBloc
   /// Starts the simulation
   void _startSimulation(
       SimulationStarted event, Emitter<SimulationPageState> emit) {
+    SimulationToolResult toolResult = new SimulationToolResult(
+        tool: state.selectedTracks.first, angleCollisionMap: {});
+
+    int i = 0;
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      add(SimulationTicked());
+      i++;
+      if (i == 4) {
+        _timer?.cancel();
+        add(SimulationStopped());
+      }
+      add(SimulationTickRotateTool());
     });
   }
 
@@ -501,11 +535,11 @@ class SimulationPageBloc
   Future<void> _nextStepInSimulation(
       Tool tool, Emitter<SimulationPageState> emit) async {}
 
-  void _onTicked(SimulationTicked event, Emitter<SimulationPageState> emit) {
+  void _onTicked(
+      SimulationTickRotateTool event, Emitter<SimulationPageState> emit) {
     Tool plate = state.selectedPlates.first;
     Tool rotatedPlate = _rotTool(plate, 90);
 
-    emit(state.copyWith(selectedPlates: [rotatedPlate], collisionOffsets: []));
-
+    // emit(state.copyWith(selectedPlates: [rotatedPlate], collisionOffsets: []));
   }
 }

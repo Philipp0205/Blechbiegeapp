@@ -17,6 +17,7 @@ class SimulationSketcher extends CustomPainter {
   final List<Tool> beams;
   final List<Tool> tracks;
   final List<Tool> plates;
+  final List<Offset> collisionOffsets;
   final List<Offset> debugOffsets;
   final double rotateAngle;
   final BuildContext context;
@@ -26,6 +27,7 @@ class SimulationSketcher extends CustomPainter {
       required this.tracks,
       required this.plates,
       required this.rotateAngle,
+      required this.collisionOffsets,
       required this.debugOffsets,
       required this.context});
 
@@ -135,8 +137,6 @@ class SimulationSketcher extends CustomPainter {
           selectedLines.add(line);
         }
       });
-
-
     }
 
     Path machinePath = new Path();
@@ -159,8 +159,13 @@ class SimulationSketcher extends CustomPainter {
     canvas.drawPath(tracksPath, greyPaint);
     canvas.drawPath(platesPath2, blueStroke);
 
-    debugOffsets.forEach((offset) {
+    collisionOffsets.forEach((offset) {
       canvas.drawCircle(offset, 1, redStroke);
+    });
+
+    /// Debug offsets
+    debugOffsets.forEach((offset) {
+      canvas.drawCircle(offset, 5, blackStroke);
     });
 
     ui.Picture machinePicture = machineRecorder.endRecording();
@@ -170,6 +175,8 @@ class SimulationSketcher extends CustomPainter {
     ui.Picture platePicture = plateRecorder.endRecording();
     List<Offset> plateOffsets = await createPicture(
         platePicture, plateRecorder, size, pPath, Colors.black);
+
+
 
     _detectCollision(machineOffsets, plateOffsets);
   }
@@ -208,8 +215,10 @@ class SimulationSketcher extends CustomPainter {
 
   void _detectCollision(
       List<Offset> collisionOffsets, List<Offset> plateOffsets) {
-    this.context.read<SimulationPageBloc>().add(SimulationCollisionDetected(
-        collisionOffsets: collisionOffsets, plateOffsets: plateOffsets));
+    context.read<SimulationPageBloc>().add(SimulationCollisionDetected(
+        collisionOffsets: collisionOffsets,
+        plateOffsets: plateOffsets,
+        rotationAngle: rotateAngle));
   }
 
   @override
