@@ -146,9 +146,9 @@ class SimulationSketcher extends CustomPainter {
         }
       });
 
-      // canvas.drawPath(beamsPath, blackPaint);
-      // canvas.drawPath(tracksPath, greyPaint);
-      // canvas.drawPath(platesPath, blueStroke);
+      canvas.drawPath(beamsPath, blackPaint);
+      canvas.drawPath(tracksPath, greyPaint);
+      canvas.drawPath(platesPath, blueStroke);
 
 
 
@@ -170,8 +170,8 @@ class SimulationSketcher extends CustomPainter {
     plateCanvas.drawPath(platesPath, blackStroke);
     // plateCanvas.drawPath(platesPath2, blackPaint);
 
-    canvas.drawPath(machinePath, blackPaint);
-    canvas.drawPath(platesPath, redStroke);
+    // canvas.drawPath(machinePath, blackPaint);
+    // canvas.drawPath(platesPath, redStroke);
 
     ui.Picture machinePicture = machineRecorder.endRecording();
     List<Offset> machineOffsets = await createPicture(
