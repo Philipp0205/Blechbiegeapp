@@ -15,6 +15,8 @@ class SimulationPageState extends Equatable {
   // Will be removed later.
   final List<Offset> collisionOffsets;
 
+  final List<SimulationToolResult> simulationResult;
+
   /// In what states can the simulation page be in?
   /// -
   const SimulationPageState({
@@ -29,6 +31,7 @@ class SimulationPageState extends Equatable {
     required this.isSimulationRunning,
     required this.duration,
     required this.currentTick,
+    required this.simulationResult,
   });
 
   @override
@@ -44,6 +47,7 @@ class SimulationPageState extends Equatable {
         isSimulationRunning,
         duration,
         currentTick,
+        simulationResult
       ];
 
   SimulationPageState copyWith({
@@ -58,6 +62,7 @@ class SimulationPageState extends Equatable {
     double? duration,
     int? currentTick,
     List<Offset>? collisionOffsets,
+    List<SimulationToolResult>? simulationResult,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -71,6 +76,7 @@ class SimulationPageState extends Equatable {
       duration: duration ?? this.duration,
       currentTick: currentTick ?? this.currentTick,
       collisionOffsets: collisionOffsets ?? this.collisionOffsets,
+      simulationResult: simulationResult ?? this.simulationResult,
     );
   }
 }
@@ -89,6 +95,7 @@ class SimulationPageInitial extends SimulationPageState {
     required bool isSimulationRunning,
     required double duration,
     required int currentTick,
+    required List<SimulationToolResult> simulationResult,
   }) : super(
           shapes: tools,
           lines: lines,
@@ -101,5 +108,6 @@ class SimulationPageInitial extends SimulationPageState {
           isSimulationRunning: isSimulationRunning,
           duration: duration,
           currentTick: currentTick,
+          simulationResult: simulationResult,
         );
 }

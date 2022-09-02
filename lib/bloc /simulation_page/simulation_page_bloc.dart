@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -6,6 +7,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/model/simulation/simulation_result/collision_result.dart';
+import 'package:open_bsp/model/simulation/simulation_result/simulation_tool_result.dart';
 import 'package:open_bsp/pages/simulation_page/ticker.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
@@ -31,19 +34,20 @@ class SimulationPageBloc
           selectedBeams: [],
           selectedTracks: [],
           selectedPlates: [],
+          simulationResult: [],
           rotationAngle: 0,
           debugOffsets: [],
           inCollision: false,
           isSimulationRunning: false,
           duration: 0,
-          currentTick: 0,
+          currentTick: 9999,
         )) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
     on<SimulationToolMirrored>(_onMirrorTool);
-    on<SimulationCollisionDetected>(_detectCollision);
+    on<SimulationCollisionDetected>(_onCollisionDetect);
     on<SimulationStarted>(_onSimulationStart);
     on<SimulationStopped>(_onSimulationStopped);
     on<SimulationTicked>(_onTicked);
@@ -345,7 +349,7 @@ class SimulationPageBloc
     return tool.copyWith(lines: mirroredLines);
   }
 
-  void _detectCollision(
+  void _onCollisionDetect(
       SimulationCollisionDetected event, Emitter<SimulationPageState> emit) {
     bool result = false;
 
@@ -358,8 +362,37 @@ class SimulationPageBloc
 
     collisionOffsets.isNotEmpty ? result = true : result = false;
 
-    emit(state.copyWith(
-        inCollision: result, collisionOffsets: collisionOffsets));
+    Line selectedLine =
+        state.selectedPlates.first.lines.firstWhere((line) => line.isSelected);
+    double angle =
+        _calculationsService.getAngle(selectedLine.start, selectedLine.end);
+
+    List<SimulationToolResult> simulationResults = state.simulationResult;
+    SimulationToolResult? toolResult = simulationResults.firstWhereOrNull(
+        (result) => result.tool.name == state.selectedPlates.first.name);
+
+    if (toolResult == null) {
+      toolResult = new SimulationToolResult(
+          tool: state.selectedPlates.first, collisionResults: []);
+    }
+
+    if (state.currentTick < 10) {
+      toolResult.collisionResults
+          .add(new CollisionResult(angle: angle, isCollision: result));
+      simulationResults
+        ..removeWhere(
+            (result) => result.tool.name == state.selectedPlates.first.name)
+        ..add(toolResult);
+
+      emit(state.copyWith(simulationResult: []));
+      emit(state.copyWith(
+          inCollision: result,
+          collisionOffsets: collisionOffsets,
+          simulationResult: simulationResults));
+    } else {
+      emit(state.copyWith(
+          inCollision: result, collisionOffsets: collisionOffsets));
+    }
   }
 
   /// Places the lower track on the on the lower beam.
@@ -489,7 +522,8 @@ class SimulationPageBloc
   void _onSimulationStart(
       SimulationStarted event, Emitter<SimulationPageState> emit) {
     add(SimulationTicked());
-    emit(state.copyWith(isSimulationRunning: true));
+
+    emit(state.copyWith(isSimulationRunning: true, currentTick: 0));
   }
 
   void _testAllSidesOfPlateForCollision(
@@ -502,7 +536,7 @@ class SimulationPageBloc
   /// Stops the simulation
   void _onSimulationStopped(
       SimulationStopped event, Emitter<SimulationPageState> emit) {
-    emit(state.copyWith(isSimulationRunning: false, currentTick: -1));
+    emit(state.copyWith(isSimulationRunning: false, currentTick: 9999));
   }
 
   /// Rudimentary algorithm for the simulation.
@@ -514,35 +548,38 @@ class SimulationPageBloc
   void _onTicked(SimulationTicked event, Emitter<SimulationPageState> emit) {
     int tick = state.currentTick;
 
-    if (tick < 3 && state.isSimulationRunning) {
-      Tool plate = state.selectedPlates.first;
-      Tool rotatedPlate = _rotTool(plate, 90);
-
-      tick++;
-
-      emit(state.copyWith(selectedPlates: []));
-      emit(state.copyWith(
-          selectedPlates: [rotatedPlate],
-          collisionOffsets: [],
-          currentTick: tick));
-    }  else if (tick == 3) {
-      Tool mirroredTool = _mirrorTool(state.selectedPlates.first);
-      tick ++;
-      emit(state.copyWith(selectedPlates: []));
-      emit(state.copyWith(selectedPlates: [mirroredTool], currentTick: tick));
-    }  else if (tick < 8 && state.isSimulationRunning) {
-      Tool plate = state.selectedPlates.first;
-      Tool rotatedPlate = _rotTool(plate, 90);
-
-      tick++;
-
-      emit(state.copyWith(selectedPlates: []));
-      emit(state.copyWith(
-          selectedPlates: [rotatedPlate],
-          collisionOffsets: [],
-          currentTick: tick));
+    if (state.isSimulationRunning == false) {
+      return;
     }
-    else {
+
+    if (tick < 8) {
+      Tool plate = state.selectedPlates.first;
+      Tool rotatedPlate = _rotTool(plate, 90);
+
+      tick++;
+
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(
+          selectedPlates: [rotatedPlate],
+          collisionOffsets: [],
+          currentTick: tick));
+      // } else if (tick == 3) {
+      //   Tool mirroredTool = _mirrorTool(state.selectedPlates.first);
+      //   tick++;
+      //   emit(state.copyWith(selectedPlates: []));
+      //   emit(state.copyWith(selectedPlates: [mirroredTool], currentTick: tick));
+      // } else if (tick < 8 && state.isSimulationRunning) {
+      //   Tool plate = state.selectedPlates.first;
+      //   Tool rotatedPlate = _rotTool(plate, 90);
+      //
+      //   tick++;
+      //
+      //   emit(state.copyWith(selectedPlates: []));
+      //   emit(state.copyWith(
+      //       selectedPlates: [rotatedPlate],
+      //       collisionOffsets: [],
+      //       currentTick: tick));
+    } else {
       add(SimulationStopped());
     }
   }

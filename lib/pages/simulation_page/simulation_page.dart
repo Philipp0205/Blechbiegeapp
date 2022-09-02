@@ -36,14 +36,21 @@ class _SimulationPageState extends State<SimulationPage> {
               // _setSelectedBeams(context, state.tools);
               _setSelectedTools(context, state.tools);
             }),
+
         BlocListener<SimulationPageBloc, SimulationPageState>(
-            listenWhen: (prev, current) => _requestNextCollision(
-                current.isSimulationRunning, prev, current),
+            listenWhen: (prev, current) =>
+                prev.collisionOffsets != current.collisionOffsets ,
             listener: (context, state) {
-              // context
-              //     .read<SimulationPageBloc>()
-              //     .add(SimulationNextCollisionRequested());
+
             }),
+        // BlocListener<SimulationPageBloc, SimulationPageState>(
+        //     listenWhen: (prev, current) => _requestNextCollision(
+        //         current.isSimulationRunning, prev, current),
+        //     listener: (context, state) {
+        //       // context
+        //       //     .read<SimulationPageBloc>()
+        //       //     .add(SimulationNextCollisionRequested());
+        //     }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
           builder: (context, state) {

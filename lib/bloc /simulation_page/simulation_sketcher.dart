@@ -135,8 +135,6 @@ class SimulationSketcher extends CustomPainter {
           selectedLines.add(line);
         }
       });
-
-
     }
 
     Path machinePath = new Path();
@@ -208,9 +206,14 @@ class SimulationSketcher extends CustomPainter {
 
   void _detectCollision(
       List<Offset> collisionOffsets, List<Offset> plateOffsets) {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+
     this.context.read<SimulationPageBloc>().add(SimulationCollisionDetected(
         collisionOffsets: collisionOffsets, plateOffsets: plateOffsets));
-    this.context.read<SimulationPageBloc>().add(SimulationTicked());
+
+    if (state.isSimulationRunning == true) {
+      this.context.read<SimulationPageBloc>().add(SimulationTicked());
+    }
   }
 
   @override
