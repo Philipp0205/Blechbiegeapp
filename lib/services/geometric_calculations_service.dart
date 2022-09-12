@@ -5,7 +5,6 @@ import 'package:vector_math/vector_math.dart';
 
 import '../model/line.dart';
 import '../model/segment_widget/segment.dart';
-import '../model/simulation/tool.dart';
 
 /// All calculations involving points (offsets) in a the coordinate system of
 /// the application.
@@ -353,5 +352,15 @@ class GeometricCalculationsService {
     } else {
       return offset;
     }
+  }
+
+  /// Reverses the start and the end of all [lines]
+  List<Line> reverseStartAndEndOfLines(List<Line> lines) {
+    List<Line> result = [];
+    lines.forEach((line) {
+      result.add(line.copyWith(start: line.end, end: line.start));
+    });
+
+    return result;
   }
 }

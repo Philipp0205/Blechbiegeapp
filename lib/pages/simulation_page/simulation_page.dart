@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
 import 'package:open_bsp/pages/simulation_page/timer_widget.dart';
+import 'package:progress_state_button/progress_button.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../bloc /ticker_widget/timer_widget_bloc.dart';
@@ -39,10 +40,8 @@ class _SimulationPageState extends State<SimulationPage> {
 
         BlocListener<SimulationPageBloc, SimulationPageState>(
             listenWhen: (prev, current) =>
-                prev.collisionOffsets != current.collisionOffsets ,
-            listener: (context, state) {
-
-            }),
+                prev.collisionOffsets != current.collisionOffsets,
+            listener: (context, state) {}),
         // BlocListener<SimulationPageBloc, SimulationPageState>(
         //     listenWhen: (prev, current) => _requestNextCollision(
         //         current.isSimulationRunning, prev, current),
@@ -53,14 +52,16 @@ class _SimulationPageState extends State<SimulationPage> {
         //     }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
+          buildWhen: (prev, current) =>
+              prev.collisionOffsets != current.collisionOffsets,
           builder: (context, state) {
-        return Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: buildAppBar(),
-          backgroundColor: Colors.white,
-          body: buildBody(),
-        );
-      }),
+            return Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: buildAppBar(),
+              backgroundColor: Colors.white,
+              body: buildBody(),
+            );
+          }),
     );
   }
 
@@ -96,8 +97,7 @@ class _SimulationPageState extends State<SimulationPage> {
     return Row(
       children: [
         ElevatedButton(
-            onPressed: () => _openSelectToolPage(),
-            child: Text('Wangen & Schienen')),
+            onPressed: () => _openSelectToolPage(), child: Text('Maschine')),
         IconButton(
             onPressed: () => _nextLineOfPlate(),
             icon: new Icon(Icons.navigate_next)),
@@ -106,7 +106,28 @@ class _SimulationPageState extends State<SimulationPage> {
             icon: new Icon(Icons.rotate_right)),
         IconButton(
             onPressed: () => _mirrorCurrentPlate(),
-            icon: new Icon(Icons.compare_arrows))
+            icon: new Icon(Icons.compare_arrows)),
+        if (context.read<SimulationPageBloc>().state.isSimulationRunning ==
+            true) ...[
+          IconButton(
+              onPressed: () => {
+                    context.read<SimulationPageBloc>().add(SimulationStopped()),
+                  },
+              icon: new Icon(Icons.pause)),
+        ] else ...[
+          IconButton(
+              onPressed: () => {
+                    context
+                        .read<SimulationPageBloc>()
+                        .add(SimulationStarted(timeInterval: 2)),
+                  },
+              icon: new Icon(Icons.play_arrow))
+        ],
+        IconButton(
+            onPressed: () => _refoldPlate(), icon: new Icon(Icons.arrow_back)),
+        IconButton(
+            onPressed: () => _unFoldPlate(),
+            icon: new Icon(Icons.arrow_forward)),
       ],
     );
   }
@@ -119,37 +140,11 @@ class _SimulationPageState extends State<SimulationPage> {
       builder: (context, state) {
         return Row(
           children: [
-            Container(
-              width: 30,
-              height: 30,
-              child: TextField(
-                keyboardType: TextInputType.number,
-                controller: _timeController,
-                onChanged: (value) {
-                  print('test');
-                },
-              ),
-            ),
-            Text('Zeit'),
-            if (context.read<SimulationPageBloc>().state.isSimulationRunning ==
-                true) ...[
-              IconButton(
-                  onPressed: () => {
-                        context
-                            .read<SimulationPageBloc>()
-                            .add(SimulationStopped()),
-                      },
-                  icon: new Icon(Icons.pause)),
+            if (state.isSimulationRunning) ...[
+              CircularProgressIndicator(),
             ] else ...[
-              IconButton(
-                  onPressed: () => {
-                        context
-                            .read<SimulationPageBloc>()
-                            .add(SimulationStarted(timeInterval: 2)),
-                      },
-                  icon: new Icon(Icons.play_arrow))
+              CircularProgressIndicator(color: Colors.grey, value: 1)
             ],
-            TimerWidget(),
           ],
         );
       },
@@ -171,7 +166,6 @@ class _SimulationPageState extends State<SimulationPage> {
               bottomRight: Radius.circular(10)),
         ),
         child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
-            // buildWhen: (prev, current) => prev.selectedPlates != current.selectedPlates,
             builder: (context, state) {
           return RepaintBoundary(
             child: CustomPaint(
@@ -180,7 +174,8 @@ class _SimulationPageState extends State<SimulationPage> {
                   tracks: state.selectedTracks,
                   plates: state.selectedPlates,
                   rotateAngle: state.rotationAngle,
-                  debugOffsets: state.collisionOffsets,
+                  collisionOffsets: state.collisionOffsets,
+                  debugOffsets: state.debugOffsets,
                   context: context),
             ),
           );
@@ -237,6 +232,20 @@ class _SimulationPageState extends State<SimulationPage> {
     context
         .read<SimulationPageBloc>()
         .add(SimulationToolMirrored(tool: state.selectedPlates.first));
+  }
+
+  void _unFoldPlate() {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationPlateUnfolded(plate: state.selectedPlates.first));
+  }
+
+  void _refoldPlate() {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+    context
+        .read<SimulationPageBloc>()
+        .add(SimulationPlateRefolded(plate: state.selectedPlates.first));
   }
 
   Text _setCollisionLabel(bool isColliding) {

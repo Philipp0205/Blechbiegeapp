@@ -7,6 +7,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/model/debugging_offset.dart';
 import 'package:open_bsp/model/simulation/simulation_result/collision_result.dart';
 import 'package:open_bsp/model/simulation/simulation_result/simulation_tool_result.dart';
 import 'package:open_bsp/pages/simulation_page/ticker.dart';
@@ -34,9 +35,11 @@ class SimulationPageBloc
           selectedBeams: [],
           selectedTracks: [],
           selectedPlates: [],
+          bendingHistory: [],
           simulationResult: [],
           rotationAngle: 0,
           debugOffsets: [],
+          collisionOffsets: [],
           inCollision: false,
           isSimulationRunning: false,
           duration: 0,
@@ -51,6 +54,8 @@ class SimulationPageBloc
     on<SimulationStarted>(_onSimulationStart);
     on<SimulationStopped>(_onSimulationStopped);
     on<SimulationTicked>(_onTicked);
+    on<SimulationPlateUnfolded>(_onUnfoldPlate);
+    on<SimulationPlateRefolded>(_onRefoldPlate);
 
     // fakeStream.listen((_) {
     //   print('fakestream');
@@ -210,6 +215,7 @@ class SimulationPageBloc
     Offset moveOffset = plateOffset - trackOffset;
 
     Tool movedTool = _moveTool(plate, moveOffset, false);
+
     return movedTool;
   }
 
@@ -229,6 +235,14 @@ class SimulationPageBloc
     });
 
     return tool.copyWith(lines: newLines);
+  }
+
+  Line _moveLine(Line line, Offset offset, bool positiveDirection) {
+    if (positiveDirection) {
+      return line.copyWith(start: line.start + offset, end: line.end + offset);
+    } else {
+      return line.copyWith(start: line.start - offset, end: line.end - offset);
+    }
   }
 
   List<Tool> _getToolsByCategory(List<Tool> tools, ToolCategoryEnum category) {
@@ -315,7 +329,6 @@ class SimulationPageBloc
         return tool;
       }
     }
-
     return tool;
   }
 
@@ -367,32 +380,81 @@ class SimulationPageBloc
     double angle =
         _calculationsService.getAngle(selectedLine.start, selectedLine.end);
 
-    List<SimulationToolResult> simulationResults = state.simulationResult;
+    List<SimulationToolResult> simulationResults = state.simulationResults;
     SimulationToolResult? toolResult = simulationResults.firstWhereOrNull(
         (result) => result.tool.name == state.selectedPlates.first.name);
 
     if (toolResult == null) {
       toolResult = new SimulationToolResult(
-          tool: state.selectedPlates.first, collisionResults: []);
+          tool: state.selectedPlates.first,
+          angleOfTool: angle,
+          collisionResults: []);
     }
 
     if (state.currentTick < 10) {
       toolResult.collisionResults
           .add(new CollisionResult(angle: angle, isCollision: result));
+
       simulationResults
         ..removeWhere(
             (result) => result.tool.name == state.selectedPlates.first.name)
         ..add(toolResult);
 
-      emit(state.copyWith(simulationResult: []));
+      emit(state.copyWith(simulationResults: []));
       emit(state.copyWith(
           inCollision: result,
           collisionOffsets: collisionOffsets,
-          simulationResult: simulationResults));
+          simulationResults: simulationResults));
     } else {
+      CollisionResult collisionResult =
+          new CollisionResult(angle: angle, isCollision: result);
+
+      SimulationToolResult toolResult = new SimulationToolResult(
+          tool: state.selectedPlates.first,
+          angleOfTool: angle,
+          collisionResults: [collisionResult]);
+
+      List<SimulationToolResult> simulationResults = _addCollisionResult(
+          state.selectedPlates.first, collisionResult, angle, emit);
+
       emit(state.copyWith(
-          inCollision: result, collisionOffsets: collisionOffsets));
+          inCollision: result,
+          collisionOffsets: collisionOffsets,
+          simulationResults: simulationResults));
     }
+  }
+
+  List<SimulationToolResult> _addCollisionResult(
+      Tool tool,
+      CollisionResult collisionResult,
+      double angle,
+      Emitter<SimulationPageState> emit) {
+    List<SimulationToolResult> simulationResults = state.simulationResults;
+
+    if (simulationResults.length > 1) {
+      if (simulationResults.last.angleOfTool == angle) {
+        return simulationResults;
+      }
+    }
+
+    SimulationToolResult? resultTool =
+        simulationResults.firstWhereOrNull((result) => result.tool == tool);
+
+    if (resultTool == null) {
+      SimulationToolResult toolResult = new SimulationToolResult(
+          tool: tool, angleOfTool: angle, collisionResults: [collisionResult]);
+
+      simulationResults.add(toolResult);
+    } else {
+      int index = simulationResults.indexOf(resultTool);
+      resultTool.collisionResults.add(collisionResult);
+
+      simulationResults
+        ..removeAt(index)
+        ..insert(index, resultTool);
+    }
+
+    return simulationResults;
   }
 
   /// Places the lower track on the on the lower beam.
@@ -451,7 +513,7 @@ class SimulationPageBloc
 
     Tool placedPlate = _placePlateOnTrack(emit, plate, lowerTrack);
 
-    emit(state.copyWith(selectedPlates: [placedPlate]));
+    emit(state.copyWith(selectedPlates: [placedPlate], simulationResults: []));
   }
 
   /// Places the upper track on the plate profile.
@@ -523,7 +585,8 @@ class SimulationPageBloc
       SimulationStarted event, Emitter<SimulationPageState> emit) {
     add(SimulationTicked());
 
-    emit(state.copyWith(isSimulationRunning: true, currentTick: 0));
+    emit(state.copyWith(
+        isSimulationRunning: true, currentTick: 0, simulationResults: []));
   }
 
   void _testAllSidesOfPlateForCollision(
@@ -552,7 +615,7 @@ class SimulationPageBloc
       return;
     }
 
-    if (tick < 8) {
+    if (tick < 4) {
       Tool plate = state.selectedPlates.first;
       Tool rotatedPlate = _rotTool(plate, 90);
 
@@ -563,24 +626,110 @@ class SimulationPageBloc
           selectedPlates: [rotatedPlate],
           collisionOffsets: [],
           currentTick: tick));
-      // } else if (tick == 3) {
-      //   Tool mirroredTool = _mirrorTool(state.selectedPlates.first);
-      //   tick++;
-      //   emit(state.copyWith(selectedPlates: []));
-      //   emit(state.copyWith(selectedPlates: [mirroredTool], currentTick: tick));
-      // } else if (tick < 8 && state.isSimulationRunning) {
-      //   Tool plate = state.selectedPlates.first;
-      //   Tool rotatedPlate = _rotTool(plate, 90);
-      //
-      //   tick++;
-      //
-      //   emit(state.copyWith(selectedPlates: []));
-      //   emit(state.copyWith(
-      //       selectedPlates: [rotatedPlate],
-      //       collisionOffsets: [],
-      //       currentTick: tick));
+    } else if (tick == 3) {
+      Tool mirroredTool = _mirrorTool(state.selectedPlates.first);
+      tick++;
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(selectedPlates: [mirroredTool], currentTick: tick));
+    } else if (tick < 8 && state.isSimulationRunning) {
+      Tool plate = state.selectedPlates.first;
+      Tool rotatedPlate = _rotTool(plate, 90);
+
+      tick++;
+
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(
+          selectedPlates: [rotatedPlate],
+          collisionOffsets: [],
+          currentTick: tick));
     } else {
       add(SimulationStopped());
     }
+  }
+
+  /// Unfolds a plate one time.
+  void _onUnfoldPlate(
+      SimulationPlateUnfolded event, Emitter<SimulationPageState> emit) {
+    List<Line> lines = event.plate.lines;
+    Line selectedLine = event.plate.lines.firstWhere((line) => line.isSelected);
+
+    Offset lowestX = _calculationsService
+        .getLowestX([selectedLine.start, selectedLine.end]).first;
+
+    Offset newOffset;
+    Line lineToBend;
+    int indexOfSelectedLine = event.plate.lines.indexOf(selectedLine);
+    List<DebuggingOffset> debuggingOffsets = [];
+
+    if (selectedLine.start == lowestX) {
+      lineToBend = event.plate.lines[indexOfSelectedLine - 1];
+      double distance = (lineToBend.start - lineToBend.end).distance;
+
+      newOffset =
+          new Offset(selectedLine.start.dx - distance, selectedLine.start.dy);
+
+      for (int i = 0; i < indexOfSelectedLine; i++) {
+        Line line = event.plate.lines[i];
+        Line movedLine = _moveLine(line, newOffset, false);
+        lines[i] = movedLine;
+      }
+    } else {
+      lineToBend = event.plate.lines[indexOfSelectedLine + 1];
+      double distance = (lineToBend.start - lineToBend.end).distance;
+
+      newOffset =
+          new Offset(selectedLine.end.dx - distance, selectedLine.end.dy);
+
+      List<Line> movedLines = [];
+
+      List<Line> remainingLines =
+          lines.getRange(indexOfSelectedLine, lines.length - 1).toList();
+
+      double xOffset = (newOffset.dx - lineToBend.start.dx);
+      Offset moveOffset2 = new Offset(xOffset, 0);
+
+      List<Line> rotatedLines = _calculationsService.rotateLines(
+          remainingLines, lineToBend.start, 90);
+
+      for (int i = 0; i < rotatedLines.length; i++) {
+        movedLines.add(_moveLine(rotatedLines[i], moveOffset2, true));
+      }
+
+      List<Offset> movedOffsets = [];
+      movedLines.forEach((line) {
+        movedOffsets..addAll([line.start, line.end]);
+      });
+
+      List<Line> reversedLines =
+          _calculationsService.reverseStartAndEndOfLines(movedLines);
+
+      lines..removeRange(indexOfSelectedLine, lines.length);
+      Line newSelectedLine = selectedLine.copyWith(end: reversedLines.last.end);
+
+      lines
+        ..add(newSelectedLine)
+        ..addAll(reversedLines.reversed);
+
+      emit(state.copyWith(selectedPlates: []));
+      emit(state.copyWith(
+          selectedPlates: [event.plate.copyWith(lines: lines)],
+          debugOffsets: debuggingOffsets));
+    }
+  }
+
+  void _onRefoldPlate(
+      SimulationPlateRefolded event, Emitter<SimulationPageState> emit) {
+    List<SimulationToolResult> results = state.simulationResults;
+
+    results.removeLast();
+
+    SimulationToolResult lastTool = results.last;
+    // results.removeLast();
+
+    Tool rotatedTool = _rotTool(lastTool.tool, lastTool.angleOfTool);
+
+    emit(state.copyWith(selectedPlates: [], simulationResults: []));
+    emit(state
+        .copyWith(simulationResults: results, selectedPlates: [rotatedTool]));
   }
 }

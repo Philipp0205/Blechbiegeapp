@@ -6,32 +6,31 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedBeams;
   final List<Tool> selectedTracks;
   final List<Tool> selectedPlates;
+  final List<Tool> bendingHistory;
+  final List<DebuggingOffset> debugOffsets;
   final double rotationAngle;
   final bool inCollision;
   final bool isSimulationRunning;
   final double duration;
   final int currentTick;
-
-  // Will be removed later.
   final List<Offset> collisionOffsets;
+  final List<SimulationToolResult> simulationResults;
 
-  final List<SimulationToolResult> simulationResult;
-
-  /// In what states can the simulation page be in?
-  /// -
   const SimulationPageState({
     required this.shapes,
     required this.lines,
     required this.selectedPlates,
     required this.selectedBeams,
     required this.selectedTracks,
+    required this.bendingHistory,
+    required this.debugOffsets,
     required this.rotationAngle,
     required this.collisionOffsets,
     required this.inCollision,
     required this.isSimulationRunning,
     required this.duration,
     required this.currentTick,
-    required this.simulationResult,
+    required this.simulationResults,
   });
 
   @override
@@ -41,13 +40,15 @@ class SimulationPageState extends Equatable {
         selectedBeams,
         selectedTracks,
         selectedPlates,
+        bendingHistory,
         rotationAngle,
         collisionOffsets,
         inCollision,
         isSimulationRunning,
         duration,
         currentTick,
-        simulationResult
+        // simulationResults,
+        debugOffsets,
       ];
 
   SimulationPageState copyWith({
@@ -56,13 +57,15 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedBeams,
     List<Tool>? selectedTracks,
     List<Tool>? selectedPlates,
+    List<Tool>? bendingHistory,
+    List<DebuggingOffset>? debugOffsets,
     double? rotationAngle,
     bool? inCollision,
     bool? isSimulationRunning,
     double? duration,
     int? currentTick,
     List<Offset>? collisionOffsets,
-    List<SimulationToolResult>? simulationResult,
+    List<SimulationToolResult>? simulationResults,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -70,13 +73,15 @@ class SimulationPageState extends Equatable {
       selectedBeams: selectedBeams ?? this.selectedBeams,
       selectedTracks: selectedTracks ?? this.selectedTracks,
       selectedPlates: selectedPlates ?? this.selectedPlates,
+      bendingHistory: bendingHistory ?? this.bendingHistory,
+      debugOffsets: debugOffsets ?? this.debugOffsets,
       rotationAngle: rotationAngle ?? this.rotationAngle,
       inCollision: inCollision ?? this.inCollision,
       isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
       duration: duration ?? this.duration,
       currentTick: currentTick ?? this.currentTick,
       collisionOffsets: collisionOffsets ?? this.collisionOffsets,
-      simulationResult: simulationResult ?? this.simulationResult,
+      simulationResults: simulationResults ?? this.simulationResults,
     );
   }
 }
@@ -88,9 +93,11 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Tool> selectedBeams,
     required List<Tool> selectedTracks,
     required List<Tool> selectedPlates,
+    required List<Tool> bendingHistory,
     required List<Line> lines,
+    required List<DebuggingOffset> debugOffsets,
+    required List<Offset> collisionOffsets,
     required double rotationAngle,
-    required List<Offset> debugOffsets,
     required bool inCollision,
     required bool isSimulationRunning,
     required double duration,
@@ -102,12 +109,14 @@ class SimulationPageInitial extends SimulationPageState {
           selectedPlates: selectedPlates,
           selectedBeams: selectedBeams,
           selectedTracks: selectedTracks,
+          bendingHistory: bendingHistory,
+          debugOffsets: debugOffsets,
           rotationAngle: rotationAngle,
-          collisionOffsets: debugOffsets,
+          collisionOffsets: collisionOffsets,
           inCollision: inCollision,
           isSimulationRunning: isSimulationRunning,
           duration: duration,
           currentTick: currentTick,
-          simulationResult: simulationResult,
+          simulationResults: simulationResult,
         );
 }
