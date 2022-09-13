@@ -21,6 +21,8 @@ class Tool {
   final List<Line> adapterLine;
   @HiveField(6)
   final double s;
+  @HiveField(7)
+  final bool isMirrored;
 
   const Tool({
     required this.name,
@@ -29,6 +31,7 @@ class Tool {
     required this.isSelected,
     required this.adapterLine,
     required this.s,
+    required this.isMirrored,
   });
 
   Tool copyWith({
@@ -38,14 +41,16 @@ class Tool {
     bool? isSelected,
     List<Line>? adapterLine,
     double? s,
+    bool? isMirrored,
   }) {
     return Tool(
       name: name ?? this.name,
-      lines: lines ?? this.lines,
+      lines: lines != null ? List.from(lines) : List.from(this.lines),
       type: type ?? this.type,
       isSelected: isSelected ?? this.isSelected,
       adapterLine: adapterLine ?? this.adapterLine,
       s: s ?? this.s,
+      isMirrored: isMirrored ?? this.isMirrored,
     );
   }
 }

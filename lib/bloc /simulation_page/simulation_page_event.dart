@@ -89,3 +89,16 @@ class SimulationTicked extends SimulationPageEvent {
   const SimulationTicked();
 }
 
+/// Unfolds plate
+class SimulationPlateUnbended extends SimulationPageEvent {
+  final Tool plate;
+
+  const SimulationPlateUnbended({required this.plate});
+}
+
+/// Refolds plate
+class SimulationPlateBended extends SimulationPageEvent {
+  final Tool plate;
+
+  const SimulationPlateBended({required this.plate});
+}

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:ui' as ui;
 import 'package:image/image.dart' as img;
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
+import 'package:open_bsp/model/debugging_offset.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../model/line.dart';
@@ -17,7 +18,8 @@ class SimulationSketcher extends CustomPainter {
   final List<Tool> beams;
   final List<Tool> tracks;
   final List<Tool> plates;
-  final List<Offset> debugOffsets;
+  final List<DebuggingOffset> debugOffsets;
+  final List<Offset> collisionOffsets;
   final double rotateAngle;
   final BuildContext context;
 
@@ -27,6 +29,7 @@ class SimulationSketcher extends CustomPainter {
       required this.plates,
       required this.rotateAngle,
       required this.debugOffsets,
+      required this.collisionOffsets,
       required this.context});
 
   GeometricCalculationsService _calculationsService =
@@ -54,8 +57,14 @@ class SimulationSketcher extends CustomPainter {
     Paint redStroke = Paint()
       ..color = Colors.red
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 1.0
+      ..strokeWidth = 5.0
       ..style = PaintingStyle.stroke;
+
+    Paint redPaint = Paint()
+      ..color = Colors.red
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.fill;
 
     Paint blackStroke = Paint()
       ..color = Colors.black
@@ -135,8 +144,6 @@ class SimulationSketcher extends CustomPainter {
           selectedLines.add(line);
         }
       });
-
-
     }
 
     Path machinePath = new Path();
@@ -159,9 +166,20 @@ class SimulationSketcher extends CustomPainter {
     canvas.drawPath(tracksPath, greyPaint);
     canvas.drawPath(platesPath2, blueStroke);
 
+    Line selectedLine =
+        plates.first.lines.firstWhere((line) => line.isSelected == true);
+
+
     debugOffsets.forEach((offset) {
+      // canvas.drawCircle(offset, 5, redPaint);
+      canvas.drawCircle(offset.offset, 5, _getCustomPaint(offset.color));
+    });
+
+    collisionOffsets.forEach((offset) {
       canvas.drawCircle(offset, 1, redStroke);
     });
+
+    canvas.drawLine(selectedLine.start, selectedLine.end, redStroke);
 
     ui.Picture machinePicture = machineRecorder.endRecording();
     List<Offset> machineOffsets = await createPicture(
@@ -208,9 +226,22 @@ class SimulationSketcher extends CustomPainter {
 
   void _detectCollision(
       List<Offset> collisionOffsets, List<Offset> plateOffsets) {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+
     this.context.read<SimulationPageBloc>().add(SimulationCollisionDetected(
         collisionOffsets: collisionOffsets, plateOffsets: plateOffsets));
-    this.context.read<SimulationPageBloc>().add(SimulationTicked());
+
+    if (state.isSimulationRunning == true) {
+      this.context.read<SimulationPageBloc>().add(SimulationTicked());
+    }
+  }
+
+  Paint _getCustomPaint(Color color) {
+    return Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.fill;
   }
 
   @override

@@ -33,14 +33,9 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
   /// The new tool is added to the end of the list.
   /// The new tool is also added to the [selectedList].
   Future<void> _addTool(ToolAdded event, Emitter<ToolPageState> emit) async {
-    // print('delete all tools');
-    // _toolRepository.deleteAllTools();
-
     _toolRepository.addTool(event.tool);
-    print('add new tool ${event.tool.name}');
 
     List<Tool> tools = await _toolRepository.getTools();
-    // box.add(event.tool);
 
     emit(state.copyWith(tools: []));
     emit(state.copyWith(tools: tools));

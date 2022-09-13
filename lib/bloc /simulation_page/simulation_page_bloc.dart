@@ -6,6 +6,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:open_bsp/model/debugging_offset.dart';
+import 'package:open_bsp/model/simulation/simulation_result/collision_result.dart';
+import 'package:open_bsp/model/simulation/simulation_result/simulation_tool_result.dart';
 import 'package:open_bsp/pages/simulation_page/ticker.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
@@ -13,6 +16,7 @@ import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:collection/collection.dart';
 
 import '../../model/line.dart';
+import '../../model/simulation/simulation_result/bend_result.dart';
 import '../../model/simulation/tool.dart';
 import '../../model/simulation/enums/tool_category_enum.dart';
 
@@ -31,22 +35,27 @@ class SimulationPageBloc
           selectedBeams: [],
           selectedTracks: [],
           selectedPlates: [],
+          bendingHistory: [],
+          simulationResult: [],
           rotationAngle: 0,
           debugOffsets: [],
+          collisionOffsets: [],
           inCollision: false,
           isSimulationRunning: false,
           duration: 0,
-          currentTick: 0,
+          currentTick: 9999,
         )) {
     on<SimulationPageCreated>(_setInitialLines);
     on<SimulationToolsChanged>(_setTools);
     on<SimulationToolRotate>(_rotateTool);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
     on<SimulationToolMirrored>(_onMirrorTool);
-    on<SimulationCollisionDetected>(_detectCollision);
+    on<SimulationCollisionDetected>(_onCollisionDetect);
     on<SimulationStarted>(_onSimulationStart);
     on<SimulationStopped>(_onSimulationStopped);
     on<SimulationTicked>(_onTicked);
+    on<SimulationPlateUnbended>(_onUnbendPlate);
+    on<SimulationPlateBended>(_onBendPlate);
 
     // fakeStream.listen((_) {
     //   print('fakestream');
@@ -206,6 +215,7 @@ class SimulationPageBloc
     Offset moveOffset = plateOffset - trackOffset;
 
     Tool movedTool = _moveTool(plate, moveOffset, false);
+
     return movedTool;
   }
 
@@ -225,6 +235,14 @@ class SimulationPageBloc
     });
 
     return tool.copyWith(lines: newLines);
+  }
+
+  Line _moveLine(Line line, Offset offset, bool positiveDirection) {
+    if (positiveDirection) {
+      return line.copyWith(start: line.start + offset, end: line.end + offset);
+    } else {
+      return line.copyWith(start: line.start - offset, end: line.end - offset);
+    }
   }
 
   List<Tool> _getToolsByCategory(List<Tool> tools, ToolCategoryEnum category) {
@@ -311,7 +329,6 @@ class SimulationPageBloc
         return tool;
       }
     }
-
     return tool;
   }
 
@@ -345,7 +362,7 @@ class SimulationPageBloc
     return tool.copyWith(lines: mirroredLines);
   }
 
-  void _detectCollision(
+  void _onCollisionDetect(
       SimulationCollisionDetected event, Emitter<SimulationPageState> emit) {
     bool result = false;
 
@@ -358,8 +375,86 @@ class SimulationPageBloc
 
     collisionOffsets.isNotEmpty ? result = true : result = false;
 
-    emit(state.copyWith(
-        inCollision: result, collisionOffsets: collisionOffsets));
+    Line selectedLine =
+        state.selectedPlates.first.lines.firstWhere((line) => line.isSelected);
+    double angle =
+        _calculationsService.getAngle(selectedLine.start, selectedLine.end);
+
+    List<SimulationToolResult> simulationResults = state.simulationResults;
+    SimulationToolResult? toolResult = simulationResults.firstWhereOrNull(
+        (result) => result.tool.name == state.selectedPlates.first.name);
+
+    if (toolResult == null) {
+      toolResult = new SimulationToolResult(
+          tool: state.selectedPlates.first,
+          angleOfTool: angle,
+          collisionResults: []);
+    }
+
+    if (state.currentTick < 10) {
+      toolResult.collisionResults
+          .add(new CollisionResult(angle: angle, isCollision: result));
+
+      simulationResults
+        ..removeWhere(
+            (result) => result.tool.name == state.selectedPlates.first.name)
+        ..add(toolResult);
+
+      emit(state.copyWith(simulationResults: []));
+      emit(state.copyWith(
+          inCollision: result,
+          collisionOffsets: collisionOffsets,
+          simulationResults: simulationResults));
+    } else {
+      CollisionResult collisionResult =
+          new CollisionResult(angle: angle, isCollision: result);
+
+      SimulationToolResult toolResult = new SimulationToolResult(
+          tool: state.selectedPlates.first,
+          angleOfTool: angle,
+          collisionResults: [collisionResult]);
+
+      List<SimulationToolResult> simulationResults = _addCollisionResult(
+          state.selectedPlates.first, collisionResult, angle, emit);
+
+      emit(state.copyWith(
+          inCollision: result,
+          collisionOffsets: collisionOffsets,
+          simulationResults: simulationResults));
+    }
+  }
+
+  List<SimulationToolResult> _addCollisionResult(
+      Tool tool,
+      CollisionResult collisionResult,
+      double angle,
+      Emitter<SimulationPageState> emit) {
+    List<SimulationToolResult> simulationResults = state.simulationResults;
+
+    if (simulationResults.length > 1) {
+      if (simulationResults.last.angleOfTool == angle) {
+        return simulationResults;
+      }
+    }
+
+    SimulationToolResult? resultTool =
+        simulationResults.firstWhereOrNull((result) => result.tool == tool);
+
+    if (resultTool == null) {
+      SimulationToolResult toolResult = new SimulationToolResult(
+          tool: tool, angleOfTool: angle, collisionResults: [collisionResult]);
+
+      simulationResults.add(toolResult);
+    } else {
+      int index = simulationResults.indexOf(resultTool);
+      resultTool.collisionResults.add(collisionResult);
+
+      simulationResults
+        ..removeAt(index)
+        ..insert(index, resultTool);
+    }
+
+    return simulationResults;
   }
 
   /// Places the lower track on the on the lower beam.
@@ -418,7 +513,11 @@ class SimulationPageBloc
 
     Tool placedPlate = _placePlateOnTrack(emit, plate, lowerTrack);
 
-    emit(state.copyWith(selectedPlates: [placedPlate]));
+    emit(state.copyWith(
+      selectedPlates: [placedPlate],
+      simulationResults: [],
+      bendingHistory: [],
+    ));
   }
 
   /// Places the upper track on the plate profile.
@@ -433,7 +532,7 @@ class SimulationPageBloc
     Tool? plate = state.selectedPlates.first;
     // Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
-    if (upperTrack == null || plate == null) {
+    if (upperTrack == null) {
       return;
     }
 
@@ -489,7 +588,9 @@ class SimulationPageBloc
   void _onSimulationStart(
       SimulationStarted event, Emitter<SimulationPageState> emit) {
     add(SimulationTicked());
-    emit(state.copyWith(isSimulationRunning: true));
+
+    emit(state.copyWith(
+        isSimulationRunning: true, currentTick: 0, simulationResults: []));
   }
 
   void _testAllSidesOfPlateForCollision(
@@ -502,7 +603,7 @@ class SimulationPageBloc
   /// Stops the simulation
   void _onSimulationStopped(
       SimulationStopped event, Emitter<SimulationPageState> emit) {
-    emit(state.copyWith(isSimulationRunning: false, currentTick: -1));
+    emit(state.copyWith(isSimulationRunning: false, currentTick: 9999));
   }
 
   /// Rudimentary algorithm for the simulation.
@@ -514,7 +615,11 @@ class SimulationPageBloc
   void _onTicked(SimulationTicked event, Emitter<SimulationPageState> emit) {
     int tick = state.currentTick;
 
-    if (tick < 3 && state.isSimulationRunning) {
+    if (state.isSimulationRunning == false) {
+      return;
+    }
+
+    if (tick < 4) {
       Tool plate = state.selectedPlates.first;
       Tool rotatedPlate = _rotTool(plate, 90);
 
@@ -525,12 +630,12 @@ class SimulationPageBloc
           selectedPlates: [rotatedPlate],
           collisionOffsets: [],
           currentTick: tick));
-    }  else if (tick == 3) {
+    } else if (tick == 3) {
       Tool mirroredTool = _mirrorTool(state.selectedPlates.first);
-      tick ++;
+      tick++;
       emit(state.copyWith(selectedPlates: []));
       emit(state.copyWith(selectedPlates: [mirroredTool], currentTick: tick));
-    }  else if (tick < 8 && state.isSimulationRunning) {
+    } else if (tick < 8 && state.isSimulationRunning) {
       Tool plate = state.selectedPlates.first;
       Tool rotatedPlate = _rotTool(plate, 90);
 
@@ -541,9 +646,115 @@ class SimulationPageBloc
           selectedPlates: [rotatedPlate],
           collisionOffsets: [],
           currentTick: tick));
-    }
-    else {
+    } else {
       add(SimulationStopped());
     }
+  }
+
+  void _onUnbendPlate(
+      SimulationPlateUnbended event, Emitter<SimulationPageState> emit) {
+    Tool plate = event.plate.copyWith();
+    List<BendResult> bendResults = state.bendingHistory;
+    List<DebuggingOffset> debuggingOffsets = [];
+
+    if (bendResults.isEmpty) {
+      _addBendingResult(event.plate, 0, emit);
+    }
+
+    List<Line> lines = plate.lines;
+    int indexOfSelectedLine = _getIndexOfSelectedLine(lines);
+    Line selectedLine = plate.lines[indexOfSelectedLine];
+
+    if (plate.lines
+        .getRange(indexOfSelectedLine + 1, plate.lines.length)
+        .isEmpty) {
+      lines = _reverseLineOrder(plate.lines);
+      indexOfSelectedLine = _getIndexOfSelectedLine(lines);
+      selectedLine = lines[indexOfSelectedLine];
+    }
+
+    /// Rotate Line To bend + rest
+    List<Line> linesToRotate =
+        lines.getRange(indexOfSelectedLine + 1, plate.lines.length).toList();
+
+    linesToRotate.forEach((line) {
+      debuggingOffsets
+          .add(DebuggingOffset(offset: line.start, color: Colors.red));
+      debuggingOffsets
+          .add(DebuggingOffset(offset: line.end, color: Colors.red));
+    });
+
+    List<Line> rotatedLines = _calculationsService.rotateLines(
+        linesToRotate, linesToRotate.first.start, 270);
+
+    debuggingOffsets.addAll([
+      DebuggingOffset(offset: selectedLine.start, color: Colors.blue),
+      DebuggingOffset(offset: selectedLine.end, color: Colors.green)
+    ]);
+
+    ///  Merge selected line and bended line
+    List<Line> currentLines = plate.copyWith().lines;
+    selectedLine = selectedLine.copyWith(end: rotatedLines.first.end);
+    rotatedLines.removeAt(0);
+
+    currentLines
+      ..removeRange(indexOfSelectedLine, currentLines.length)
+      ..insert(indexOfSelectedLine, selectedLine)
+      ..addAll(rotatedLines);
+
+    debuggingOffsets.add(new DebuggingOffset(offset: selectedLine.start, color: Colors.purple));
+    debuggingOffsets.add(new DebuggingOffset(offset: selectedLine.end, color: Colors.purple));
+
+    double angle =
+        _calculationsService.getAngle(selectedLine.start, selectedLine.end);
+    Tool newPlate = plate.copyWith(lines: currentLines);
+    List<BendResult> newBendResults = bendResults
+      ..add(new BendResult(tool: newPlate, angle: angle));
+
+    // emit(state.copyWith(debugOffsets: debuggingOffsets));
+
+    emit(state.copyWith(
+        debugOffsets: debuggingOffsets,
+        selectedPlates: [newPlate],
+        bendingHistory: newBendResults));
+  }
+
+  /// Return the index of the currently selected [Line] of the given [lines].
+  ///
+  int _getIndexOfSelectedLine(List<Line> lines) {
+    /// Get Line To bend
+    Line selectedLine = lines.firstWhere((line) => line.isSelected == true);
+
+    return lines.indexOf(selectedLine);
+  }
+
+  void _onBendPlate(
+      SimulationPlateBended event, Emitter<SimulationPageState> emit) {
+    List<BendResult> bendResults = state.bendingHistory;
+    bendResults.removeLast();
+
+    Tool lowerTrack = state.selectedTracks
+        .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
+    Tool placedPlate = _placePlateOnTrack(emit, bendResults.last.tool, lowerTrack);
+
+    emit(state.copyWith(selectedPlates: [], simulationResults: []));
+    emit(state
+        .copyWith(bendingHistory: bendResults, selectedPlates: [placedPlate]));
+  }
+
+  /// Add [BendingResult] to state.
+  void _addBendingResult(
+      Tool tool, double angle, Emitter<SimulationPageState> emit) {
+    List<BendResult> bendResults = state.bendingHistory;
+    bendResults.add(new BendResult(tool: tool.copyWith(), angle: angle));
+
+    emit(state.copyWith(bendingHistory: bendResults));
+  }
+
+  /// Reverse the given [lines].
+  List<Line> _reverseLineOrder(List<Line> lines) {
+    return _calculationsService
+        .reverseStartAndEndOfLines(lines.reversed.toList());
+    // return lines.reversed.toList();
   }
 }

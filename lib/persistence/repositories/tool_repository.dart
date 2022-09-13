@@ -1,4 +1,3 @@
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:open_bsp/model/simulation/enums/position_enum.dart';
 
@@ -12,7 +11,7 @@ import '../database_provider.dart';
 
 class ToolRepository {
   final DatabaseProvider databaseProvider;
-  final String boxName = 'shapes8';
+  final String boxName = 'shapes9';
 
   ToolRepository(this.databaseProvider);
 
