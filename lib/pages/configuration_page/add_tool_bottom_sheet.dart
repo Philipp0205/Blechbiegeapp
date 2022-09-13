@@ -178,8 +178,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         s: context.read<ConfigPageBloc>().state.s,
         isMirrored: false);
 
-    print('thickness of new Tool: ${context.read<ConfigPageBloc>().state.s}');
-
     if (selectedShape == null) {
       Navigator.of(context).pushNamed("/shapes");
       context.read<ToolPageBloc>().add(ToolAdded(tool: tool));

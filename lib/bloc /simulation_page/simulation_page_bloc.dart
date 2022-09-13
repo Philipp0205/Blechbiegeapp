@@ -54,7 +54,7 @@ class SimulationPageBloc
     on<SimulationStarted>(_onSimulationStart);
     on<SimulationStopped>(_onSimulationStopped);
     on<SimulationTicked>(_onTicked);
-    on<SimulationPlateUnbended>(_onUnbendPlate2);
+    on<SimulationPlateUnbended>(_onUnbendPlate);
     on<SimulationPlateBended>(_onBendPlate);
 
     // fakeStream.listen((_) {
@@ -532,7 +532,7 @@ class SimulationPageBloc
     Tool? plate = state.selectedPlates.first;
     // Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
-    if (upperTrack == null || plate == null) {
+    if (upperTrack == null) {
       return;
     }
 
@@ -651,7 +651,7 @@ class SimulationPageBloc
     }
   }
 
-  void _onUnbendPlate2(
+  void _onUnbendPlate(
       SimulationPlateUnbended event, Emitter<SimulationPageState> emit) {
     Tool plate = event.plate.copyWith();
     List<BendResult> bendResults = state.bendingHistory;
@@ -661,16 +661,36 @@ class SimulationPageBloc
       _addBendingResult(event.plate, 0, emit);
     }
 
-    int indexOfSelectedLine = _getIndexOfSelectedLine(event.plate);
-    Line selectedLine = plate.lines[indexOfSelectedLine].copyWith();
+    List<Line> lines = plate.lines;
+    int indexOfSelectedLine = _getIndexOfSelectedLine(lines);
+    Line selectedLine = plate.lines[indexOfSelectedLine];
+
+    if (plate.lines
+        .getRange(indexOfSelectedLine + 1, plate.lines.length)
+        .isEmpty) {
+      lines = _reverseLineOrder(plate.lines);
+      indexOfSelectedLine = _getIndexOfSelectedLine(lines);
+      selectedLine = lines[indexOfSelectedLine];
+    }
 
     /// Rotate Line To bend + rest
-    List<Line> linesToRotate = plate.lines
-        .getRange(indexOfSelectedLine + 1, plate.lines.length)
-        .toList();
+    List<Line> linesToRotate =
+        lines.getRange(indexOfSelectedLine + 1, plate.lines.length).toList();
+
+    linesToRotate.forEach((line) {
+      debuggingOffsets
+          .add(DebuggingOffset(offset: line.start, color: Colors.red));
+      debuggingOffsets
+          .add(DebuggingOffset(offset: line.end, color: Colors.red));
+    });
 
     List<Line> rotatedLines = _calculationsService.rotateLines(
         linesToRotate, linesToRotate.first.start, 270);
+
+    debuggingOffsets.addAll([
+      DebuggingOffset(offset: selectedLine.start, color: Colors.blue),
+      DebuggingOffset(offset: selectedLine.end, color: Colors.green)
+    ]);
 
     ///  Merge selected line and bended line
     List<Line> currentLines = plate.copyWith().lines;
@@ -682,11 +702,16 @@ class SimulationPageBloc
       ..insert(indexOfSelectedLine, selectedLine)
       ..addAll(rotatedLines);
 
+    debuggingOffsets.add(new DebuggingOffset(offset: selectedLine.start, color: Colors.purple));
+    debuggingOffsets.add(new DebuggingOffset(offset: selectedLine.end, color: Colors.purple));
+
     double angle =
         _calculationsService.getAngle(selectedLine.start, selectedLine.end);
     Tool newPlate = plate.copyWith(lines: currentLines);
     List<BendResult> newBendResults = bendResults
       ..add(new BendResult(tool: newPlate, angle: angle));
+
+    // emit(state.copyWith(debugOffsets: debuggingOffsets));
 
     emit(state.copyWith(
         debugOffsets: debuggingOffsets,
@@ -694,14 +719,13 @@ class SimulationPageBloc
         bendingHistory: newBendResults));
   }
 
-  /// Return the index of the currently selected [Line] of the given [plate].
+  /// Return the index of the currently selected [Line] of the given [lines].
   ///
-  int _getIndexOfSelectedLine(Tool plate) {
+  int _getIndexOfSelectedLine(List<Line> lines) {
     /// Get Line To bend
-    Line selectedLine =
-        plate.lines.firstWhere((line) => line.isSelected == true);
+    Line selectedLine = lines.firstWhere((line) => line.isSelected == true);
 
-    return plate.lines.indexOf(selectedLine);
+    return lines.indexOf(selectedLine);
   }
 
   void _onBendPlate(
@@ -709,11 +733,13 @@ class SimulationPageBloc
     List<BendResult> bendResults = state.bendingHistory;
     bendResults.removeLast();
 
-    Tool lastTool = _rotTool(bendResults.last.tool, bendResults.last.angle);
+    Tool lowerTrack = state.selectedTracks
+        .firstWhere((tool) => tool.type.type == ToolType.lowerTrack);
+    Tool placedPlate = _placePlateOnTrack(emit, bendResults.last.tool, lowerTrack);
 
     emit(state.copyWith(selectedPlates: [], simulationResults: []));
     emit(state
-        .copyWith(bendingHistory: bendResults, selectedPlates: [lastTool]));
+        .copyWith(bendingHistory: bendResults, selectedPlates: [placedPlate]));
   }
 
   /// Add [BendingResult] to state.
@@ -723,5 +749,12 @@ class SimulationPageBloc
     bendResults.add(new BendResult(tool: tool.copyWith(), angle: angle));
 
     emit(state.copyWith(bendingHistory: bendResults));
+  }
+
+  /// Reverse the given [lines].
+  List<Line> _reverseLineOrder(List<Line> lines) {
+    return _calculationsService
+        .reverseStartAndEndOfLines(lines.reversed.toList());
+    // return lines.reversed.toList();
   }
 }
