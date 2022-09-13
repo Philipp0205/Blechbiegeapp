@@ -6,7 +6,7 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedBeams;
   final List<Tool> selectedTracks;
   final List<Tool> selectedPlates;
-  final List<Tool> bendingHistory;
+  final List<BendResult> bendingHistory;
   final List<DebuggingOffset> debugOffsets;
   final double rotationAngle;
   final bool inCollision;
@@ -16,22 +16,21 @@ class SimulationPageState extends Equatable {
   final List<Offset> collisionOffsets;
   final List<SimulationToolResult> simulationResults;
 
-  const SimulationPageState({
-    required this.shapes,
-    required this.lines,
-    required this.selectedPlates,
-    required this.selectedBeams,
-    required this.selectedTracks,
-    required this.bendingHistory,
-    required this.debugOffsets,
-    required this.rotationAngle,
-    required this.collisionOffsets,
-    required this.inCollision,
-    required this.isSimulationRunning,
-    required this.duration,
-    required this.currentTick,
-    required this.simulationResults,
-  });
+  const SimulationPageState(
+      {required this.shapes,
+      required this.lines,
+      required this.selectedPlates,
+      required this.selectedBeams,
+      required this.selectedTracks,
+      required this.bendingHistory,
+      required this.debugOffsets,
+      required this.rotationAngle,
+      required this.collisionOffsets,
+      required this.inCollision,
+      required this.isSimulationRunning,
+      required this.duration,
+      required this.currentTick,
+      required this.simulationResults});
 
   @override
   List<Object> get props => [
@@ -48,6 +47,7 @@ class SimulationPageState extends Equatable {
         duration,
         currentTick,
         // simulationResults,
+        bendingHistory,
         debugOffsets,
       ];
 
@@ -57,7 +57,7 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedBeams,
     List<Tool>? selectedTracks,
     List<Tool>? selectedPlates,
-    List<Tool>? bendingHistory,
+    List<BendResult>? bendingHistory,
     List<DebuggingOffset>? debugOffsets,
     double? rotationAngle,
     bool? inCollision,
@@ -93,7 +93,7 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Tool> selectedBeams,
     required List<Tool> selectedTracks,
     required List<Tool> selectedPlates,
-    required List<Tool> bendingHistory,
+    required List<BendResult> bendingHistory,
     required List<Line> lines,
     required List<DebuggingOffset> debugOffsets,
     required List<Offset> collisionOffsets,

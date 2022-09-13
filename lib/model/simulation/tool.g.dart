@@ -23,13 +23,14 @@ class ToolAdapter extends TypeAdapter<Tool> {
       isSelected: fields[4] as bool,
       adapterLine: (fields[5] as List).cast<Line>(),
       s: fields[6] as double,
+      isMirrored: fields[7] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Tool obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
@@ -41,7 +42,9 @@ class ToolAdapter extends TypeAdapter<Tool> {
       ..writeByte(5)
       ..write(obj.adapterLine)
       ..writeByte(6)
-      ..write(obj.s);
+      ..write(obj.s)
+      ..writeByte(7)
+      ..write(obj.isMirrored);
   }
 
   @override

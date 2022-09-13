@@ -238,14 +238,14 @@ class _SimulationPageState extends State<SimulationPage> {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
     context
         .read<SimulationPageBloc>()
-        .add(SimulationPlateUnfolded(plate: state.selectedPlates.first));
+        .add(SimulationPlateUnbended(plate: state.selectedPlates.first));
   }
 
   void _refoldPlate() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
     context
         .read<SimulationPageBloc>()
-        .add(SimulationPlateRefolded(plate: state.selectedPlates.first));
+        .add(SimulationPlateBended(plate: state.selectedPlates.first));
   }
 
   Text _setCollisionLabel(bool isColliding) {

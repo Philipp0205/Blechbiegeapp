@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -17,6 +16,7 @@ import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:collection/collection.dart';
 
 import '../../model/line.dart';
+import '../../model/simulation/simulation_result/bend_result.dart';
 import '../../model/simulation/tool.dart';
 import '../../model/simulation/enums/tool_category_enum.dart';
 
@@ -54,8 +54,8 @@ class SimulationPageBloc
     on<SimulationStarted>(_onSimulationStart);
     on<SimulationStopped>(_onSimulationStopped);
     on<SimulationTicked>(_onTicked);
-    on<SimulationPlateUnfolded>(_onUnfoldPlate);
-    on<SimulationPlateRefolded>(_onRefoldPlate);
+    on<SimulationPlateUnbended>(_onUnbendPlate2);
+    on<SimulationPlateBended>(_onBendPlate);
 
     // fakeStream.listen((_) {
     //   print('fakestream');
@@ -513,7 +513,11 @@ class SimulationPageBloc
 
     Tool placedPlate = _placePlateOnTrack(emit, plate, lowerTrack);
 
-    emit(state.copyWith(selectedPlates: [placedPlate], simulationResults: []));
+    emit(state.copyWith(
+      selectedPlates: [placedPlate],
+      simulationResults: [],
+      bendingHistory: [],
+    ));
   }
 
   /// Places the upper track on the plate profile.
@@ -647,89 +651,77 @@ class SimulationPageBloc
     }
   }
 
-  /// Unfolds a plate one time.
-  void _onUnfoldPlate(
-      SimulationPlateUnfolded event, Emitter<SimulationPageState> emit) {
-    List<Line> lines = event.plate.lines;
-    Line selectedLine = event.plate.lines.firstWhere((line) => line.isSelected);
-
-    Offset lowestX = _calculationsService
-        .getLowestX([selectedLine.start, selectedLine.end]).first;
-
-    Offset newOffset;
-    Line lineToBend;
-    int indexOfSelectedLine = event.plate.lines.indexOf(selectedLine);
+  void _onUnbendPlate2(
+      SimulationPlateUnbended event, Emitter<SimulationPageState> emit) {
+    Tool plate = event.plate.copyWith();
+    List<BendResult> bendResults = state.bendingHistory;
     List<DebuggingOffset> debuggingOffsets = [];
 
-    if (selectedLine.start == lowestX) {
-      lineToBend = event.plate.lines[indexOfSelectedLine - 1];
-      double distance = (lineToBend.start - lineToBend.end).distance;
-
-      newOffset =
-          new Offset(selectedLine.start.dx - distance, selectedLine.start.dy);
-
-      for (int i = 0; i < indexOfSelectedLine; i++) {
-        Line line = event.plate.lines[i];
-        Line movedLine = _moveLine(line, newOffset, false);
-        lines[i] = movedLine;
-      }
-    } else {
-      lineToBend = event.plate.lines[indexOfSelectedLine + 1];
-      double distance = (lineToBend.start - lineToBend.end).distance;
-
-      newOffset =
-          new Offset(selectedLine.end.dx - distance, selectedLine.end.dy);
-
-      List<Line> movedLines = [];
-
-      List<Line> remainingLines =
-          lines.getRange(indexOfSelectedLine, lines.length - 1).toList();
-
-      double xOffset = (newOffset.dx - lineToBend.start.dx);
-      Offset moveOffset2 = new Offset(xOffset, 0);
-
-      List<Line> rotatedLines = _calculationsService.rotateLines(
-          remainingLines, lineToBend.start, 90);
-
-      for (int i = 0; i < rotatedLines.length; i++) {
-        movedLines.add(_moveLine(rotatedLines[i], moveOffset2, true));
-      }
-
-      List<Offset> movedOffsets = [];
-      movedLines.forEach((line) {
-        movedOffsets..addAll([line.start, line.end]);
-      });
-
-      List<Line> reversedLines =
-          _calculationsService.reverseStartAndEndOfLines(movedLines);
-
-      lines..removeRange(indexOfSelectedLine, lines.length);
-      Line newSelectedLine = selectedLine.copyWith(end: reversedLines.last.end);
-
-      lines
-        ..add(newSelectedLine)
-        ..addAll(reversedLines.reversed);
-
-      emit(state.copyWith(selectedPlates: []));
-      emit(state.copyWith(
-          selectedPlates: [event.plate.copyWith(lines: lines)],
-          debugOffsets: debuggingOffsets));
+    if (bendResults.isEmpty) {
+      _addBendingResult(event.plate, 0, emit);
     }
+
+    int indexOfSelectedLine = _getIndexOfSelectedLine(event.plate);
+    Line selectedLine = plate.lines[indexOfSelectedLine].copyWith();
+
+    /// Rotate Line To bend + rest
+    List<Line> linesToRotate = plate.lines
+        .getRange(indexOfSelectedLine + 1, plate.lines.length)
+        .toList();
+
+    List<Line> rotatedLines = _calculationsService.rotateLines(
+        linesToRotate, linesToRotate.first.start, 270);
+
+    ///  Merge selected line and bended line
+    List<Line> currentLines = plate.copyWith().lines;
+    selectedLine = selectedLine.copyWith(end: rotatedLines.first.end);
+    rotatedLines.removeAt(0);
+
+    currentLines
+      ..removeRange(indexOfSelectedLine, currentLines.length)
+      ..insert(indexOfSelectedLine, selectedLine)
+      ..addAll(rotatedLines);
+
+    double angle =
+        _calculationsService.getAngle(selectedLine.start, selectedLine.end);
+    Tool newPlate = plate.copyWith(lines: currentLines);
+    List<BendResult> newBendResults = bendResults
+      ..add(new BendResult(tool: newPlate, angle: angle));
+
+    emit(state.copyWith(
+        debugOffsets: debuggingOffsets,
+        selectedPlates: [newPlate],
+        bendingHistory: newBendResults));
   }
 
-  void _onRefoldPlate(
-      SimulationPlateRefolded event, Emitter<SimulationPageState> emit) {
-    List<SimulationToolResult> results = state.simulationResults;
+  /// Return the index of the currently selected [Line] of the given [plate].
+  ///
+  int _getIndexOfSelectedLine(Tool plate) {
+    /// Get Line To bend
+    Line selectedLine =
+        plate.lines.firstWhere((line) => line.isSelected == true);
 
-    results.removeLast();
+    return plate.lines.indexOf(selectedLine);
+  }
 
-    SimulationToolResult lastTool = results.last;
-    // results.removeLast();
+  void _onBendPlate(
+      SimulationPlateBended event, Emitter<SimulationPageState> emit) {
+    List<BendResult> bendResults = state.bendingHistory;
+    bendResults.removeLast();
 
-    Tool rotatedTool = _rotTool(lastTool.tool, lastTool.angleOfTool);
+    Tool lastTool = _rotTool(bendResults.last.tool, bendResults.last.angle);
 
     emit(state.copyWith(selectedPlates: [], simulationResults: []));
     emit(state
-        .copyWith(simulationResults: results, selectedPlates: [rotatedTool]));
+        .copyWith(bendingHistory: bendResults, selectedPlates: [lastTool]));
+  }
+
+  /// Add [BendingResult] to state.
+  void _addBendingResult(
+      Tool tool, double angle, Emitter<SimulationPageState> emit) {
+    List<BendResult> bendResults = state.bendingHistory;
+    bendResults.add(new BendResult(tool: tool.copyWith(), angle: angle));
+
+    emit(state.copyWith(bendingHistory: bendResults));
   }
 }

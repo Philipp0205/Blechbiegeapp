@@ -175,7 +175,8 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
         type: type,
         isSelected: false,
         adapterLine: [],
-        s: context.read<ConfigPageBloc>().state.s,);
+        s: context.read<ConfigPageBloc>().state.s,
+        isMirrored: false);
 
     print('thickness of new Tool: ${context.read<ConfigPageBloc>().state.s}');
 
@@ -186,6 +187,5 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
       Navigator.pop(context);
       context.read<ToolPageBloc>().add(ToolEdited(tool: tool));
     }
-
   }
 }
