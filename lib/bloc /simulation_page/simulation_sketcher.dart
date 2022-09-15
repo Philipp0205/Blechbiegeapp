@@ -170,16 +170,17 @@ class SimulationSketcher extends CustomPainter {
         plates.first.lines.firstWhere((line) => line.isSelected == true);
 
 
+    canvas.drawLine(selectedLine.start, selectedLine.end, _getCustomPaint(Colors.purple, 5));
+
     debugOffsets.forEach((offset) {
       // canvas.drawCircle(offset, 5, redPaint);
-      canvas.drawCircle(offset.offset, 5, _getCustomPaint(offset.color));
+      canvas.drawCircle(offset.offset, 5, _getCustomPaint(offset.color, 5));
     });
 
     collisionOffsets.forEach((offset) {
-      canvas.drawCircle(offset, 1, redStroke);
+      canvas.drawCircle(offset, 1, _getCustomPaint(Colors.red, 5));
     });
 
-    canvas.drawLine(selectedLine.start, selectedLine.end, redStroke);
 
     ui.Picture machinePicture = machineRecorder.endRecording();
     List<Offset> machineOffsets = await createPicture(
@@ -236,11 +237,11 @@ class SimulationSketcher extends CustomPainter {
     }
   }
 
-  Paint _getCustomPaint(Color color) {
+  Paint _getCustomPaint(Color color, double strokeWidth) {
     return Paint()
       ..color = color
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 1.0
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.fill;
   }
 

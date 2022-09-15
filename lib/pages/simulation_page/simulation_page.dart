@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
@@ -37,19 +38,16 @@ class _SimulationPageState extends State<SimulationPage> {
               // _setSelectedBeams(context, state.tools);
               _setSelectedTools(context, state.tools);
             }),
-
         BlocListener<SimulationPageBloc, SimulationPageState>(
             listenWhen: (prev, current) =>
                 prev.collisionOffsets != current.collisionOffsets,
             listener: (context, state) {}),
-        // BlocListener<SimulationPageBloc, SimulationPageState>(
-        //     listenWhen: (prev, current) => _requestNextCollision(
-        //         current.isSimulationRunning, prev, current),
-        //     listener: (context, state) {
-        //       // context
-        //       //     .read<SimulationPageBloc>()
-        //       //     .add(SimulationNextCollisionRequested());
-        //     }),
+        BlocListener<SimulationPageBloc, SimulationPageState>(
+            listenWhen: (prev, current) =>
+                prev.isSimulationRunning != current.isSimulationRunning,
+            listener: (context, state) {
+              _toggleDialog(state.isSimulationRunning);
+            }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
           buildWhen: (prev, current) =>
@@ -109,6 +107,7 @@ class _SimulationPageState extends State<SimulationPage> {
             icon: new Icon(Icons.compare_arrows)),
         if (context.read<SimulationPageBloc>().state.isSimulationRunning ==
             true) ...[
+          // _closeLoadingDialog(context),
           IconButton(
               onPressed: () => {
                     context.read<SimulationPageBloc>().add(SimulationStopped()),
@@ -120,6 +119,8 @@ class _SimulationPageState extends State<SimulationPage> {
                     context
                         .read<SimulationPageBloc>()
                         .add(SimulationStarted(timeInterval: 2)),
+
+                    // _showLoadingDialog(context)
                   },
               icon: new Icon(Icons.play_arrow))
         ],
@@ -138,12 +139,26 @@ class _SimulationPageState extends State<SimulationPage> {
       buildWhen: (prev, current) =>
           prev.isSimulationRunning != current.isSimulationRunning,
       builder: (context, state) {
+        if (state.isSimulationRunning) {}
+        // if (state.isSimulationRunning) {
+        //   SchedulerBinding.instance.addPostFrameCallback((_) {
+        //     // _showLoadingDialog(context);
+        //   });
+        // }
+        // if (state.isSimulationRunning == false) {
+        //   SchedulerBinding.instance.addPostFrameCallback((_) {
+        //     Navigator.pop(context);
+        //   });
+        // }
+        // if (state.isSimulationRunning) {
+        //   _showLoadingDialog(context);
+        // } else {
+        //   _closeLoadingDialog(context);
+        // }
         return Row(
           children: [
             if (state.isSimulationRunning) ...[
-              CircularProgressIndicator(),
             ] else ...[
-              CircularProgressIndicator(color: Colors.grey, value: 1)
             ],
           ],
         );
@@ -260,27 +275,93 @@ class _SimulationPageState extends State<SimulationPage> {
     context.read<TimerWidgetBloc>().add(TimerStarted(duration: 60));
     context.read<SimulationPageBloc>().add(
         SimulationStarted(timeInterval: double.parse(_timeController.text)));
-    // SimulationStarted(timeInterval: 10));
+    _showLoadingDialog(context);
   }
 
   void _stopSimulation() {
     context.read<TimerWidgetBloc>().add(TimerStopped());
+    _closeLoadingDialog(context);
   }
-}
 
-class TimerText extends StatelessWidget {
-  const TimerText({Key? key}) : super(key: key);
+  void _showLoadingDialog(BuildContext context) async {
+    // show the loading dialog
+    return showDialog(
+        // The user CANNOT close this dialog  by pressing outsite it
+        barrierDismissible: false,
+        context: context,
+        builder: (_) {
+          return Dialog(
+            // The background color
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  // The loading indicator
+                  CircularProgressIndicator(),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  // Some text
+                  Text('Loading...')
+                ],
+              ),
+            ),
+          );
+        });
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final duration =
-        context.select((SimulationPageBloc bloc) => bloc.state.duration);
-    final minutesStr =
-        ((duration / 60) % 60).floor().toString().padLeft(2, '0');
-    final secondsStr = (duration % 60).floor().toString().padLeft(2, '0');
-    return Text(
-      '$minutesStr:$secondsStr',
-      style: Theme.of(context).textTheme.bodyText1,
+  void _closeLoadingDialog(BuildContext context) {
+    Navigator.of(context).pop();
+  }
+
+  SimpleDialog _showSimpleDialog(BuildContext context) {
+    return SimpleDialog(
+      title: const Text('Simulation'),
+      children: <Widget>[
+        SimpleDialogOption(
+          onPressed: () {
+            _startSimulation();
+            Navigator.pop(context);
+          },
+          child: const Text('Start'),
+        ),
+        SimpleDialogOption(
+          onPressed: () {
+            _stopSimulation();
+            Navigator.pop(context);
+          },
+          child: const Text('Stop'),
+        ),
+      ],
     );
+  }
+
+  showLoaderDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      content: new Row(
+        children: [
+          CircularProgressIndicator(),
+          Container(
+              margin: EdgeInsets.only(left: 7), child: Text("Loading...")),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  void _toggleDialog(bool isSimulationRunning) {
+    if (isSimulationRunning) {
+      _showLoadingDialog(context);
+    } else {
+      _closeLoadingDialog(context);
+    }
   }
 }
