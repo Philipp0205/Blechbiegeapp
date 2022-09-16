@@ -46,7 +46,7 @@ class SimulationPageBloc
           currentTick: 9999,
         )) {
     on<SimulationPageCreated>(_setInitialLines);
-    on<SimulationToolsChanged>(_setTools);
+    on<SimulationToolsChanged>(_placeTools);
     on<SimulationToolRotate>(_rotateTool);
     on<SimulationSelectedPlateLineChanged>(_nextLineOfPlate);
     on<SimulationToolMirrored>(_onMirrorTool);
@@ -86,7 +86,7 @@ class SimulationPageBloc
 
   /// Set the tools of the simulation.
   /// This method is called when the [SimulationToolsChanged] event is emitted.
-  void _setTools(
+  void _placeTools(
       SimulationToolsChanged event, Emitter<SimulationPageState> emit) {
     if (event.tools.isEmpty) return;
 
@@ -541,6 +541,8 @@ class SimulationPageBloc
     Tool? plate = state.selectedPlates.first;
     // Tool? plate = _getToolByType(event.tools, ToolType.plateProfile);
 
+    List<DebugOffset> debuggingOffsets = [];
+
     if (upperTrack == null) {
       return;
     }
@@ -573,6 +575,7 @@ class SimulationPageBloc
       selectedBeams) {
     // Tool? upperBeam = _getToolByType(event.tools, ToolType.upperBeam);
     // Tool? upperTrack = _getToolByType(event.tools, ToolType.upperTrack);
+    List<DebugOffset> debugOffsets = [];
 
     Tool? upperBeam = _getToolByType(selectedBeams, ToolType.upperBeam);
     Tool? upperTrack = _getToolByType(selectedTracks, ToolType.upperTrack);
@@ -581,16 +584,44 @@ class SimulationPageBloc
       return;
     }
 
-    Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack);
+    // Tool placedBeam = _placeTrackOnBeam(upperBeam, upperTrack);
+
+    /// TODO remove this and refactor _placeTrackOnBeam function.
+    Line beamAdapterLine =
+        upperBeam.lines.where((line) => line.isSelected).first;
+    Line trackAdapterLine =
+        upperTrack.lines.where((line) => line.isSelected).first;
+
+    Offset trackOffset = _calculationsService
+        .getLowestX([trackAdapterLine.start, trackAdapterLine.end]).first;
+
+    Offset beamOffset = _calculationsService
+        .getLowestX([beamAdapterLine.start, beamAdapterLine.end]).first;
+
+    // debugOffsets.addAll([
+    //   DebugOffset(
+    //     offset: trackOffset,
+    //     color: Colors.red,
+    //   ),
+    //   DebugOffset(
+    //     offset: beamOffset,
+    //     color: Colors.green,
+    //   ),
+    // ]);
 
     Tool currentUpperBeam = selectedBeams
         .firstWhere((tool) => tool.type.type == ToolType.upperBeam);
+
+    Offset newOffset = beamOffset - trackOffset;
+
+    Tool placedBeam = _moveTool(upperBeam, newOffset, false);
 
     selectedBeams
       ..remove(currentUpperBeam)
       ..add(placedBeam);
 
-    emit(state.copyWith(selectedBeams: selectedBeams));
+    emit(state.copyWith(
+        selectedBeams: selectedBeams, debugOffsets: debugOffsets));
   }
 
   /// Starts the simulation
@@ -716,7 +747,7 @@ class SimulationPageBloc
       SimulationPlateUnbended event, Emitter<SimulationPageState> emit) {
     Tool plate = event.plate.copyWith();
     List<BendResult> bendResults = state.bendingHistory;
-    List<DebuggingOffset> debuggingOffsets = [];
+    List<DebugOffset> debuggingOffsets = [];
 
     List<Line> lines = plate.lines;
     int indexOfSelectedLine = _getIndexOfSelectedLine(lines);
