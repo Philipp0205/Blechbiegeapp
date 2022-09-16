@@ -21,4 +21,22 @@ class ToolType2 {
       required this.type,
       required this.category,
       required this.position});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': this.name,
+      'type': this.type,
+      'category': this.category,
+      'position': this.position,
+    };
+  }
+
+  factory ToolType2.fromMap(Map<String, dynamic> map) {
+    return ToolType2(
+      name: map['name'] as String,
+      type: map['type'] as ToolType,
+      category: map['category'] as ToolCategoryEnum,
+      position: map['position'] as PositionEnum,
+    );
+  }
 }

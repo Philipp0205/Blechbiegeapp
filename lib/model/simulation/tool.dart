@@ -52,5 +52,31 @@ class Tool {
       s: s ?? this.s,
       isMirrored: isMirrored ?? this.isMirrored,
     );
+
+
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': this.name,
+      'lines': this.lines,
+      'type': this.type,
+      'isSelected': this.isSelected,
+      'adapterLine': this.adapterLine,
+      's': this.s,
+      'isMirrored': this.isMirrored,
+    };
+  }
+
+  factory Tool.fromMap(Map<String, dynamic> map) {
+    return Tool(
+      name: map['name'] as String,
+      lines: map['lines'] as List<Line>,
+      type: map['type'] as ToolType2,
+      isSelected: map['isSelected'] as bool,
+      adapterLine: map['adapterLine'] as List<Line>,
+      s: map['s'] as double,
+      isMirrored: map['isMirrored'] as bool,
+    );
   }
 }
