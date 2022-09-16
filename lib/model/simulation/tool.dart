@@ -56,7 +56,7 @@ class Tool {
 
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'name': this.name,
       'lines': this.lines,
@@ -68,7 +68,7 @@ class Tool {
     };
   }
 
-  factory Tool.fromMap(Map<String, dynamic> map) {
+  factory Tool.fromJson(Map<String, dynamic> map) {
     return Tool(
       name: map['name'] as String,
       lines: map['lines'] as List<Line>,
