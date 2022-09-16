@@ -46,7 +46,7 @@ class SimulationPageState extends Equatable {
         isSimulationRunning,
         duration,
         currentTick,
-        // simulationResults,
+        simulationResults,
         bendingHistory,
         debugOffsets,
       ];
@@ -59,13 +59,13 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedPlates,
     List<BendResult>? bendingHistory,
     List<DebuggingOffset>? debugOffsets,
+    List<SimulationToolResult>? simulationResults,
     double? rotationAngle,
     bool? inCollision,
     bool? isSimulationRunning,
     double? duration,
     int? currentTick,
     List<Offset>? collisionOffsets,
-    List<SimulationToolResult>? simulationResults,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
