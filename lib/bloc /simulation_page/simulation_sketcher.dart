@@ -18,7 +18,7 @@ class SimulationSketcher extends CustomPainter {
   final List<Tool> beams;
   final List<Tool> tracks;
   final List<Tool> plates;
-  final List<DebuggingOffset> debugOffsets;
+  final List<DebugOffset> debugOffsets;
   final List<Offset> collisionOffsets;
   final double rotateAngle;
   final BuildContext context;

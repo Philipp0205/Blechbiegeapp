@@ -7,7 +7,7 @@ class SimulationPageState extends Equatable {
   final List<Tool> selectedTracks;
   final List<Tool> selectedPlates;
   final List<BendResult> bendingHistory;
-  final List<DebuggingOffset> debugOffsets;
+  final List<DebugOffset> debugOffsets;
   final double rotationAngle;
   final bool inCollision;
   final bool isSimulationRunning;
@@ -58,7 +58,7 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedTracks,
     List<Tool>? selectedPlates,
     List<BendResult>? bendingHistory,
-    List<DebuggingOffset>? debugOffsets,
+    List<DebugOffset>? debugOffsets,
     List<SimulationToolResult>? simulationResults,
     double? rotationAngle,
     bool? inCollision,
@@ -95,7 +95,7 @@ class SimulationPageInitial extends SimulationPageState {
     required List<Tool> selectedPlates,
     required List<BendResult> bendingHistory,
     required List<Line> lines,
-    required List<DebuggingOffset> debugOffsets,
+    required List<DebugOffset> debugOffsets,
     required List<Offset> collisionOffsets,
     required double rotationAngle,
     required bool inCollision,

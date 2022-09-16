@@ -1,16 +1,16 @@
 import 'dart:ui';
 
-class DebuggingOffset {
+class DebugOffset {
   final Offset offset;
   final Color color;
 
-  const DebuggingOffset({required this.offset, required this.color});
+  const DebugOffset({required this.offset, required this.color});
 
-  DebuggingOffset copyWith({
+  DebugOffset copyWith({
     Offset? offset,
     Color? color,
   }) {
-    return DebuggingOffset(
+    return DebugOffset(
       offset: offset ?? this.offset,
       color: color ?? this.color,
     );
