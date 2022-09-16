@@ -139,29 +139,19 @@ class _SimulationPageState extends State<SimulationPage> {
       buildWhen: (prev, current) =>
           prev.isSimulationRunning != current.isSimulationRunning,
       builder: (context, state) {
-        if (state.isSimulationRunning) {}
-        // if (state.isSimulationRunning) {
-        //   SchedulerBinding.instance.addPostFrameCallback((_) {
-        //     // _showLoadingDialog(context);
-        //   });
-        // }
-        // if (state.isSimulationRunning == false) {
-        //   SchedulerBinding.instance.addPostFrameCallback((_) {
-        //     Navigator.pop(context);
-        //   });
-        // }
-        // if (state.isSimulationRunning) {
-        //   _showLoadingDialog(context);
-        // } else {
-        //   _closeLoadingDialog(context);
-        // }
-        return Row(
-          children: [
-            if (state.isSimulationRunning) ...[
+        return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          Text('Ergebnis:'),
+          if (state.simulationResults.isNotEmpty) ...[
+            if (state.simulationResults.last.isBendable) ...[
+              Text('Blech ist biegbar'),
+              Icon(Icons.thumb_up, color: Colors.green),
             ] else ...[
+              // Spacer(flex: 5),
+              Text('Blech ist NICHT biegbar'),
+              Icon(Icons.thumb_down, color: Colors.red),
             ],
-          ],
-        );
+          ]
+        ]);
       },
     );
   }

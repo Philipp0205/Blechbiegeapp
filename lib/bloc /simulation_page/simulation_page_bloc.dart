@@ -391,7 +391,8 @@ class SimulationPageBloc
           tool: state.selectedPlates.first,
           angleOfTool: angle,
           collisionResults: [],
-          numberOfCheckedLines: 0);
+          numberOfCheckedLines: 0,
+          isBendable: false);
     }
 
     if (state.currentTick < 10) {
@@ -683,9 +684,18 @@ class SimulationPageBloc
           emit(state.copyWith(currentTick: 0));
           add(SimulationTicked());
         } else {
+          List<SimulationToolResult> simulationResults =
+              state.simulationResults;
+          SimulationToolResult lastResult = simulationResults.last;
           if (plate.lines.length > 1) {
+            simulationResults
+              ..removeLast()
+              ..add(lastResult.copyWith(isBendable: false));
             print('Negative result');
           } else {
+            simulationResults
+              ..removeLast()
+              ..add(lastResult.copyWith(isBendable: true));
             print('Positive result');
           }
           add(SimulationStopped());
@@ -755,7 +765,8 @@ class SimulationPageBloc
         tool: newPlate,
         collisionResults: [],
         numberOfCheckedLines: 0,
-        angleOfTool: 0);
+        angleOfTool: 0,
+        isBendable: false);
 
     toolResults.add(toolResult);
 
