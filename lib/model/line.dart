@@ -33,7 +33,7 @@ class Line {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'start': this.start,
       'end': this.end,
@@ -41,7 +41,7 @@ class Line {
     };
   }
 
-  factory Line.fromMap(Map<String, dynamic> map) {
+  factory Line.fromJson(Map<String, dynamic> map) {
     return Line(
       start: map['start'] as Offset,
       end: map['end'] as Offset,

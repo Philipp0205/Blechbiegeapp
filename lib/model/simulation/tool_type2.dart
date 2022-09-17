@@ -22,7 +22,7 @@ class ToolType2 {
       required this.category,
       required this.position});
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'name': this.name,
       'type': this.type,
@@ -31,7 +31,7 @@ class ToolType2 {
     };
   }
 
-  factory ToolType2.fromMap(Map<String, dynamic> map) {
+  factory ToolType2.fromJson(Map<String, dynamic> map) {
     return ToolType2(
       name: map['name'] as String,
       type: map['type'] as ToolType,
