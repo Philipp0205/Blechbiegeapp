@@ -72,15 +72,15 @@ class ToolRepository {
   }
 
   void loadBackup() async {
+    Hive.initFlutter();
     Directory appDocDir = await getApplicationDocumentsDirectory();
-    Hive.init(appDocDir.path);
+    // Hive.init(appDocDir.path);
 
     await Hive.openBox('shapes9');
     Box box = Hive.box('shapes9');
 
     String hiveLoc = appDocDir.path.toString() + '/shapes10.hive';
     await box.close;
-
 
     ByteData data = await rootBundle.load('assets/data/shapes10.hive');
     List<int> bytes =
@@ -99,6 +99,37 @@ class ToolRepository {
         addTool(tool);
       }
     }
+  }
 
+  void loadBackup2() async {
+    restoreHiveBox('shapes10', 'assets/data/shapes10.hive');
+    Box box = Hive.box('shapes10');
+    print(box.length);
+  }
+
+  Future<void> backupHiveBox<T>(String boxName, String backupPath) async {
+    final box = await Hive.openBox<T>(boxName);
+    final boxPath = box.path;
+    await box.close();
+
+    try {
+      File(boxPath!).copy(backupPath);
+    } finally {
+      await Hive.openBox<T>(boxName);
+    }
+  }
+
+  Future<void> restoreHiveBox<T>(String boxName, String backupPath) async {
+    Box box = await databaseProvider.createBox(boxName);
+    // final box = await Hive.openBox<T>(boxName);
+    // File(backupPath)
+    final boxPath = box.path;
+    await box.close();
+
+    try {
+      File(backupPath).copy(boxPath!);
+    } finally {
+      await Hive.openBox<T>(boxName);
+    }
   }
 }
