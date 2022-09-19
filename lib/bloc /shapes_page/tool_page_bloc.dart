@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
+import 'package:open_bsp/services/json_serializer.dart';
 
 import '../../model/simulation/tool.dart';
 import '../../persistence/database_provider.dart';
@@ -25,6 +27,7 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
     on<ToolEdited>(_editTool);
     on<SelectionModeChanged>(_toggleSelectionMode);
     on<SelectedToolsChanged>(_changeSelectedList);
+    on<ToolDataBackedUp>(_loadBackedUpData);
   }
 
   final ToolRepository _toolRepository;
@@ -98,5 +101,12 @@ class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
 
     emit(state.copyWith(tools: []));
     emit(state.copyWith(tools: beams));
+  }
+
+  /// Backup the data to a json file.
+  /// The file is saved in the OS directory.
+  /// The file name is backup_tools.json.
+  void _loadBackedUpData(ToolDataBackedUp event, Emitter<ToolPageState> emit) async {
+    _toolRepository.loadBackup();
   }
 }

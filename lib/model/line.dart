@@ -32,4 +32,20 @@ class Line {
       isSelected: isSelected ?? this.isSelected,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'start': this.start,
+      'end': this.end,
+      'isSelected': this.isSelected,
+    };
+  }
+
+  factory Line.fromJson(Map<String, dynamic> map) {
+    return Line(
+      start: map['start'] as Offset,
+      end: map['end'] as Offset,
+      isSelected: map['isSelected'] as bool,
+    );
+  }
 }

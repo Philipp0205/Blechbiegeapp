@@ -134,14 +134,13 @@ class _DrawingPageState extends State<DrawingPage> {
                     'Modi',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-
                   buildConfigRow(state),
                   Divider(),
-
-                  /// Line configuration
                   Text('Selektiere Linie',
                       style: TextStyle(fontWeight: FontWeight.bold)),
-                  buildLineConfigRow(),
+                  buildConfigRow2(state),
+                  // buildLineConfigRow(),
+                  /// Line configuration
                 ],
               ),
             ),
@@ -169,8 +168,8 @@ class _DrawingPageState extends State<DrawingPage> {
 
   Container buildDrawingWidget() {
     return Container(
-      height: 300,
-      width: 500,
+      height: MediaQuery.of(context).size.height * 0.5,
+      width: MediaQuery.of(context).size.width,
       child: Stack(children: [
         DrawingWidget(),
       ]),
@@ -186,7 +185,6 @@ class _DrawingPageState extends State<DrawingPage> {
               _toggleSelectionMode(value!);
             }),
         Text('Linien selektieren'),
-
         Container(
           width: 10,
         ),
@@ -199,52 +197,77 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  Padding buildLineConfigRow() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 30,
-            child: TextField(
-                onChanged: (text) {
-                  double? value = double.tryParse(text);
-                  if (value != null) {
-                    _changeAngle(value);
-                  }
-                },
-                controller: _angleController,
-                keyboardType: TextInputType.number),
+  Row buildLineConfigRow() {
+    return Row(
+      children: [
+        TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Winkel',
+            ),
+            onChanged: (text) {
+              double? value = double.tryParse(text);
+              if (value != null) {
+                _changeAngle(value);
+              }
+            },
+            controller: _angleController,
+            keyboardType: TextInputType.number),
+        Text('Winkel'),
+        Container(
+          width: 50,
+          height: 30,
+          child: TextField(
+              onChanged: (text) {
+                double? value = double.tryParse(text);
+                if (value != null) {
+                  context.read<DrawingWidgetBloc>().add(
+                      LineDrawingLengthChanged(
+                          length: double.parse(_lengthController.text)));
+                }
+              },
+              controller: _lengthController,
+              keyboardType: TextInputType.number),
+        ),
+        Text('Länge'),
+      ],
+    );
+  }
+
+  Row buildConfigRow2(DrawingPageState state) {
+    return Row(
+      children: [
+        Container(
+          width: 150,
+          child: TextField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Winkel',
+            ),
           ),
-          Container(
-            width: 10,
-          ),
-          Text('Winkel'),
-          Container(
-            width: 10,
-          ),
-          Container(
-            width: 50,
-            height: 30,
-            child: TextField(
-                onChanged: (text) {
-                  double? value = double.tryParse(text);
-                  if (value != null) {
-                    context.read<DrawingWidgetBloc>().add(
-                        LineDrawingLengthChanged(
-                            length: double.parse(_lengthController.text)));
-                  }
-                },
-                controller: _lengthController,
-                keyboardType: TextInputType.number),
-          ),
-          Container(
-            width: 10,
-          ),
-          Text('Länge'),
-        ],
-      ),
+        ),
+        Container(
+          width: 20
+        ),
+        Container(
+          width: 150,
+          child: TextField(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Länge',
+              ),
+              onChanged: (text) {
+                double? value = double.tryParse(text);
+                if (value != null) {
+                  context.read<DrawingWidgetBloc>().add(
+                      LineDrawingLengthChanged(
+                          length: double.parse(_lengthController.text)));
+                }
+              },
+              controller: _lengthController,
+              keyboardType: TextInputType.number),
+        )
+      ],
     );
   }
 
@@ -253,7 +276,7 @@ class _DrawingPageState extends State<DrawingPage> {
     BlocProvider.of<DrawingWidgetBloc>(context).add((LinesDeleted()));
   }
 
-  /// Toggles the selection mode in which the user can select one ore multiple 
+  /// Toggles the selection mode in which the user can select one ore multiple
   /// [Line]s.
   void _toggleSelectionMode(bool value) {
     context
@@ -282,7 +305,7 @@ class _DrawingPageState extends State<DrawingPage> {
   }
 
   /// Changes the angle of the selected [Line]s.
-  /// Note that different events are triggered depending on the number of 
+  /// Note that different events are triggered depending on the number of
   /// selected [Line]s.
   void _changeAngle(double value) {
     List<Line> selectedLines =

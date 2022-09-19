@@ -9,7 +9,6 @@ abstract class ToolPageEvent extends Equatable {
 
 /// Event which is called when the shape page is created.
 class ToolPageCreated extends ToolPageEvent {
-
   ToolPageCreated();
 }
 
@@ -56,4 +55,12 @@ class SelectedToolsChanged extends ToolPageEvent {
   Tool tool;
 
   SelectedToolsChanged({required this.tool});
+}
+
+/// Event triggered when data is backed up to the device.
+/// This event is triggered when the user clicks on the backup button.
+/// The [backupFile] is the file that contains the backup data.
+/// The [backupFile] is null if the backup failed.
+class ToolDataBackedUp extends ToolPageEvent {
+  ToolDataBackedUp();
 }

@@ -99,6 +99,14 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
           },
           child: Text('Übersicht Werkzeuge'),
         ),
+        Container(
+          width: 10,
+        ),
+        ElevatedButton(
+            onPressed: () {
+              context.read<ToolPageBloc>().add(ToolDataBackedUp());
+            },
+            child: Icon(Icons.backup))
       ],
     );
   }
