@@ -30,31 +30,33 @@ class _DrawingWidgetState extends State<DrawingWidget> {
       child: BlocBuilder<DrawingWidgetBloc, DrawingWidgetState>(
           builder: (context, state) {
         /// Contains the part where the user can draw the line.
-        return Container(
-          height: 300,
-          width: 500,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10)),
-          ),
-          child: GestureDetector(
-            onPanStart: (details) => onPanStart(context, details, state),
-            onPanUpdate: (details) => onPanUpdate(context, details, state),
-            onPanDown: (details) => onPanDown(context, details, state),
-            child: RepaintBoundary(
-              child: Container(
-                // width: MediaQuery.of(context).size.width,
-                // height: MediaQuery.of(context).size.height,
-                width: 300,
-                height: 500,
-                child: CustomPaint(
-                  painter: DrawingWidgetSketcher(
-                    lines2: state.lines,
+        return Center(
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.5,
+            width: MediaQuery.of(context).size.height * 0.9,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10)),
+            ),
+            child: GestureDetector(
+              onPanStart: (details) => onPanStart(context, details, state),
+              onPanUpdate: (details) => onPanUpdate(context, details, state),
+              onPanDown: (details) => onPanDown(context, details, state),
+              child: RepaintBoundary(
+                child: Container(
+                  // width: MediaQuery.of(context).size.width,
+                  // height: MediaQuery.of(context).size.height,
+                  width: 300,
+                  height: 500,
+                  child: CustomPaint(
+                    painter: DrawingWidgetSketcher(
+                      lines2: state.lines,
+                    ),
                   ),
                 ),
               ),
