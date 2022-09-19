@@ -17,8 +17,8 @@ class _ConstructingPageSegmentWidgetState
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 300,
-      width: 500,
+      height: MediaQuery.of(context).size.height * 0.5,
+      width: MediaQuery.of(context).size.width * 0.9,
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),

@@ -75,7 +75,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
               ///TextFields
               buildTextFieldRow(state, context),
-              buildSetAdapterRow(state, context)
             ],
           ),
         ),
@@ -101,9 +100,10 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       child: Row(
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 150,
             child: TextField(
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), labelText: 'Blechdicke'),
                 controller: _sController,
                 keyboardType: TextInputType.number,
                 onChanged: (text) {
@@ -118,11 +118,12 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   }
                 }),
           ),
-          Text('Bleckdicke (s)   '),
+          Container(width: 20),
           Container(
-            width: 30,
-            height: 30,
+            width: 150,
             child: TextField(
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), labelText: 'Radius'),
                 controller: _rController,
                 keyboardType: TextInputType.number,
                 onChanged: (text) {
@@ -133,7 +134,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   }
                 }),
           ),
-          Text('Radius (r)'),
           Container(
             width: 30,
           ),
@@ -174,21 +174,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
                   .add(ConfigAnglesShown(showAngles: value!));
             }),
         Text('Winkel'),
-      ],
-    );
-  }
-
-  /// Builds [Row] containing one more [Checkbox] for marking a line as adapter
-  /// line.
-  Row buildSetAdapterRow(ConfigPageState state, BuildContext context) {
-    return Row(
-      children: [
-        Checkbox(
-            value: state.markAdapterLineMode,
-            onChanged: (bool? value) {
-              _toggleAdapterLineMode(value!);
-            }),
-        Text('Adapter'),
       ],
     );
   }
