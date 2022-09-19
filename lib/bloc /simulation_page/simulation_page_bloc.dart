@@ -370,6 +370,8 @@ class SimulationPageBloc
     for (int i = 0; i < event.plateOffsets.length; i++) {
       if (event.collisionOffsets.contains(event.plateOffsets[i])) {
         collisionOffsets.add(event.plateOffsets[i]);
+        /// TODO break for loop after first positive result for better performance.
+        break;
       }
     }
 

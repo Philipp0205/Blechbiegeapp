@@ -101,12 +101,6 @@ class ToolRepository {
     }
   }
 
-  void loadBackup2() async {
-    restoreHiveBox('shapes10', 'assets/data/shapes10.hive');
-    Box box = Hive.box('shapes10');
-    print(box.length);
-  }
-
   Future<void> backupHiveBox<T>(String boxName, String backupPath) async {
     final box = await Hive.openBox<T>(boxName);
     final boxPath = box.path;

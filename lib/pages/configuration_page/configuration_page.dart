@@ -61,7 +61,6 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
             children: [
               /// Sketcher
               ConstructingPageSegmentWidget(),
-
               /// Checkboxes
               buildCheckboxRow(state, context),
               Divider(
@@ -95,7 +94,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       child: Row(
         children: [
           Container(
-            width: 150,
+            width: 100,
             child: TextField(
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), labelText: 'Blechdicke'),
@@ -115,7 +114,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           ),
           Container(width: 20),
           Container(
-            width: 150,
+            width: 100,
             child: TextField(
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), labelText: 'Radius'),
