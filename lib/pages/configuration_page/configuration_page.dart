@@ -55,22 +55,17 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         appBar: buildAppBar(),
         backgroundColor: Colors.white,
         floatingActionButton: buildFloatingActionButton(state, context),
-        body: Container(
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
               /// Sketcher
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: ConstructingPageSegmentWidget(),
-              ),
+              ConstructingPageSegmentWidget(),
 
               /// Checkboxes
               buildCheckboxRow(state, context),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Divider(
-                  color: Colors.black,
-                ),
+              Divider(
+                color: Colors.black,
               ),
 
               ///TextFields
@@ -216,12 +211,5 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         return AddToolBottomSheet(selectedShape: null);
       },
     );
-  }
-
-  /// Toggles the adapter line mode.
-  void _toggleAdapterLineMode(bool value) {
-    context
-        .read<ConfigPageBloc>()
-        .add(ConfigToggleMarkAdapterLineMode(adapterLineMode: value));
   }
 }

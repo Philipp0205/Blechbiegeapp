@@ -58,9 +58,9 @@ class MyApp extends StatelessWidget {
           title: 'Flutter Demo',
           // home: DrawingPage(),
           theme: ThemeData(
-              primaryColor: Color(0xff009374),
+              primaryColor: Color(0xffD22630),
               primarySwatch:
-                  colorService.buildMaterialColor(Color(0xff009374))),
+                  colorService.buildMaterialColor(Color(0xffD22630))),
           initialRoute: '/',
           routes: {
             '/': (context) => const DrawingPage(),
