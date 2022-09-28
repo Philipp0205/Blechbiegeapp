@@ -56,6 +56,7 @@ class SimulationPageBloc
     on<SimulationTicked>(_onTicked);
     on<SimulationPlateUnbended>(_onUnbendPlate);
     on<SimulationPlateBended>(_onBendPlate);
+    on<SimulationBendingBeamPlaced>(_placeBendingBeamOnPlate);
 
     // fakeStream.listen((_) {
     //   print('fakestream');
@@ -370,6 +371,7 @@ class SimulationPageBloc
     for (int i = 0; i < event.plateOffsets.length; i++) {
       if (event.collisionOffsets.contains(event.plateOffsets[i])) {
         collisionOffsets.add(event.plateOffsets[i]);
+
         /// TODO break for loop after first positive result for better performance.
         break;
       }
@@ -830,7 +832,7 @@ class SimulationPageBloc
 
     Tool newPlate = bendResults.last.tool;
 
-    Tool placedPlate = _rotateUntilSelectedLineHasAngle(newPlate, [0], 1);
+    Tool placedPlate = _rotateUntilSelectedLineHasAngle(newPlate, [360], 1);
 
     placedPlate = _placePlateOnTrack(emit, placedPlate, lowerTrack);
 
@@ -868,5 +870,136 @@ class SimulationPageBloc
       }
     }
     return true;
+  }
+
+  void _placeBendingBeamOnPlate(
+      SimulationBendingBeamPlaced event, Emitter<SimulationPageState> emit) {
+    List<DebugOffset> debuggingOffsets = [];
+
+    Tool plate = state.selectedPlates.first;
+    List<Line> lines = plate.lines;
+    Tool? bendingBeam = state.selectedBeams
+        .firstWhereOrNull((tool) => tool.type.type == ToolType.bendingBeam);
+
+    if (bendingBeam == null) {
+      return;
+    }
+
+    /// Rotate Line To bend + rest
+    if (lines.length == 1) {
+      _placeBendingBeamInNeutralPosition(emit);
+      return;
+    }
+
+    int indexOfSelectedLine = _getIndexOfSelectedLine(plate.lines);
+
+    Line selectedLine =
+        plate.lines.firstWhere((line) => line.isSelected == true);
+    Offset lowestXOffset = _calculationsService
+        .getLowestX([selectedLine.start, selectedLine.end]).first;
+
+    /// TODO refactor into extra function
+    if (plate.lines
+        .getRange(indexOfSelectedLine + 1, plate.lines.length)
+        .isEmpty) {
+      lines = _reverseLineOrder(plate.lines);
+      indexOfSelectedLine = _getIndexOfSelectedLine(lines);
+      selectedLine = lines[indexOfSelectedLine];
+    }
+
+    Line nextLine = lines[indexOfSelectedLine + 1];
+
+    Line beamSelectedLine =
+        bendingBeam.lines.firstWhere((line) => line.isSelected == true);
+
+    double angleOfNextLine =
+        _calculationsService.getAngle(nextLine.start, nextLine.end);
+    double angleOfBeamLine = _calculationsService.getAngle(
+        beamSelectedLine.start, beamSelectedLine.end);
+
+    double angleToRotate = angleOfNextLine - angleOfBeamLine;
+
+    Tool newBeam = _rotTool(bendingBeam, angleToRotate);
+
+    Offset beamOffset =
+        newBeam.lines.firstWhere((line) => line.isSelected == true).start;
+    Offset nextLineOffset = nextLine.start;
+
+    // Offset moveOffset =  nextLineOffset - beamOffset;
+    Offset moveOffset = Offset(
+        nextLineOffset.dx - beamOffset.dx, nextLineOffset.dy - beamOffset.dy);
+
+    newBeam = _moveTool(newBeam, moveOffset, true);
+
+    debuggingOffsets.addAll([
+      DebugOffset(offset: beamOffset, color: Colors.red),
+      DebugOffset(offset: nextLineOffset, color: Colors.purple),
+      DebugOffset(offset: beamSelectedLine.start, color: Colors.yellow),
+      // DebugOffset(offset: beamSelectedLine.end, color: Colors.yellow),
+      // DebugOffset(offset: nextLine.start, color: Colors.green),
+      // DebugOffset(offset: nextLine.end, color: Colors.green),
+      // DebugOffset(offset: beamOffset, color: Colors.red),
+    ]);
+
+    List<Tool> beams = state.selectedBeams;
+
+    beams
+      ..remove(bendingBeam)
+      ..add(newBeam);
+
+    emit(state.copyWith(selectedBeams: [], debugOffsets: debuggingOffsets));
+
+    emit(state.copyWith(selectedBeams: beams, debugOffsets: debuggingOffsets));
+  }
+
+  void _placeBendingBeamInNeutralPosition(Emitter<SimulationPageState> emit) {
+    List<DebugOffset> debuggingOffsets = [];
+
+    Tool bendingBeam = state.selectedBeams
+        .firstWhere((tool) => tool.type.type == ToolType.bendingBeam);
+
+    Tool lowerTrack =
+        _getToolByType(state.selectedTracks, ToolType.lowerTrack)!;
+    Line selectedLineLowerTrack =
+        lowerTrack.lines.firstWhere((line) => line.isSelected == true);
+
+    Line selectedLineBendingBeam =
+        bendingBeam.lines.firstWhere((line) => line.isSelected == true);
+
+    double angleOfBendingBeam = _calculationsService.getAngle(
+        selectedLineBendingBeam.start, selectedLineBendingBeam.end);
+
+    Offset lowestX = _calculationsService.getLowestX(
+        [selectedLineLowerTrack.start, selectedLineLowerTrack.end]).first;
+
+    /// TODO Will not work for all bending beams
+    Tool rotatedBendingBeam = _rotTool(bendingBeam, 180 - angleOfBendingBeam);
+
+    Offset newBendingBeamOffset = rotatedBendingBeam.lines
+        .firstWhere((line) => line.isSelected == true)
+        .start;
+
+    Offset newBendingBeamOffset2 = rotatedBendingBeam.lines
+        .firstWhere((line) => line.isSelected == true)
+        .end;
+
+    Offset moveOffset = lowestX - newBendingBeamOffset2;
+
+    // Tool movedBendingBeam = _moveTool(rotatedBendingBeam, moveOffset, true);
+
+    debuggingOffsets.addAll([
+      // DebugOffset(offset: selectedLineLowerTrack.start, color: Colors.red),
+      // DebugOffset(offset: selectedLineLowerTrack.end, color: Colors.red),
+      DebugOffset(offset: selectedLineBendingBeam.start, color: Colors.purple),
+      DebugOffset(offset: selectedLineBendingBeam.end, color: Colors.purple),
+      DebugOffset(offset: newBendingBeamOffset2, color: Colors.green),
+    ]);
+
+    List<Tool> beams = state.selectedBeams;
+    beams
+      ..remove(bendingBeam)
+      ..add(rotatedBendingBeam);
+
+    emit(state.copyWith(selectedBeams: beams, debugOffsets: debuggingOffsets));
   }
 }

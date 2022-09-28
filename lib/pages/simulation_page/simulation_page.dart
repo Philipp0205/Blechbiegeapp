@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
-import 'package:open_bsp/pages/simulation_page/timer_widget.dart';
-import 'package:progress_state_button/progress_button.dart';
+
+import 'package:collection/collection.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../bloc /ticker_widget/timer_widget_bloc.dart';
@@ -40,7 +39,7 @@ class _SimulationPageState extends State<SimulationPage> {
             }),
         BlocListener<SimulationPageBloc, SimulationPageState>(
             listenWhen: (prev, current) =>
-                prev.collisionOffsets != current.collisionOffsets,
+                prev.selectedPlates != current.selectedPlates,
             listener: (context, state) {}),
         BlocListener<SimulationPageBloc, SimulationPageState>(
             listenWhen: (prev, current) =>
@@ -125,9 +124,9 @@ class _SimulationPageState extends State<SimulationPage> {
               icon: new Icon(Icons.play_arrow))
         ],
         IconButton(
-            onPressed: () => _refoldPlate(), icon: new Icon(Icons.arrow_back)),
+            onPressed: () => _bendPlate(), icon: new Icon(Icons.arrow_back)),
         IconButton(
-            onPressed: () => _unFoldPlate(),
+            onPressed: () => _unBendPlate(),
             icon: new Icon(Icons.arrow_forward)),
       ],
     );
@@ -230,27 +229,35 @@ class _SimulationPageState extends State<SimulationPage> {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
     context.read<SimulationPageBloc>().add(
         SimulationToolRotate(tool: state.selectedPlates.first, degrees: 90));
+
+    context.read<SimulationPageBloc>().add(SimulationBendingBeamPlaced());
   }
 
   void _mirrorCurrentPlate() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
+
     context
         .read<SimulationPageBloc>()
         .add(SimulationToolMirrored(tool: state.selectedPlates.first));
+    context.read<SimulationPageBloc>().add(SimulationBendingBeamPlaced());
   }
 
-  void _unFoldPlate() {
+  void _unBendPlate() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
     context
         .read<SimulationPageBloc>()
         .add(SimulationPlateUnbended(plate: state.selectedPlates.first));
+
+    context.read<SimulationPageBloc>().add(SimulationBendingBeamPlaced());
   }
 
-  void _refoldPlate() {
+  void _bendPlate() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
     context
         .read<SimulationPageBloc>()
         .add(SimulationPlateBended(plate: state.selectedPlates.first));
+
+    context.read<SimulationPageBloc>().add(SimulationBendingBeamPlaced());
   }
 
   Text _setCollisionLabel(bool isColliding) {
