@@ -102,3 +102,8 @@ class SimulationPlateBended extends SimulationPageEvent {
 
   const SimulationPlateBended({required this.plate});
 }
+
+/// The event is called when the bending beam is placed on the plate.
+class SimulationBendingBeamPlaced extends SimulationPageEvent {
+  const SimulationBendingBeamPlaced();
+}

@@ -100,7 +100,6 @@ class _DrawingPageState extends State<DrawingPage> {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            backgroundColor: Color(0xff009374),
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -120,29 +119,27 @@ class _DrawingPageState extends State<DrawingPage> {
             ),
           ),
           backgroundColor: Colors.white,
-          body: Container(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  /// DrawingWidget
-                  buildDrawingWidget(),
-                  Divider(color: Colors.green),
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                // buildDrawingWidget(),
+                DrawingWidget(),
+                Divider(color: Colors.green),
 
-                  /// SelectionMode
-                  Text(
-                    'Modi',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  buildConfigRow(state),
-                  Divider(),
-                  Text('Selektiere Linie',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  buildConfigRow2(state),
-                  // buildLineConfigRow(),
-                  /// Line configuration
-                ],
-              ),
+                /// SelectionMode
+                Text(
+                  'Modi',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                buildConfigRow(state),
+                Divider(),
+                Text('Selektiere Linie',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                buildConfigRow2(state),
+                // buildLineConfigRow(),
+                /// Line configuration
+              ],
             ),
           ),
           floatingActionButton: Stack(
@@ -166,14 +163,10 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  Container buildDrawingWidget() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.5,
-      width: MediaQuery.of(context).size.width,
-      child: Stack(children: [
-        DrawingWidget(),
-      ]),
-    );
+  Widget buildDrawingWidget() {
+    return Stack(children: [
+      DrawingWidget(),
+    ]);
   }
 
   Row buildConfigRow(DrawingPageState state) {
@@ -244,11 +237,17 @@ class _DrawingPageState extends State<DrawingPage> {
               border: OutlineInputBorder(),
               labelText: 'Winkel',
             ),
+            onChanged: (text) {
+              double? value = double.tryParse(text);
+              if (value != null) {
+                _changeAngle(value);
+              }
+            },
+            controller: _angleController,
+            keyboardType: TextInputType.number,
           ),
         ),
-        Container(
-          width: 20
-        ),
+        Container(width: 20),
         Container(
           width: 150,
           child: TextField(
