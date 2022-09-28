@@ -28,18 +28,17 @@ class _DrawingWidgetState extends State<DrawingWidget> {
             selectionMode: state.selectionMode));
       },
       child: Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        width: MediaQuery.of(context).size.height * 0.9,
+        height: MediaQuery.of(context).size.height * 0.75,
+        width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
+          border: Border.all(color: Colors.black.withOpacity(0.4), width: 1),
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)),
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(5)),
         ),
-
         child: BlocBuilder<DrawingWidgetBloc, DrawingWidgetState>(
             builder: (context, state) {
           /// Contains the part where the user can draw the line.

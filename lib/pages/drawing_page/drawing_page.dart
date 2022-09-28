@@ -103,45 +103,35 @@ class _DrawingPageState extends State<DrawingPage> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Biegeapp'),
+                Text('Blechprofil zeichnen'),
                 Container(width: 100),
-                IconButton(
-                    onPressed: () {
-                      _undo();
-                    },
-                    icon: Icon(Icons.arrow_circle_left)),
-                IconButton(
-                    onPressed: () {
-                      _redo();
-                    },
-                    icon: Icon(Icons.arrow_circle_right)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          _undo();
+                        },
+                        icon: Icon(Icons.arrow_circle_left)),
+                    SizedBox(width: 10),
+                    IconButton(
+                        onPressed: () {
+                          _redo();
+                        },
+                        icon: Icon(Icons.arrow_circle_right)),
+                  ],
+                ),
               ],
             ),
           ),
           backgroundColor: Colors.white,
           body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                // buildDrawingWidget(),
-                DrawingWidget(),
-                Divider(color: Colors.green),
-
-                /// SelectionMode
-                Text(
-                  'Modi',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                buildConfigRow(state),
-                Divider(),
-                Text('Selektiere Linie',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                buildConfigRow2(state),
-                // buildLineConfigRow(),
-                /// Line configuration
-              ],
-            ),
-          ),
+              padding: const EdgeInsets.all(10.0),
+              child: OrientationBuilder(builder: (context, orientation) {
+                return orientation == Orientation.portrait
+                    ? buildPortraitLayout(state)
+                    : buildLandscapeLayout(state);
+              })),
           floatingActionButton: Stack(
             children: [
               /// Right Button
@@ -163,29 +153,113 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  /// Builds the vertical layout of the page.
+  /// The [DrawingWidget] is followed by two rows containing the options for
+  /// configuring the line.
+  ///
+  /// The first row contains the selecting and deleting the line and the second row contains the
+  /// angle and the length of the line.
+  Column buildPortraitLayout(DrawingPageState state) {
+    return Column(
+      children: [
+        DrawingWidget(),
+        Divider(color: Colors.green),
+
+        /// SelectionMode
+        Text(
+          'Modi',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        buildConfigRow(state, Orientation.portrait),
+        Divider(),
+        Text('Selektiere Linie', style: TextStyle(fontWeight: FontWeight.bold)),
+        buildConfigRow2(state),
+      ],
+    );
+  }
+
+  Row buildLandscapeLayout(DrawingPageState state) {
+    return Row(
+      children: [
+        Flexible(
+          flex: 20,
+          child: Column(
+            children: [
+              Text('Konfiguration',
+                  style: Theme.of(context).textTheme.titleLarge),
+              SizedBox(
+                height: 10,
+              ),
+              Text('Kante selektieren um Länge und Winkel anzupassen.',
+                  style: Theme.of(context).textTheme.subtitle1),
+              Divider(),
+              buildConfigRow22(state),
+              buildConfigRow(state, Orientation.landscape),
+              SizedBox(
+                width: 500,
+                child: ElevatedButton(
+                    onPressed: () => _clearCanvas(),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.delete),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text('Profil löschen')
+                      ],
+                    )),
+              )
+            ],
+          ),
+        ),
+        Spacer(),
+        Flexible(
+          flex: 80,
+          child: Column(
+            children: [
+              DrawingWidget(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget buildDrawingWidget() {
     return Stack(children: [
       DrawingWidget(),
     ]);
   }
 
-  Row buildConfigRow(DrawingPageState state) {
+  Row buildConfigRow(DrawingPageState state, Orientation orientation) {
     return Row(
+      mainAxisAlignment: orientation == Orientation.portrait
+          ? MainAxisAlignment.spaceEvenly
+          : MainAxisAlignment.spaceBetween,
       children: [
-        Checkbox(
-            value: state.selectionMode,
-            onChanged: (bool? value) {
-              _toggleSelectionMode(value!);
-            }),
-        Text('Linien selektieren'),
-        Container(
-          width: 10,
+        Expanded(
+          child: Row(
+            children: [
+              Flexible(
+                child: CheckboxListTile(
+                    title: Text('Linie selektieren'),
+                    value: state.selectionMode,
+                    onChanged: (bool? value) {
+                      _toggleSelectionMode(value!);
+                    }),
+              )
+              // Checkbox(
+              //     value: state.selectionMode,
+              //     onChanged: (bool? value) {
+              //       _toggleSelectionMode(value!);
+              //     }),
+              // Text('Linien selektieren'),
+            ],
+          ),
         ),
-        Container(
-          width: 130,
-        ),
-        ElevatedButton(
-            onPressed: () => _clearCanvas(), child: Icon(Icons.delete))
+        // ElevatedButton(
+        //     onPressed: () => _clearCanvas(), child: Icon(Icons.delete))
       ],
     );
   }
@@ -227,46 +301,82 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  Row buildConfigRow2(DrawingPageState state) {
+  Column buildConfigRow22(DrawingPageState state) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            SizedBox(width: 245, child: _buildAngleTextField()),
+          ],
+        ),
+        SizedBox(height: 10),
+        Row(children: [
+          SizedBox(
+            width: 245,
+            child: _buildLengthTextField(),
+          ),
+        ]),
+      ],
+    );
+  }
+
+  Widget buildConfigRow2(DrawingPageState state) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return orientation == Orientation.landscape
+            ? buildPortraitLengthAndAngleRow()
+            : buildConfigRow22(state);
+      },
+    );
+  }
+
+  Row buildPortraitLengthAndAngleRow() {
     return Row(
       children: [
         Container(
-          width: 150,
-          child: TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Winkel',
-            ),
-            onChanged: (text) {
-              double? value = double.tryParse(text);
-              if (value != null) {
-                _changeAngle(value);
-              }
-            },
-            controller: _angleController,
-            keyboardType: TextInputType.number,
-          ),
+          width: 100,
+          child: _buildAngleTextField(),
         ),
         Container(width: 20),
         Container(
-          width: 150,
-          child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Länge',
-              ),
-              onChanged: (text) {
-                double? value = double.tryParse(text);
-                if (value != null) {
-                  context.read<DrawingWidgetBloc>().add(
-                      LineDrawingLengthChanged(
-                          length: double.parse(_lengthController.text)));
-                }
-              },
-              controller: _lengthController,
-              keyboardType: TextInputType.number),
+          width: 100,
+          child: _buildLengthTextField(),
         )
       ],
+    );
+  }
+
+  TextField _buildLengthTextField() {
+    return TextField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
+          labelText: 'Länge (mm)',
+        ),
+        onChanged: (text) {
+          double? value = double.tryParse(text);
+          if (value != null) {
+            context.read<DrawingWidgetBloc>().add(LineDrawingLengthChanged(
+                length: double.parse(_lengthController.text)));
+          }
+        },
+        controller: _lengthController,
+        keyboardType: TextInputType.number);
+  }
+
+  TextField _buildAngleTextField() {
+    return TextField(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: 'Winkel (mm)',
+      ),
+      onChanged: (text) {
+        double? value = double.tryParse(text);
+        if (value != null) {
+          _changeAngle(value);
+        }
+      },
+      controller: _angleController,
+      keyboardType: TextInputType.number,
     );
   }
 
