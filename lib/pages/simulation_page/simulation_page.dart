@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
 
-import 'package:collection/collection.dart';
-
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../bloc /ticker_widget/timer_widget_bloc.dart';
 import '../../model/simulation/tool.dart';

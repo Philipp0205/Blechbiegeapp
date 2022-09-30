@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_state.dart';
+import 'package:open_bsp/pages/drawing_page/drawing_widget_sketcher.dart';
 import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
+import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
@@ -186,35 +188,53 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  Row buildLandscapeLayout(DrawingPageState state) {
-    return Row(
-      children: [
-        Flexible(
-          flex: 20,
-          child: Column(
-            children: [
-              for (var widget in _buildMenuHeader()) widget,
-              Divider(),
-              buildConfigRow22(state),
-              _buildSelectLineCheckboxListTile(state),
-              SizedBox(
-                width: 500,
-                child: _buildDeleteElevatedButton(),
-              )
-            ],
-          ),
+  TwoColumnLandscapeLayout buildLandscapeLayout(DrawingPageState state) {
+    return TwoColumnLandscapeLayout(
+        leftColumn: Column(
+          children: [
+            for (var widget in _buildMenuHeader()) widget,
+            Divider(),
+            _buildAngleTextField(),
+            SizedBox(height: 10),
+            _buildLengthTextField(),
+            Divider(),
+            Flexible(child: _buildSelectLineCheckboxListTile(state)),
+            _buildDeleteElevatedButton()
+          ],
         ),
-        Spacer(),
-        Flexible(
-          flex: 80,
-          child: Column(
-            children: [
-              DrawingWidget(),
-            ],
-          ),
-        ),
-      ],
-    );
+        rightColumn: Column(
+          children: [
+            DrawingWidget()
+          ],
+        ));
+    // return Row(
+    //   children: [
+    //     Flexible(
+    //       flex: 20,
+    //       child: Column(
+    //         children: [
+    //           for (var widget in _buildMenuHeader()) widget,
+    //           Divider(),
+    //           buildConfigRow22(state),
+    //           _buildSelectLineCheckboxListTile(state),
+    //           SizedBox(
+    //             width: 500,
+    //             child: _buildDeleteElevatedButton(),
+    //           )
+    //         ],
+    //       ),
+    //     ),
+    //     Spacer(),
+    //     Flexible(
+    //       flex: 80,
+    //       child: Column(
+    //         children: [
+    //           DrawingWidget(),
+    //         ],
+    //       ),
+    //     ),
+    //   ],
+    // );
   }
 
   ElevatedButton _buildDeleteElevatedButton() {

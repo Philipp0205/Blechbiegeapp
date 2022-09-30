@@ -139,7 +139,15 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   ElevatedButton _buildToolElevatedButton(ConfigPageState state) {
     return ElevatedButton(
-        onPressed: () => _createShape(state), child: Text('+ Werkzeug'));
+        onPressed: () => _createShape(state),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add),
+            SizedBox(width: 10),
+            Text('Werkzeuge'),
+          ],
+        ));
   }
 
   /// Builds the [TextField] where the user can change the radius of the
