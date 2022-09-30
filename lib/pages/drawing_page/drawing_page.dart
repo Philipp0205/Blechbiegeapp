@@ -306,15 +306,17 @@ class _DrawingPageState extends State<DrawingPage> {
       children: [
         Row(
           children: [
-            SizedBox(width: 245, child: _buildAngleTextField()),
+            Flexible(child: _buildAngleTextField()),
+            // SizedBox(width: 245, child: _buildAngleTextField()),
           ],
         ),
         SizedBox(height: 10),
         Row(children: [
-          SizedBox(
-            width: 245,
-            child: _buildLengthTextField(),
-          ),
+          Flexible(child: _buildLengthTextField()),
+          // SizedBox(
+          //   width: 245,
+          //   child: _buildLengthTextField(),
+          // ),
         ]),
       ],
     );
