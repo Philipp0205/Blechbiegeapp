@@ -3,12 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
+import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
-import '../drawing_page/two_column_layout.dart';
+import '../drawing_page/two_column_landscape_layout.dart';
 import 'config_page_segment_widget.dart';
 
 class ConfigurationPage extends StatefulWidget {
@@ -66,21 +67,44 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     });
   }
 
-  Column _buildPortraitLayout(ConfigPageState state, BuildContext context) {
-    return Column(
-      children: [
-        /// Sketcher
-        ConstructingPageSegmentWidget(),
-
-        /// Checkboxes
-        buildCheckboxRow(state, context),
-        Divider(
-          color: Colors.black,
-        ),
-
-        ///TextFields
-        buildTextFieldRow(state, context),
-      ],
+  TwoColumnPortraitLayout _buildPortraitLayout(
+      ConfigPageState state, BuildContext context) {
+    return TwoColumnPortraitLayout(
+      upperRow: Row(
+        children: [Expanded(child: ConstructingPageSegmentWidget())],
+      ),
+      lowerColumn: Column(
+        children: [
+          Column(
+            children: [
+              for (var widget in _buildMenuHeader()) widget,
+            ],
+          ),
+          Divider(height: 20),
+          Row(
+            children: [
+              Flexible(child: _buildSTextField(context)),
+              SizedBox(width: 10),
+              Flexible(child: _buildRadiusTextField(context)),
+              SizedBox(width: 10),
+              Flexible(child: _buildToolElevatedButton(state)),
+            ],
+          ),
+          Divider(height: 20),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Flexible(child: _buildCoodinateCheckboxListTile(state)),
+                VerticalDivider(),
+                Flexible(child: _buildLengthCheckboxListTile(state)),
+                VerticalDivider(),
+                Flexible(child: _buildAngleCheckboxListTile(state)),
+              ],
+            ),
+          ),
+          Divider(),
+        ],
+      ),
     );
   }
 
@@ -107,11 +131,15 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           Container(
             width: 30,
           ),
-          ElevatedButton(
-              onPressed: () => _createShape(state), child: Text('+ Werkzeug'))
+          _buildToolElevatedButton(state)
         ],
       ),
     );
+  }
+
+  ElevatedButton _buildToolElevatedButton(ConfigPageState state) {
+    return ElevatedButton(
+        onPressed: () => _createShape(state), child: Text('+ Werkzeug'));
   }
 
   /// Builds the [TextField] where the user can change the radius of the
@@ -183,6 +211,52 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
+  Column buildCheckboxes2(ConfigPageState state) {
+    return Column(
+      children: [
+        _buildCoodinateCheckboxListTile(state),
+        _buildLengthCheckboxListTile(state),
+        _buildAngleCheckboxListTile(state)
+      ],
+    );
+  }
+
+  CheckboxListTile _buildAngleCheckboxListTile(ConfigPageState state) {
+    return CheckboxListTile(
+        value: state.showEdgeLengths,
+        title: Text('Winkel anzeigen'),
+        secondary: Icon(Icons.text_rotation_angledown),
+        onChanged: (bool? value) {
+          context
+              .read<ConfigPageBloc>()
+              .add(ConfigAnglesShown(showAngles: value!));
+        });
+  }
+
+  CheckboxListTile _buildLengthCheckboxListTile(ConfigPageState state) {
+    return CheckboxListTile(
+        value: state.showEdgeLengths,
+        title: Text('Längen anzeigen'),
+        secondary: Icon(Icons.mms),
+        onChanged: (bool? value) {
+          context
+              .read<ConfigPageBloc>()
+              .add(ConfigEdgeLengthsShown(showEdgeLengths: value!));
+        });
+  }
+
+  CheckboxListTile _buildCoodinateCheckboxListTile(ConfigPageState state) {
+    return CheckboxListTile(
+        value: state.showCoordinates,
+        title: Text('Koordinaten anzeigen'),
+        secondary: Icon(Icons.control_point),
+        onChanged: (bool? value) {
+          context
+              .read<ConfigPageBloc>()
+              .add(ConfigCoordinatesShown(showCoordinates: value!));
+        });
+  }
+
   /// Builds the left [FloatingActionButton].
   Stack buildFloatingActionButton(ConfigPageState state, BuildContext context) {
     return Stack(
@@ -223,48 +297,22 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
-  TwoColumnLayout buildLandscapeLayout(ConfigPageState state) {
-    return TwoColumnLayout(
+  TwoColumnLandscapeLayout buildLandscapeLayout(ConfigPageState state) {
+    return TwoColumnLandscapeLayout(
       leftColumn: Column(
         children: [
-          Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
-          SizedBox(
-            height: 10,
-          ),
-          Text('Kante selektieren um Länge und Winkel anzupassen.',
-              style: Theme.of(context).textTheme.subtitle1),
+          for (var widget in _buildMenuHeader()) widget,
           Divider(),
           Flexible(child: _buildRadiusTextField(context)),
           SizedBox(height: 10),
           Flexible(child: _buildSTextField(context)),
           Divider(),
-          CheckboxListTile(
-              value: state.showCoordinates,
-              title: Text('Koordinaten anzeigen'),
-              secondary: Icon(Icons.control_point),
-              onChanged: (bool? value) {
-                context
-                    .read<ConfigPageBloc>()
-                    .add(ConfigCoordinatesShown(showCoordinates: value!));
-              }),
-          CheckboxListTile(
-              value: state.showEdgeLengths,
-              title: Text('Längen anzeigen'),
-              secondary: Icon(Icons.mms),
-              onChanged: (bool? value) {
-                context
-                    .read<ConfigPageBloc>()
-                    .add(ConfigEdgeLengthsShown(showEdgeLengths: value!));
-              }),
-          CheckboxListTile(
-              value: state.showEdgeLengths,
-              title: Text('Winkel anzeigen'),
-              secondary: Icon(Icons.text_rotation_angledown),
-              onChanged: (bool? value) {
-                context
-                    .read<ConfigPageBloc>()
-                    .add(ConfigAnglesShown(showAngles: value!));
-              }),
+          buildCheckboxes2(state),
+          Divider(),
+          SizedBox(
+            width: double.infinity,
+            child: _buildToolElevatedButton(state),
+          ),
         ],
       ),
       rightColumn: Column(
@@ -273,5 +321,16 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildMenuHeader() {
+    return [
+      Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Kante selektieren um Länge und Winkel anzupassen.',
+          style: Theme.of(context).textTheme.subtitle1),
+    ];
   }
 }

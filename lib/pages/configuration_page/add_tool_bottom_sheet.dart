@@ -56,7 +56,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 450,
+      height: MediaQuery.of(context).size.height,
       child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
         return Padding(

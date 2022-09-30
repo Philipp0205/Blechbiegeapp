@@ -29,7 +29,7 @@ class _DrawingWidgetState extends State<DrawingWidget> {
       },
       child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
-        width: MediaQuery.of(context).size.width,
+        width: MediaQuery.of(context).size.width * 0.9,
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: Colors.black.withOpacity(0.4), width: 1),

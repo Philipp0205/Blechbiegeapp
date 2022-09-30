@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_state.dart';
+import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
@@ -125,13 +126,11 @@ class _DrawingPageState extends State<DrawingPage> {
             ),
           ),
           backgroundColor: Colors.white,
-          body: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: OrientationBuilder(builder: (context, orientation) {
-                return orientation == Orientation.portrait
-                    ? buildPortraitLayout(state)
-                    : buildLandscapeLayout(state);
-              })),
+          body: OrientationBuilder(builder: (context, orientation) {
+            return orientation == Orientation.portrait
+                ? buildPortraitLayout(state)
+                : buildLandscapeLayout(state);
+          }),
           floatingActionButton: Stack(
             children: [
               /// Right Button
@@ -159,22 +158,31 @@ class _DrawingPageState extends State<DrawingPage> {
   ///
   /// The first row contains the selecting and deleting the line and the second row contains the
   /// angle and the length of the line.
-  Column buildPortraitLayout(DrawingPageState state) {
-    return Column(
-      children: [
-        DrawingWidget(),
-        Divider(color: Colors.green),
-
-        /// SelectionMode
-        Text(
-          'Modi',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        buildConfigRow(state, Orientation.portrait),
-        Divider(),
-        Text('Selektiere Linie', style: TextStyle(fontWeight: FontWeight.bold)),
-        buildConfigRow2(state),
-      ],
+  TwoColumnPortraitLayout buildPortraitLayout(DrawingPageState state) {
+    return TwoColumnPortraitLayout(
+      upperRow: Row(
+        children: [Expanded(child: DrawingWidget())],
+      ),
+      lowerColumn: Column(
+        children: [
+          for (var widget in _buildMenuHeader()) widget,
+          Divider(
+            height: 20,
+          ),
+          Row(
+            children: [
+              Flexible(child: _buildAngleTextField()),
+              SizedBox(width: 10),
+              Flexible(child: _buildLengthTextField()),
+              SizedBox(width: 10),
+              Flexible(child: _buildSelectLineCheckboxListTile(state)),
+              SizedBox(width: 10),
+              Flexible(child: _buildDeleteElevatedButton()),
+            ],
+          ),
+          Divider(height: 20),
+        ],
+      ),
     );
   }
 
@@ -185,30 +193,13 @@ class _DrawingPageState extends State<DrawingPage> {
           flex: 20,
           child: Column(
             children: [
-              Text('Konfiguration',
-                  style: Theme.of(context).textTheme.titleLarge),
-              SizedBox(
-                height: 10,
-              ),
-              Text('Kante selektieren um Länge und Winkel anzupassen.',
-                  style: Theme.of(context).textTheme.subtitle1),
+              for (var widget in _buildMenuHeader()) widget,
               Divider(),
               buildConfigRow22(state),
-              buildConfigRow(state, Orientation.landscape),
+              _buildSelectLineCheckboxListTile(state),
               SizedBox(
                 width: 500,
-                child: ElevatedButton(
-                    onPressed: () => _clearCanvas(),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.delete),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Text('Profil löschen')
-                      ],
-                    )),
+                child: _buildDeleteElevatedButton(),
               )
             ],
           ),
@@ -226,42 +217,45 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  ElevatedButton _buildDeleteElevatedButton() {
+    return ElevatedButton(
+        onPressed: () => _clearCanvas(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete),
+            SizedBox(
+              width: 10,
+            ),
+            Text('Profil löschen')
+          ],
+        ));
+  }
+
+  List<Widget> _buildMenuHeader() {
+    return [
+      Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Kante selektieren um Länge und Winkel anzupassen.',
+          style: Theme.of(context).textTheme.subtitle1)
+    ];
+  }
+
   Widget buildDrawingWidget() {
     return Stack(children: [
       DrawingWidget(),
     ]);
   }
 
-  Row buildConfigRow(DrawingPageState state, Orientation orientation) {
-    return Row(
-      mainAxisAlignment: orientation == Orientation.portrait
-          ? MainAxisAlignment.spaceEvenly
-          : MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Row(
-            children: [
-              Flexible(
-                child: CheckboxListTile(
-                    title: Text('Linie selektieren'),
-                    value: state.selectionMode,
-                    onChanged: (bool? value) {
-                      _toggleSelectionMode(value!);
-                    }),
-              )
-              // Checkbox(
-              //     value: state.selectionMode,
-              //     onChanged: (bool? value) {
-              //       _toggleSelectionMode(value!);
-              //     }),
-              // Text('Linien selektieren'),
-            ],
-          ),
-        ),
-        // ElevatedButton(
-        //     onPressed: () => _clearCanvas(), child: Icon(Icons.delete))
-      ],
-    );
+  CheckboxListTile _buildSelectLineCheckboxListTile(DrawingPageState state) {
+    return CheckboxListTile(
+        title: Text('Linie selektieren'),
+        value: state.selectionMode,
+        onChanged: (bool? value) {
+          _toggleSelectionMode(value!);
+        });
   }
 
   Row buildLineConfigRow() {

@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
-class TwoColumnLayout extends StatelessWidget {
+class TwoColumnLandscapeLayout extends StatelessWidget {
   final Column leftColumn;
   final Column rightColumn;
 
-  const TwoColumnLayout({
+  const TwoColumnLandscapeLayout({
     Key? key,
     required this.leftColumn,
     required this.rightColumn,
