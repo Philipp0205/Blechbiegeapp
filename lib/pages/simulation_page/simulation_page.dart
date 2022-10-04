@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
+import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
-import '../../bloc /ticker_widget/timer_widget_bloc.dart';
 import '../../model/simulation/tool.dart';
 
 class SimulationPage extends StatefulWidget {
@@ -231,6 +231,24 @@ class _SimulationPageState extends State<SimulationPage> {
           ));
     }
   }
+  
+  Row _buildSimulationResultsRow() {
+    SimulationPageState state = context.read<SimulationPageBloc>().state;
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+      Text('Ergebnis:', style: Theme.of(context).textTheme.titleLarge),
+      if (state.simulationResults.isNotEmpty) ...[
+        if (state.simulationResults.last.isBendable) ...[
+          Text('Blech ist biegbar'),
+          Icon(Icons.thumb_up, color: Colors.green),
+        ] else ...[
+          // Spacer(flex: 5),
+          Text('Blech ist NICHT biegbar'),
+          Icon(Icons.thumb_down, color: Colors.red),
+        ],
+      ]
+    ]);
+  }
 
   /// Build a row containing the controls for the simulation.
   Widget buildSimulationControlsRow() {
@@ -238,7 +256,8 @@ class _SimulationPageState extends State<SimulationPage> {
       buildWhen: (prev, current) =>
           prev.isSimulationRunning != current.isSimulationRunning,
       builder: (context, state) {
-        return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           Text('Ergebnis:'),
           if (state.simulationResults.isNotEmpty) ...[
             if (state.simulationResults.last.isBendable) ...[
@@ -262,12 +281,12 @@ class _SimulationPageState extends State<SimulationPage> {
         width: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.grey.withOpacity(0.5), width: 2),
+          border: Border.all(color: Colors.black.withOpacity(0.4), width: 1),
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)),
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(5)),
         ),
         child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
             builder: (context, state) {
@@ -369,14 +388,12 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   void _startSimulation() {
-    context.read<TimerWidgetBloc>().add(TimerStarted(duration: 60));
     context.read<SimulationPageBloc>().add(
         SimulationStarted(timeInterval: double.parse(_timeController.text)));
     _showLoadingDialog(context);
   }
 
   void _stopSimulation() {
-    context.read<TimerWidgetBloc>().add(TimerStopped());
     _closeLoadingDialog(context);
   }
 
@@ -462,7 +479,8 @@ class _SimulationPageState extends State<SimulationPage> {
     }
   }
 
-  _buildPortraitLayout() {}
+  _buildPortraitLayout() {
+  }
 
   TwoColumnLandscapeLayout _buildLandscapeLayout() {
     return TwoColumnLandscapeLayout(
@@ -491,11 +509,13 @@ class _SimulationPageState extends State<SimulationPage> {
           ),
           Divider(),
           _buildStartStopButton(),
+          SizedBox(height: 10),
+          _buildSimulationResultsRow()
         ],
       ),
       rightColumn: Column(
         children: [
-          Flexible(child: buildSketcher()),
+          Expanded(child: buildSketcher()),
         ],
       ),
     );

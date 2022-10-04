@@ -9,7 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/model/debugging_offset.dart';
 import 'package:open_bsp/model/simulation/simulation_result/collision_result.dart';
 import 'package:open_bsp/model/simulation/simulation_result/simulation_tool_result.dart';
-import 'package:open_bsp/pages/simulation_page/ticker.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
@@ -27,9 +26,8 @@ part 'simulation_page_state.dart';
 /// Business logic for the [SimulationPage].
 class SimulationPageBloc
     extends Bloc<SimulationPageEvent, SimulationPageState> {
-  SimulationPageBloc({required Ticker ticker})
-      : _ticker = ticker,
-        super(SimulationPageInitial(
+  SimulationPageBloc()
+      : super(SimulationPageInitial(
           tools: [],
           lines: [],
           selectedBeams: [],
@@ -69,7 +67,6 @@ class SimulationPageBloc
 
   List<Offset> collisionOffsets = [];
 
-  final Ticker _ticker;
   StreamSubscription<int>? _streamSubscription;
 
   // StreamController<int> fakeStream = StreamController<int>.broadcast();
