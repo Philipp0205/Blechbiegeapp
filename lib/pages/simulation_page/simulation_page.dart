@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
+import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../bloc /ticker_widget/timer_widget_bloc.dart';
@@ -71,37 +72,37 @@ class _SimulationPageState extends State<SimulationPage> {
   }
 
   /// Builds the body of the app.
-  Container buildBody() {
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Column(
-          children: [
-            buildSketcher(),
-            buildButtonRow(),
-            Divider(),
-            buildSimulationControlsRow()
-          ],
-        ),
-      ),
-    );
+  OrientationBuilder buildBody() {
+    return OrientationBuilder(builder: (context, orientation) {
+      return orientation == Orientation.portrait
+          ? _buildPortraitLayout()
+          : _buildLandscapeLayout();
+    });
+
+    //   child: Container(
+    //     child: Padding(
+    //       padding: const EdgeInsets.all(4.0),
+    //       child: Column(
+    //         children: [
+    //           buildSketcher(),
+    //           buildButtonRow(),
+    //           Divider(),
+    //           buildSimulationControlsRow()
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 
   /// Build a row containing the buttons for adding tools and bending tools.
   Row buildButtonRow() {
     return Row(
       children: [
-        ElevatedButton(
-            onPressed: () => _openSelectToolPage(), child: Text('Maschine')),
-        IconButton(
-            onPressed: () => _nextLineOfPlate(),
-            icon: new Icon(Icons.navigate_next)),
-        IconButton(
-            onPressed: () => _rotateRight(),
-            icon: new Icon(Icons.rotate_right)),
-        IconButton(
-            onPressed: () => _mirrorCurrentPlate(),
-            icon: new Icon(Icons.compare_arrows)),
+        buildMachineButton(),
+        _buildNextLineButton(),
+        _buildRotateRightButton(),
+        _buildMirrorButton(),
         if (context.read<SimulationPageBloc>().state.isSimulationRunning ==
             true) ...[
           // _closeLoadingDialog(context),
@@ -130,6 +131,107 @@ class _SimulationPageState extends State<SimulationPage> {
     );
   }
 
+  ElevatedButton _buildMirrorButton() {
+    return ElevatedButton(
+        onPressed: () => _mirrorCurrentPlate(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [Icon(Icons.flip), SizedBox(width: 10), Text('Mirror')],
+        ));
+  }
+
+  ElevatedButton _buildRotateRightButton() {
+    return ElevatedButton(
+        onPressed: () => _rotateRight(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.rotate_right),
+            SizedBox(width: 10),
+            Text('Rotate')
+          ],
+        ));
+  }
+
+  ElevatedButton _buildNextLineButton() {
+    return ElevatedButton(
+        onPressed: () => _nextLineOfPlate(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.arrow_forward),
+            SizedBox(width: 10),
+            Text('Next Line')
+          ],
+        ));
+    // return IconButton(
+    //     onPressed: () => _nextLineOfPlate(),
+    //     icon: new Icon(Icons.navigate_next));
+  }
+
+  ElevatedButton buildMachineButton() {
+    return ElevatedButton(
+        onPressed: () => _openSelectToolPage(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add),
+            SizedBox(width: 10),
+            Text('Maschine'),
+          ],
+        ));
+  }
+  
+  ElevatedButton _buildUnbendButton() {
+    return ElevatedButton(
+        onPressed: () => _unBendPlate(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.arrow_forward),
+            SizedBox(width: 10),
+            Text('Unbend'),
+          ],
+        ));
+  }
+  
+  ElevatedButton _buildBendButton() {
+    return ElevatedButton(
+        onPressed: () => _bendPlate(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.arrow_back),
+            SizedBox(width: 10),
+            Text('Bend'),
+          ],
+        ));
+  }
+
+  ElevatedButton _buildStartStopButton() {
+    if (context.read<SimulationPageBloc>().state.isSimulationRunning == true) {
+      return ElevatedButton(
+          onPressed: () => {
+                context.read<SimulationPageBloc>().add(SimulationStopped()),
+              },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Icon(Icons.pause), SizedBox(width: 10), Text('Pause')],
+          ));
+    } else {
+      return ElevatedButton(
+          onPressed: () => {
+                context
+                    .read<SimulationPageBloc>()
+                    .add(SimulationStarted(timeInterval: 2)),
+              },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Icon(Icons.play_arrow), SizedBox(width: 10), Text('Simulation starten')],
+          ));
+    }
+  }
+
   /// Build a row containing the controls for the simulation.
   Widget buildSimulationControlsRow() {
     return BlocBuilder<SimulationPageBloc, SimulationPageState>(
@@ -156,7 +258,7 @@ class _SimulationPageState extends State<SimulationPage> {
   /// Builds the sketcher area of the page where the simulation takes place.
   Container buildSketcher() {
     return Container(
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.75,
         width: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -359,4 +461,77 @@ class _SimulationPageState extends State<SimulationPage> {
       _closeLoadingDialog(context);
     }
   }
+
+  _buildPortraitLayout() {}
+
+  TwoColumnLandscapeLayout _buildLandscapeLayout() {
+    return TwoColumnLandscapeLayout(
+      leftColumn: Column(
+        children: [
+          for (var widget in _buildMenuHeader()) widget,
+          buildMachineButton(),
+          Divider(),
+          for (var widget in _buildPositionPlateDescription()) widget,
+          Row(
+            children: [
+              Flexible(child: _buildRotateRightButton()),
+              SizedBox(width: 10),
+              Flexible(child: _buildNextLineButton()),
+            ],
+          ),
+          Flexible(child: _buildMirrorButton()),
+          Divider(),
+          for (var widget in _buildBendPlateDescription()) widget,
+          Row(
+            children: [
+              Flexible(child: _buildBendButton()),
+              SizedBox(width: 10),
+              Flexible(child: _buildUnbendButton())
+            ],
+          ),
+          Divider(),
+          _buildStartStopButton(),
+        ],
+      ),
+      rightColumn: Column(
+        children: [
+          Flexible(child: buildSketcher()),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildMenuHeader() {
+    return [
+      Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Kante selektieren um Länge und Winkel anzupassen.',
+          style: Theme.of(context).textTheme.subtitle1),
+    ];
+  }
+
+  List<Widget> _buildPositionPlateDescription() {
+    return [
+      Text('Blech positionieren', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Das Blech kann mit folgenden Optionen manuell positioniert werden.',
+          style: Theme.of(context).textTheme.subtitle1),
+    ];
+  }
+
+  List<Widget> _buildBendPlateDescription() {
+    return [
+      Text('Blech biegen', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Das Blech kann mit folgenden Optionen manuell gebogen werden.',
+          style: Theme.of(context).textTheme.subtitle1),
+    ];
+  }
+
 }
