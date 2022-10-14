@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
+import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
+import 'package:open_bsp/pages/widgets/app_title.dart';
 import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
-import '../../model/simulation/tool_type.dart';
+import '../drawing_page/two_column_landscape_layout.dart';
 import 'config_page_segment_widget.dart';
 
 class ConfigurationPage extends StatefulWidget {
@@ -37,6 +39,12 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   @override
+  void onBackPressed() {
+//some function
+  }
+
+
+  @override
   void dispose() {
     _sController.dispose();
     _rController.dispose();
@@ -55,25 +63,56 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         appBar: buildAppBar(),
         backgroundColor: Colors.white,
         floatingActionButton: buildFloatingActionButton(state, context),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              /// Sketcher
-              ConstructingPageSegmentWidget(),
-              /// Checkboxes
-              buildCheckboxRow(state, context),
-              Divider(
-                color: Colors.black,
-              ),
-
-              ///TextFields
-              buildTextFieldRow(state, context),
-            ],
-          ),
+        body: OrientationBuilder(
+          builder: (context, orientation) {
+            return orientation == Orientation.portrait
+                ? _buildPortraitLayout(state, context)
+                : buildLandscapeLayout(state);
+          },
         ),
       );
     });
+  }
+
+  TwoColumnPortraitLayout _buildPortraitLayout(
+      ConfigPageState state, BuildContext context) {
+    return TwoColumnPortraitLayout(
+      upperRow: Row(
+        children: [Expanded(child: ConstructingPageSegmentWidget())],
+      ),
+      lowerColumn: Column(
+        children: [
+          Column(
+            children: [
+              for (var widget in _buildMenuHeader()) widget,
+            ],
+          ),
+          Divider(height: 20),
+          Row(
+            children: [
+              Flexible(child: _buildSTextField(context)),
+              SizedBox(width: 10),
+              Flexible(child: _buildRadiusTextField(context)),
+              SizedBox(width: 10),
+              Flexible(child: _buildToolElevatedButton(state)),
+            ],
+          ),
+          Divider(height: 20),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Flexible(child: _buildCoodinateCheckboxListTile(state)),
+                VerticalDivider(),
+                Flexible(child: _buildLengthCheckboxListTile(state)),
+                VerticalDivider(),
+                Flexible(child: _buildAngleCheckboxListTile(state)),
+              ],
+            ),
+          ),
+          Divider(),
+        ],
+      ),
+    );
   }
 
   /// Builds the app bar of the page.
@@ -81,7 +120,14 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     return AppBar(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text('Konfiguration')],
+        children: [Text('Konfiguration des Profils'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              AppTitle(),
+            ],
+          )
+        ],
       ),
     );
   }
@@ -93,49 +139,64 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
       child: Row(
         children: [
-          Container(
-            width: 100,
-            child: TextField(
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Blechdicke'),
-                controller: _sController,
-                keyboardType: TextInputType.number,
-                onChanged: (text) {
-                  double? angle = double.tryParse(_sController.text);
-                  if (angle != null) {
-                    context
-                        .read<ConfigPageBloc>()
-                        .add(ConfigSChanged(s: angle));
-                    context
-                        .read<SimulationPageBloc>()
-                        .add(SimulationSChanged(s: angle));
-                  }
-                }),
-          ),
+          _buildSTextField(context),
           Container(width: 20),
-          Container(
-            width: 100,
-            child: TextField(
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Radius'),
-                controller: _rController,
-                keyboardType: TextInputType.number,
-                onChanged: (text) {
-                  double? value = double.tryParse(text);
-                  if (value != null) {
-                    context.read<ConfigPageBloc>().add(
-                        ConfigRChanged(r: double.parse(_rController.text)));
-                  }
-                }),
-          ),
+          _buildRadiusTextField(context),
           Container(
             width: 30,
           ),
-          ElevatedButton(
-              onPressed: () => _createShape(state), child: Text('+ Werkzeug'))
+          _buildToolElevatedButton(state)
         ],
       ),
     );
+  }
+
+  ElevatedButton _buildToolElevatedButton(ConfigPageState state) {
+    return ElevatedButton(
+        onPressed: () => _createTool(state),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add),
+            SizedBox(width: 10),
+            Text('Werkzeuge'),
+          ],
+        ));
+  }
+
+  /// Builds the [TextField] where the user can change the radius of the
+  /// profile.
+  TextField _buildRadiusTextField(BuildContext context) {
+    return TextField(
+        decoration:
+            InputDecoration(border: OutlineInputBorder(), labelText: 'Radius'),
+        controller: _rController,
+        keyboardType: TextInputType.number,
+        onChanged: (text) {
+          double? value = double.tryParse(text);
+          if (value != null) {
+            context
+                .read<ConfigPageBloc>()
+                .add(ConfigRChanged(r: double.parse(_rController.text)));
+          }
+        });
+  }
+
+  TextField _buildSTextField(BuildContext context) {
+    return TextField(
+        decoration: InputDecoration(
+            border: OutlineInputBorder(), labelText: 'Blechdicke'),
+        controller: _sController,
+        keyboardType: TextInputType.number,
+        onChanged: (text) {
+          double? angle = double.tryParse(_sController.text);
+          if (angle != null) {
+            context.read<ConfigPageBloc>().add(ConfigSChanged(s: angle));
+            context
+                .read<SimulationPageBloc>()
+                .add(SimulationSChanged(s: angle));
+          }
+        });
   }
 
   /// [Row] containing checkboxes for showing different details of the drawn
@@ -172,6 +233,52 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     );
   }
 
+  Column buildCheckboxes2(ConfigPageState state) {
+    return Column(
+      children: [
+        _buildCoodinateCheckboxListTile(state),
+        _buildLengthCheckboxListTile(state),
+        _buildAngleCheckboxListTile(state)
+      ],
+    );
+  }
+
+  CheckboxListTile _buildAngleCheckboxListTile(ConfigPageState state) {
+    return CheckboxListTile(
+        value: state.showAngles,
+        title: Text('Winkel anzeigen'),
+        secondary: Icon(Icons.text_rotation_angledown),
+        onChanged: (bool? value) {
+          context
+              .read<ConfigPageBloc>()
+              .add(ConfigAnglesShown(showAngles: value!));
+        });
+  }
+
+  CheckboxListTile _buildLengthCheckboxListTile(ConfigPageState state) {
+    return CheckboxListTile(
+        value: state.showEdgeLengths,
+        title: Text('Längen anzeigen'),
+        secondary: Icon(Icons.mms),
+        onChanged: (bool? value) {
+          context
+              .read<ConfigPageBloc>()
+              .add(ConfigEdgeLengthsShown(showEdgeLengths: value!));
+        });
+  }
+
+  CheckboxListTile _buildCoodinateCheckboxListTile(ConfigPageState state) {
+    return CheckboxListTile(
+        value: state.showCoordinates,
+        title: Text('Koordinaten anzeigen'),
+        secondary: Icon(Icons.control_point),
+        onChanged: (bool? value) {
+          context
+              .read<ConfigPageBloc>()
+              .add(ConfigCoordinatesShown(showCoordinates: value!));
+        });
+  }
+
   /// Builds the left [FloatingActionButton].
   Stack buildFloatingActionButton(ConfigPageState state, BuildContext context) {
     return Stack(
@@ -200,15 +307,53 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   /// Creates a new [Tool] using a [ModalBottomSheet]
-  void _createShape(ConfigPageState state) {
+  void _createTool(ConfigPageState state) {
     ToolPageBloc(context.read<ToolRepository>()).add(ToolPageCreated());
 
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
         // No selected shape because new Shapes created.
         return AddToolBottomSheet(selectedShape: null);
       },
     );
+  }
+
+  TwoColumnLandscapeLayout buildLandscapeLayout(ConfigPageState state) {
+    return TwoColumnLandscapeLayout(
+      leftColumn: Column(
+        children: [
+          for (var widget in _buildMenuHeader()) widget,
+          Divider(),
+          Flexible(child: _buildRadiusTextField(context)),
+          SizedBox(height: 10),
+          Flexible(child: _buildSTextField(context)),
+          Divider(),
+          buildCheckboxes2(state),
+          Divider(),
+          SizedBox(
+            width: double.infinity,
+            child: _buildToolElevatedButton(state),
+          ),
+        ],
+      ),
+      rightColumn: Column(
+        children: [
+          ConstructingPageSegmentWidget(),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildMenuHeader() {
+    return [
+      Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Kante selektieren um Länge und Winkel anzupassen.',
+          style: Theme.of(context).textTheme.subtitle1),
+    ];
   }
 }

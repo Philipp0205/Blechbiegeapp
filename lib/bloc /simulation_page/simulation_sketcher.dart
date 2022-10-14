@@ -54,18 +54,6 @@ class SimulationSketcher extends CustomPainter {
       ..strokeWidth = 5.0
       ..style = PaintingStyle.fill;
 
-    Paint redStroke = Paint()
-      ..color = Colors.red
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0
-      ..style = PaintingStyle.stroke;
-
-    Paint redPaint = Paint()
-      ..color = Colors.red
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.fill;
-
     Paint blackStroke = Paint()
       ..color = Colors.black
       ..strokeCap = StrokeCap.round

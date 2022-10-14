@@ -13,8 +13,6 @@ import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 import 'package:open_bsp/services/color_service.dart';
 
 import 'bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
-import 'bloc /ticker_widget/timer_widget_bloc.dart';
-import 'pages/simulation_page/ticker.dart';
 
 void main() {
   runApp(MyApp());
@@ -45,14 +43,11 @@ class MyApp extends StatelessWidget {
               ..add(ConfigRegisterAdapters()),
           ),
           BlocProvider(
-            create: (_) => SimulationPageBloc(ticker: Ticker()),
+            create: (_) => SimulationPageBloc(),
           ),
           BlocProvider(
             create: (context) => ToolPageBloc(context.read<ToolRepository>()),
           ),
-          BlocProvider(
-            create: (context) => TimerWidgetBloc(ticker: Ticker()),
-          )
         ],
         child: MaterialApp(
           title: 'Flutter Demo',

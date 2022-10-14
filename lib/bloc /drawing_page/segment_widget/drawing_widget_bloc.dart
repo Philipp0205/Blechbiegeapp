@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
@@ -39,6 +41,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     on<CurrentSegmentModeChanged>(_changeMode);
     on<LineDrawingUndo>(_undo);
     on<LineDrawingRedo>(_redo);
+    on<LinesReplaced>(_onReplaceLines);
   }
 
   void _deleteLines(LinesDeleted event, Emitter<DrawingWidgetState> emit) {
@@ -133,9 +136,9 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       List<Line> lines = state.lines;
 
       Line line = new Line(
-          start: event.firstDrawnOffset,
-          end: event.firstDrawnOffset,
-          isSelected: false,
+        start: event.firstDrawnOffset,
+        end: event.firstDrawnOffset,
+        isSelected: false,
       );
 
       if (lines.isNotEmpty) line = line.copyWith(start: lines.last.end);
@@ -171,6 +174,11 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     List<Line> lines = state.lines;
     List<Line> selectedLines = state.selectedLines;
+
+    /// Unselect previous selected lines.
+    selectedLines.forEach((line) {
+      line.isSelected = false;
+    });
 
     List<Offset> middlePoints = lines
         .map((line) => _calculationService.getMiddle(line.start, line.end))
@@ -263,5 +271,9 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
+  }
+
+  void _onReplaceLines(LinesReplaced event, Emitter<DrawingWidgetState> emit) {
+    emit(state.copyWith(lines: event.lines));
   }
 }

@@ -5,11 +5,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
 import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_state.dart';
+import 'package:open_bsp/pages/drawing_page/drawing_widget_sketcher.dart';
+import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
+import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
+import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/line.dart';
+import '../widgets/app_title.dart';
 import 'drawing_widget.dart';
 
 /// On this page the user can draw a single line representing the the profile
@@ -85,16 +90,32 @@ class _DrawingPageState extends State<DrawingPage> {
   Widget build(BuildContext context) {
     /// Triggers when a new line is selected and there the [TextField]s get new
     /// values.
-    return BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
-      listenWhen: (prev, current) =>
-          prev.selectedLines != current.selectedLines &&
-          current.selectedLines.isNotEmpty,
-      listener: (context, state) {
-        _setAngle(state.selectedLines);
-        _setLength(state.selectedLines);
-      },
+    return MultiBlocListener(
+      listeners: [
+        /// When the drawing widget state updates lines the angle and length
+        /// of the TextField are updated.
+        BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
+          listenWhen: (prev, current) =>
+              prev.selectedLines != current.selectedLines &&
+              current.selectedLines.isNotEmpty,
+          listener: (context, state) {
+            _setAngle(state.selectedLines);
+            _setLength(state.selectedLines);
+          },
+        ),
 
-      /// Rebuild the Widget if [DrawingPageState] changes.
+        /// When the configuration page state has lines the drawing widget page
+        /// state gets updated as well.
+        BlocListener<ConfigPageBloc, ConfigPageState>(
+          listenWhen: (prev, current) =>
+              prev.lines != current.lines && current.lines.isNotEmpty,
+          listener: (context, state) {
+            context
+                .read<DrawingWidgetBloc>()
+                .add(LinesReplaced(lines: state.lines));
+          },
+        ),
+      ],
       child: BlocBuilder<DrawingPageBloc, DrawingPageState>(
           builder: (context, state) {
         return Scaffold(
@@ -103,45 +124,31 @@ class _DrawingPageState extends State<DrawingPage> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Biegeapp'),
-                Container(width: 100),
-                IconButton(
-                    onPressed: () {
-                      _undo();
-                    },
-                    icon: Icon(Icons.arrow_circle_left)),
-                IconButton(
-                    onPressed: () {
-                      _redo();
-                    },
-                    icon: Icon(Icons.arrow_circle_right)),
+                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                  Text('Blechprofil zeichnen'),
+                  Container(width: 10),
+                  IconButton(
+                      onPressed: () {
+                        _undo();
+                      },
+                      icon: Icon(Icons.arrow_circle_left)),
+                  SizedBox(width: 10),
+                  IconButton(
+                      onPressed: () {
+                        _redo();
+                      },
+                      icon: Icon(Icons.arrow_circle_right))
+                ]),
+                AppTitle(),
               ],
             ),
           ),
           backgroundColor: Colors.white,
-          body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                // buildDrawingWidget(),
-                DrawingWidget(),
-                Divider(color: Colors.green),
-
-                /// SelectionMode
-                Text(
-                  'Modi',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                buildConfigRow(state),
-                Divider(),
-                Text('Selektiere Linie',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                buildConfigRow2(state),
-                // buildLineConfigRow(),
-                /// Line configuration
-              ],
-            ),
-          ),
+          body: OrientationBuilder(builder: (context, orientation) {
+            return orientation == Orientation.portrait
+                ? buildPortraitLayout(state)
+                : buildLandscapeLayout(state);
+          }),
           floatingActionButton: Stack(
             children: [
               /// Right Button
@@ -163,31 +170,98 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
+  /// Builds the vertical layout of the page.
+  /// The [DrawingWidget] is followed by two rows containing the options for
+  /// configuring the line.
+  ///
+  /// The first row contains the selecting and deleting the line and the second row contains the
+  /// angle and the length of the line.
+  TwoColumnPortraitLayout buildPortraitLayout(DrawingPageState state) {
+    return TwoColumnPortraitLayout(
+      upperRow: Row(
+        children: [Expanded(child: DrawingWidget())],
+      ),
+      lowerColumn: Column(
+        children: [
+          for (var widget in _buildMenuHeader()) widget,
+          Divider(
+            height: 20,
+          ),
+          Row(
+            children: [
+              Flexible(child: _buildAngleTextField()),
+              SizedBox(width: 10),
+              Flexible(child: _buildLengthTextField()),
+              SizedBox(width: 10),
+              Flexible(child: _buildSelectLineCheckboxListTile(state)),
+              SizedBox(width: 10),
+              Flexible(child: _buildDeleteElevatedButton()),
+            ],
+          ),
+          Divider(height: 20),
+        ],
+      ),
+    );
+  }
+
+  TwoColumnLandscapeLayout buildLandscapeLayout(DrawingPageState state) {
+    return TwoColumnLandscapeLayout(
+        leftColumn: Column(
+          children: [
+            for (var widget in _buildMenuHeader()) widget,
+            Divider(),
+            _buildAngleTextField(),
+            SizedBox(height: 10),
+            _buildLengthTextField(),
+            Divider(),
+            Flexible(child: _buildSelectLineCheckboxListTile(state)),
+            _buildDeleteElevatedButton(),
+          ],
+        ),
+        rightColumn: Column(
+          children: [DrawingWidget()],
+        ));
+  }
+
+  ElevatedButton _buildDeleteElevatedButton() {
+    return ElevatedButton(
+        onPressed: () => _clearCanvas(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete),
+            SizedBox(
+              width: 10,
+            ),
+            Text('Profil löschen')
+          ],
+        ));
+  }
+
+  List<Widget> _buildMenuHeader() {
+    return [
+      Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
+      SizedBox(
+        height: 10,
+      ),
+      Text('Kante selektieren um Länge und Winkel anzupassen.',
+          style: Theme.of(context).textTheme.subtitle1)
+    ];
+  }
+
   Widget buildDrawingWidget() {
     return Stack(children: [
       DrawingWidget(),
     ]);
   }
 
-  Row buildConfigRow(DrawingPageState state) {
-    return Row(
-      children: [
-        Checkbox(
-            value: state.selectionMode,
-            onChanged: (bool? value) {
-              _toggleSelectionMode(value!);
-            }),
-        Text('Linien selektieren'),
-        Container(
-          width: 10,
-        ),
-        Container(
-          width: 130,
-        ),
-        ElevatedButton(
-            onPressed: () => _clearCanvas(), child: Icon(Icons.delete))
-      ],
-    );
+  CheckboxListTile _buildSelectLineCheckboxListTile(DrawingPageState state) {
+    return CheckboxListTile(
+        title: Text('Linie selektieren'),
+        value: state.selectionMode,
+        onChanged: (bool? value) {
+          _toggleSelectionMode(value!);
+        });
   }
 
   Row buildLineConfigRow() {
@@ -227,46 +301,84 @@ class _DrawingPageState extends State<DrawingPage> {
     );
   }
 
-  Row buildConfigRow2(DrawingPageState state) {
+  Column buildConfigRow22(DrawingPageState state) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Flexible(child: _buildAngleTextField()),
+            // SizedBox(width: 245, child: _buildAngleTextField()),
+          ],
+        ),
+        SizedBox(height: 10),
+        Row(children: [
+          Flexible(child: _buildLengthTextField()),
+          // SizedBox(
+          //   width: 245,
+          //   child: _buildLengthTextField(),
+          // ),
+        ]),
+      ],
+    );
+  }
+
+  Widget buildConfigRow2(DrawingPageState state) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return orientation == Orientation.landscape
+            ? buildPortraitLengthAndAngleRow()
+            : buildConfigRow22(state);
+      },
+    );
+  }
+
+  Row buildPortraitLengthAndAngleRow() {
     return Row(
       children: [
         Container(
-          width: 150,
-          child: TextField(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Winkel',
-            ),
-            onChanged: (text) {
-              double? value = double.tryParse(text);
-              if (value != null) {
-                _changeAngle(value);
-              }
-            },
-            controller: _angleController,
-            keyboardType: TextInputType.number,
-          ),
+          width: 100,
+          child: _buildAngleTextField(),
         ),
         Container(width: 20),
         Container(
-          width: 150,
-          child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Länge',
-              ),
-              onChanged: (text) {
-                double? value = double.tryParse(text);
-                if (value != null) {
-                  context.read<DrawingWidgetBloc>().add(
-                      LineDrawingLengthChanged(
-                          length: double.parse(_lengthController.text)));
-                }
-              },
-              controller: _lengthController,
-              keyboardType: TextInputType.number),
+          width: 100,
+          child: _buildLengthTextField(),
         )
       ],
+    );
+  }
+
+  TextField _buildLengthTextField() {
+    return TextField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(),
+          labelText: 'Länge (mm)',
+        ),
+        onChanged: (text) {
+          double? value = double.tryParse(text);
+          if (value != null) {
+            context.read<DrawingWidgetBloc>().add(LineDrawingLengthChanged(
+                length: double.parse(_lengthController.text)));
+          }
+        },
+        controller: _lengthController,
+        keyboardType: TextInputType.number);
+  }
+
+  TextField _buildAngleTextField() {
+    return TextField(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: 'Winkel (°)',
+      ),
+      onChanged: (text) {
+        double? value = double.tryParse(text);
+        if (value != null) {
+          _changeAngle(value);
+        }
+      },
+      controller: _angleController,
+      keyboardType: TextInputType.number,
     );
   }
 
@@ -286,6 +398,11 @@ class _DrawingPageState extends State<DrawingPage> {
   /// Navigates to the next Page and passes the selected lines to the next Page.
   void _goToNextPage() {
     List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
+
+    /// Load tools from the database.
+    context.read<ToolPageBloc>()
+      ..add(ToolDataBackedUp())
+      ..add(ToolPageCreated());
 
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(lines: lines, tools: []));

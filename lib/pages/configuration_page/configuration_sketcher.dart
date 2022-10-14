@@ -216,7 +216,7 @@ class ConfigurationSketcher extends CustomPainter {
 
   /// Draws text on the canvas containing the length of a line.
   void _drawLineLengths(Canvas canvas, Offset offsetA, Offset offsetB) {
-    String text = '${(offsetA - offsetB).distance.toStringAsFixed(1)} cm';
+    String text = '${(offsetA - offsetB).distance.toStringAsFixed(1)} mm';
 
     Offset middle = _calculationsService.getMiddle(offsetA, offsetB);
 

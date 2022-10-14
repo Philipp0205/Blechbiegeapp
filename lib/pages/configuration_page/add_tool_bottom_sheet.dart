@@ -56,7 +56,7 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 450,
+      height: MediaQuery.of(context).size.height * 0.7,
       child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
         return Padding(
@@ -83,7 +83,15 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
             List<Line> lines = context.read<ConfigPageBloc>().state.lines;
             _saveTool(_nameController.text, lines);
           },
-          child: Text('Speichern'),
+          child: Row(
+            children: [
+              Icon(Icons.save),
+              SizedBox(
+                width: 5,
+              ),
+              Text('Speichern'),
+            ],
+          ),
         ),
         Container(
           width: 10,
@@ -94,10 +102,17 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
 
             // Close bottom sheet
             Navigator.pop(context);
-
             Navigator.of(context).pushNamed("/shapes");
           },
-          child: Text('Übersicht Werkzeuge'),
+          child: Row(
+            children: [
+              Icon(Icons.edit),
+              SizedBox(
+                width: 5,
+              ),
+              Text('Übersicht Werkzeuge'),
+            ],
+          ),
         ),
         Container(
           width: 10,
@@ -106,7 +121,15 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
             onPressed: () {
               context.read<ToolPageBloc>().add(ToolDataBackedUp());
             },
-            child: Icon(Icons.backup))
+            child: Row(
+              children: [
+                Icon(Icons.download),
+                SizedBox(
+                  width: 10,
+                ),
+                Text('Standard Werkzeuge laden'),
+              ],
+            ))
       ],
     );
   }
