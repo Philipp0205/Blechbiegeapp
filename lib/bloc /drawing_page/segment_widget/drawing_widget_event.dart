@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../../model/appmodes.dart';
+import '../../../model/line.dart';
 
 /// Handles all events of the [SegmentWidget].
 abstract class DrawingWidgetEvent {
@@ -92,6 +93,19 @@ class LineDrawingUndo extends DrawingWidgetEvent {
 /// Redo (recover) the last drawn line. Is possible with multiple lines as well.
 class LineDrawingRedo extends DrawingWidgetEvent {
   LineDrawingRedo();
+}
+
+/// Event that triggers when user presses undo button.
+/// Undo is only possible if there is a line to undo.
+class LineDrawingUndoPossible extends DrawingWidgetEvent {
+  LineDrawingUndoPossible();
+}
+
+/// Event that that updates the [lines] of the widget.
+class LinesReplaced extends DrawingWidgetEvent {
+  final List<Line> lines;
+
+  const LinesReplaced({required this.lines});
 }
 
 

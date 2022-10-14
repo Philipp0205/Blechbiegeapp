@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/model/simulation/enums/position_enum.dart';
 
 import '../../model/OffsetAdapter.dart';
@@ -54,6 +55,7 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   Future<void> _initializePage(
       ConfigPageCreated event, Emitter<ConfigPageState> emit) async {
     _createToolTypes(emit);
+
     emit(state.copyWith(lines: event.lines));
   }
 
@@ -104,11 +106,6 @@ class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {
   /// Handles the event that changes the radius of the curves that are drawn.j
   void _changeRadius(ConfigRChanged event, Emitter<ConfigPageState> emit) {
     emit(state.copyWith(r: event.r));
-  }
-
-  bool _shapeAlreadyExists(Tool shape, List<Tool> shapes) {
-    List<List<Line>> lines = shapes.map((shape) => shape.lines).toList();
-    return lines.contains(shape.lines);
   }
 
   /// Toggles the adapter mode of the configuration page.

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
-import 'package:open_bsp/bloc%20/simulation_page/simulation_sketcher.dart';
-import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
+import 'package:open_bsp/pages/simulation_page/simulation_page_sketcher.dart';
+import 'package:open_bsp/pages/widgets/app_title.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/simulation/tool.dart';
@@ -46,6 +46,15 @@ class _SimulationPageState extends State<SimulationPage> {
             listener: (context, state) {
               _toggleDialog(state.isSimulationRunning);
             }),
+        /// Bloc Listener to show dialog
+        BlocListener<SimulationPageBloc, SimulationPageState>(
+            listenWhen: (prev, current) =>
+                prev.simulationError  != current.simulationError,
+            listener: (context, state) {
+              if (state.simulationError == true) {
+                _showErrorDialog(context, "test", "test");
+              }
+            }),
       ],
       child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
           buildWhen: (prev, current) =>
@@ -78,21 +87,6 @@ class _SimulationPageState extends State<SimulationPage> {
           ? _buildPortraitLayout()
           : _buildLandscapeLayout();
     });
-
-    //   child: Container(
-    //     child: Padding(
-    //       padding: const EdgeInsets.all(4.0),
-    //       child: Column(
-    //         children: [
-    //           buildSketcher(),
-    //           buildButtonRow(),
-    //           Divider(),
-    //           buildSimulationControlsRow()
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
   }
 
   /// Build a row containing the buttons for adding tools and bending tools.
@@ -181,7 +175,7 @@ class _SimulationPageState extends State<SimulationPage> {
           ],
         ));
   }
-  
+
   ElevatedButton _buildUnbendButton() {
     return ElevatedButton(
         onPressed: () => _unBendPlate(),
@@ -194,7 +188,7 @@ class _SimulationPageState extends State<SimulationPage> {
           ],
         ));
   }
-  
+
   ElevatedButton _buildBendButton() {
     return ElevatedButton(
         onPressed: () => _bendPlate(),
@@ -227,15 +221,18 @@ class _SimulationPageState extends State<SimulationPage> {
               },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Icon(Icons.play_arrow), SizedBox(width: 10), Text('Simulation starten')],
+            children: [
+              Icon(Icons.play_arrow),
+              SizedBox(width: 10),
+              Text('Simulation starten')
+            ],
           ));
     }
   }
-  
+
   Row _buildSimulationResultsRow() {
     SimulationPageState state = context.read<SimulationPageBloc>().state;
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
       Text('Ergebnis:', style: Theme.of(context).textTheme.titleLarge),
       if (state.simulationResults.isNotEmpty) ...[
         if (state.simulationResults.last.isBendable) ...[
@@ -256,8 +253,7 @@ class _SimulationPageState extends State<SimulationPage> {
       buildWhen: (prev, current) =>
           prev.isSimulationRunning != current.isSimulationRunning,
       builder: (context, state) {
-        return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           Text('Ergebnis:'),
           if (state.simulationResults.isNotEmpty) ...[
             if (state.simulationResults.last.isBendable) ...[
@@ -274,37 +270,6 @@ class _SimulationPageState extends State<SimulationPage> {
     );
   }
 
-  /// Builds the sketcher area of the page where the simulation takes place.
-  Container buildSketcher() {
-    return Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        width: MediaQuery.of(context).size.height * 0.9,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.black.withOpacity(0.4), width: 1),
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(5),
-              topRight: Radius.circular(5),
-              bottomLeft: Radius.circular(5),
-              bottomRight: Radius.circular(5)),
-        ),
-        child: BlocBuilder<SimulationPageBloc, SimulationPageState>(
-            builder: (context, state) {
-          return RepaintBoundary(
-            child: CustomPaint(
-              painter: SimulationSketcher(
-                  beams: state.selectedBeams,
-                  tracks: state.selectedTracks,
-                  plates: state.selectedPlates,
-                  rotateAngle: state.rotationAngle,
-                  collisionOffsets: state.collisionOffsets,
-                  debugOffsets: state.debugOffsets,
-                  context: context),
-            ),
-          );
-        }));
-  }
-
   /// Build the appbar of the the page.
   AppBar buildAppBar() {
     return AppBar(
@@ -312,8 +277,15 @@ class _SimulationPageState extends State<SimulationPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('Simulation'),
-          _setCollisionLabel(
-              context.read<SimulationPageBloc>().state.inCollision)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _setCollisionLabel(
+                  context.read<SimulationPageBloc>().state.inCollision),
+              VerticalDivider(),
+              AppTitle(),
+            ],
+          ),
         ],
       ),
     );
@@ -387,16 +359,6 @@ class _SimulationPageState extends State<SimulationPage> {
     }
   }
 
-  void _startSimulation() {
-    context.read<SimulationPageBloc>().add(
-        SimulationStarted(timeInterval: double.parse(_timeController.text)));
-    _showLoadingDialog(context);
-  }
-
-  void _stopSimulation() {
-    _closeLoadingDialog(context);
-  }
-
   void _showLoadingDialog(BuildContext context) async {
     // show the loading dialog
     return showDialog(
@@ -418,7 +380,7 @@ class _SimulationPageState extends State<SimulationPage> {
                     height: 15,
                   ),
                   // Some text
-                  Text('Loading...')
+                  Text('Wird geladen...')
                 ],
               ),
             ),
@@ -428,28 +390,6 @@ class _SimulationPageState extends State<SimulationPage> {
 
   void _closeLoadingDialog(BuildContext context) {
     Navigator.of(context).pop();
-  }
-
-  SimpleDialog _showSimpleDialog(BuildContext context) {
-    return SimpleDialog(
-      title: const Text('Simulation'),
-      children: <Widget>[
-        SimpleDialogOption(
-          onPressed: () {
-            _startSimulation();
-            Navigator.pop(context);
-          },
-          child: const Text('Start'),
-        ),
-        SimpleDialogOption(
-          onPressed: () {
-            _stopSimulation();
-            Navigator.pop(context);
-          },
-          child: const Text('Stop'),
-        ),
-      ],
-    );
   }
 
   showLoaderDialog(BuildContext context) {
@@ -479,8 +419,27 @@ class _SimulationPageState extends State<SimulationPage> {
     }
   }
 
-  _buildPortraitLayout() {
+  void _showErrorDialog(BuildContext context, String title, String text) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text(title),
+          content: new Text(text),
+          actions: <Widget>[
+            new ElevatedButton(
+              child: new Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
+
+  _buildPortraitLayout() {}
 
   TwoColumnLandscapeLayout _buildLandscapeLayout() {
     return TwoColumnLandscapeLayout(
@@ -515,7 +474,7 @@ class _SimulationPageState extends State<SimulationPage> {
       ),
       rightColumn: Column(
         children: [
-          Expanded(child: buildSketcher()),
+          SimulationPageSketcher(),
         ],
       ),
     );
@@ -534,7 +493,8 @@ class _SimulationPageState extends State<SimulationPage> {
 
   List<Widget> _buildPositionPlateDescription() {
     return [
-      Text('Blech positionieren', style: Theme.of(context).textTheme.titleLarge),
+      Text('Blech positionieren',
+          style: Theme.of(context).textTheme.titleLarge),
       SizedBox(
         height: 10,
       ),
@@ -553,5 +513,4 @@ class _SimulationPageState extends State<SimulationPage> {
           style: Theme.of(context).textTheme.subtitle1),
     ];
   }
-
 }

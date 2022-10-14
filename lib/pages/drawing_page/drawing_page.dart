@@ -12,7 +12,9 @@ import 'package:open_bsp/services/geometric_calculations_service.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
+import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/line.dart';
+import '../widgets/app_title.dart';
 import 'drawing_widget.dart';
 
 /// On this page the user can draw a single line representing the the profile
@@ -88,16 +90,32 @@ class _DrawingPageState extends State<DrawingPage> {
   Widget build(BuildContext context) {
     /// Triggers when a new line is selected and there the [TextField]s get new
     /// values.
-    return BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
-      listenWhen: (prev, current) =>
-          prev.selectedLines != current.selectedLines &&
-          current.selectedLines.isNotEmpty,
-      listener: (context, state) {
-        _setAngle(state.selectedLines);
-        _setLength(state.selectedLines);
-      },
+    return MultiBlocListener(
+      listeners: [
+        /// When the drawing widget state updates lines the angle and length
+        /// of the TextField are updated.
+        BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
+          listenWhen: (prev, current) =>
+              prev.selectedLines != current.selectedLines &&
+              current.selectedLines.isNotEmpty,
+          listener: (context, state) {
+            _setAngle(state.selectedLines);
+            _setLength(state.selectedLines);
+          },
+        ),
 
-      /// Rebuild the Widget if [DrawingPageState] changes.
+        /// When the configuration page state has lines the drawing widget page
+        /// state gets updated as well.
+        BlocListener<ConfigPageBloc, ConfigPageState>(
+          listenWhen: (prev, current) =>
+              prev.lines != current.lines && current.lines.isNotEmpty,
+          listener: (context, state) {
+            context
+                .read<DrawingWidgetBloc>()
+                .add(LinesReplaced(lines: state.lines));
+          },
+        ),
+      ],
       child: BlocBuilder<DrawingPageBloc, DrawingPageState>(
           builder: (context, state) {
         return Scaffold(
@@ -106,24 +124,22 @@ class _DrawingPageState extends State<DrawingPage> {
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Blechprofil zeichnen'),
-                Container(width: 100),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                        onPressed: () {
-                          _undo();
-                        },
-                        icon: Icon(Icons.arrow_circle_left)),
-                    SizedBox(width: 10),
-                    IconButton(
-                        onPressed: () {
-                          _redo();
-                        },
-                        icon: Icon(Icons.arrow_circle_right)),
-                  ],
-                ),
+                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                  Text('Blechprofil zeichnen'),
+                  Container(width: 10),
+                  IconButton(
+                      onPressed: () {
+                        _undo();
+                      },
+                      icon: Icon(Icons.arrow_circle_left)),
+                  SizedBox(width: 10),
+                  IconButton(
+                      onPressed: () {
+                        _redo();
+                      },
+                      icon: Icon(Icons.arrow_circle_right))
+                ]),
+                AppTitle(),
               ],
             ),
           ),
@@ -199,42 +215,12 @@ class _DrawingPageState extends State<DrawingPage> {
             _buildLengthTextField(),
             Divider(),
             Flexible(child: _buildSelectLineCheckboxListTile(state)),
-            _buildDeleteElevatedButton()
+            _buildDeleteElevatedButton(),
           ],
         ),
         rightColumn: Column(
-          children: [
-            DrawingWidget()
-          ],
+          children: [DrawingWidget()],
         ));
-    // return Row(
-    //   children: [
-    //     Flexible(
-    //       flex: 20,
-    //       child: Column(
-    //         children: [
-    //           for (var widget in _buildMenuHeader()) widget,
-    //           Divider(),
-    //           buildConfigRow22(state),
-    //           _buildSelectLineCheckboxListTile(state),
-    //           SizedBox(
-    //             width: 500,
-    //             child: _buildDeleteElevatedButton(),
-    //           )
-    //         ],
-    //       ),
-    //     ),
-    //     Spacer(),
-    //     Flexible(
-    //       flex: 80,
-    //       child: Column(
-    //         children: [
-    //           DrawingWidget(),
-    //         ],
-    //       ),
-    //     ),
-    //   ],
-    // );
   }
 
   ElevatedButton _buildDeleteElevatedButton() {
@@ -383,7 +369,7 @@ class _DrawingPageState extends State<DrawingPage> {
     return TextField(
       decoration: InputDecoration(
         border: OutlineInputBorder(),
-        labelText: 'Winkel (mm)',
+        labelText: 'Winkel (°)',
       ),
       onChanged: (text) {
         double? value = double.tryParse(text);
@@ -412,6 +398,11 @@ class _DrawingPageState extends State<DrawingPage> {
   /// Navigates to the next Page and passes the selected lines to the next Page.
   void _goToNextPage() {
     List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
+
+    /// Load tools from the database.
+    context.read<ToolPageBloc>()
+      ..add(ToolDataBackedUp())
+      ..add(ToolPageCreated());
 
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(lines: lines, tools: []));

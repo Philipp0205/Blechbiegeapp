@@ -15,7 +15,6 @@ part 'tool_page_event.dart';
 part 'tool_page_state.dart';
 
 class ToolPageBloc extends Bloc<ToolPageEvent, ToolPageState> {
-  DatabaseProvider _service = new DatabaseProvider();
   late Box box = Hive.box('shapes');
 
   ToolPageBloc(this._toolRepository)

@@ -11,6 +11,7 @@ class SimulationPageState extends Equatable {
   final double rotationAngle;
   final bool inCollision;
   final bool isSimulationRunning;
+  final bool simulationError;
   final double duration;
   final int currentTick;
   final List<Offset> collisionOffsets;
@@ -30,6 +31,7 @@ class SimulationPageState extends Equatable {
       required this.isSimulationRunning,
       required this.duration,
       required this.currentTick,
+      required this.simulationError,
       required this.simulationResults});
 
   @override
@@ -49,6 +51,7 @@ class SimulationPageState extends Equatable {
         simulationResults,
         bendingHistory,
         debugOffsets,
+        simulationError,
       ];
 
   SimulationPageState copyWith({
@@ -59,13 +62,14 @@ class SimulationPageState extends Equatable {
     List<Tool>? selectedPlates,
     List<BendResult>? bendingHistory,
     List<DebugOffset>? debugOffsets,
-    List<SimulationToolResult>? simulationResults,
     double? rotationAngle,
     bool? inCollision,
     bool? isSimulationRunning,
+    bool? simulationError,
     double? duration,
     int? currentTick,
     List<Offset>? collisionOffsets,
+    List<SimulationToolResult>? simulationResults,
   }) {
     return SimulationPageState(
       shapes: shapes ?? this.shapes,
@@ -78,6 +82,7 @@ class SimulationPageState extends Equatable {
       rotationAngle: rotationAngle ?? this.rotationAngle,
       inCollision: inCollision ?? this.inCollision,
       isSimulationRunning: isSimulationRunning ?? this.isSimulationRunning,
+      simulationError: simulationError ?? this.simulationError,
       duration: duration ?? this.duration,
       currentTick: currentTick ?? this.currentTick,
       collisionOffsets: collisionOffsets ?? this.collisionOffsets,
@@ -100,6 +105,7 @@ class SimulationPageInitial extends SimulationPageState {
     required double rotationAngle,
     required bool inCollision,
     required bool isSimulationRunning,
+    required bool simulationError,
     required double duration,
     required int currentTick,
     required List<SimulationToolResult> simulationResult,
@@ -114,6 +120,7 @@ class SimulationPageInitial extends SimulationPageState {
           rotationAngle: rotationAngle,
           collisionOffsets: collisionOffsets,
           inCollision: inCollision,
+          simulationError: simulationError,
           isSimulationRunning: isSimulationRunning,
           duration: duration,
           currentTick: currentTick,

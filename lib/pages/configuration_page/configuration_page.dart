@@ -4,6 +4,7 @@ import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
 import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
+import 'package:open_bsp/pages/widgets/app_title.dart';
 import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
@@ -36,6 +37,12 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
     // createDebuggingShapes();
   }
+
+  @override
+  void onBackPressed() {
+//some function
+  }
+
 
   @override
   void dispose() {
@@ -113,7 +120,14 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     return AppBar(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text('Konfiguration des Profils')],
+        children: [Text('Konfiguration des Profils'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              AppTitle(),
+            ],
+          )
+        ],
       ),
     );
   }
@@ -139,7 +153,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   ElevatedButton _buildToolElevatedButton(ConfigPageState state) {
     return ElevatedButton(
-        onPressed: () => _createShape(state),
+        onPressed: () => _createTool(state),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -231,7 +245,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   CheckboxListTile _buildAngleCheckboxListTile(ConfigPageState state) {
     return CheckboxListTile(
-        value: state.showEdgeLengths,
+        value: state.showAngles,
         title: Text('Winkel anzeigen'),
         secondary: Icon(Icons.text_rotation_angledown),
         onChanged: (bool? value) {
@@ -293,10 +307,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   /// Creates a new [Tool] using a [ModalBottomSheet]
-  void _createShape(ConfigPageState state) {
+  void _createTool(ConfigPageState state) {
     ToolPageBloc(context.read<ToolRepository>()).add(ToolPageCreated());
 
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
         // No selected shape because new Shapes created.

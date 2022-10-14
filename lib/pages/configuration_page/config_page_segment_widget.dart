@@ -30,18 +30,15 @@ class _ConstructingPageSegmentWidgetState
       ),
       child: BlocBuilder<ConfigPageBloc, ConfigPageState>(
           builder: (context, state) {
-        return GestureDetector(
-          onPanDown: (details) => onPanDown(context, details, state),
-          child: CustomPaint(
-            painter: ConfigurationSketcher(
-                segments: state.segment,
-                coordinatesShown: state.showCoordinates,
-                edgeLengthsShown: state.showEdgeLengths,
-                anglesShown: state.showAngles,
-                s: state.s,
-                r: state.r,
-                lines: state.lines),
-          ),
+        return CustomPaint(
+          painter: ConfigurationSketcher(
+              segments: state.segment,
+              coordinatesShown: state.showCoordinates,
+              edgeLengthsShown: state.showEdgeLengths,
+              anglesShown: state.showAngles,
+              s: state.s,
+              r: state.r,
+              lines: state.lines),
         );
       }),
     );

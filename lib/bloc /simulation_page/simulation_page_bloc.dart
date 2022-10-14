@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/model/debugging_offset.dart';
@@ -39,6 +37,7 @@ class SimulationPageBloc
           debugOffsets: [],
           collisionOffsets: [],
           inCollision: false,
+          simulationError: false,
           isSimulationRunning: false,
           duration: 0,
           currentTick: 9999,
@@ -86,7 +85,9 @@ class SimulationPageBloc
   /// This method is called when the [SimulationToolsChanged] event is emitted.
   void _placeTools(
       SimulationToolsChanged event, Emitter<SimulationPageState> emit) {
-    if (event.tools.isEmpty) return;
+    if (event.tools.isEmpty || state.selectedPlates.isEmpty) {
+      emit(state.copyWith(simulationError: true));
+    }
 
     List<Tool> selectedBeams =
         _getToolsByCategory(event.tools, ToolCategoryEnum.BEAM);
@@ -628,10 +629,13 @@ class SimulationPageBloc
   /// Starts the simulation
   void _onSimulationStart(
       SimulationStarted event, Emitter<SimulationPageState> emit) {
-    add(SimulationTicked());
-
-    emit(state.copyWith(
-        isSimulationRunning: true, currentTick: 0, simulationResults: []));
+    if (state.selectedTracks.isEmpty) {
+      emit(state.copyWith(simulationError: true));
+    } else {
+      add(SimulationTicked());
+      emit(state.copyWith(
+          isSimulationRunning: true, currentTick: 0, simulationResults: []));
+    }
   }
 
   void _testAllSidesOfPlateForCollision(

@@ -5,7 +5,6 @@ import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_event.dart';
 import '../../bloc /drawing_page/segment_widget/drawing_widget_state.dart';
-import '../../model/appmodes.dart';
 import 'drawing_widget_sketcher.dart';
 
 /// Widget which the the line is drawn on. Gestures from the user are
