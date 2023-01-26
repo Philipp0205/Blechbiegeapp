@@ -24,3 +24,6 @@ To store your credentials in cache and avoid logging in every time you perform a
 
 [Source](https://stackoverflow.com/a/69559900/7127837)
 
+## Create release apk 
+
+

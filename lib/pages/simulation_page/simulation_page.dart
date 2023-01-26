@@ -46,13 +46,15 @@ class _SimulationPageState extends State<SimulationPage> {
             listener: (context, state) {
               _toggleDialog(state.isSimulationRunning);
             }),
+
         /// Bloc Listener to show dialog
         BlocListener<SimulationPageBloc, SimulationPageState>(
             listenWhen: (prev, current) =>
-                prev.simulationError  != current.simulationError,
+                prev.simulationError != current.simulationError,
             listener: (context, state) {
               if (state.simulationError == true) {
-                _showErrorDialog(context, "test", "test");
+                _showErrorDialog(context, "Fehler",
+                    "Sie müssen eine komplette Maschine und die Werkzeuge auswählen.");
               }
             }),
       ],
@@ -68,16 +70,6 @@ class _SimulationPageState extends State<SimulationPage> {
             );
           }),
     );
-  }
-
-  bool _requestNextCollision(
-      bool isRunning, SimulationPageState prev, SimulationPageState current) {
-    if (isRunning) {
-      // return prev.inCollision != current.inCollision;
-      return true;
-    } else {
-      return false;
-    }
   }
 
   /// Builds the body of the app.

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../../model/appmodes.dart';
-import '../../../model/line.dart';
+import '../../../../model/appmodes.dart';
+import '../../../../model/line.dart';
 
 /// Handles all events of the [SegmentWidget].
 abstract class DrawingWidgetEvent {
