@@ -17,12 +17,9 @@ import 'drawing_widget.dart';
 /// On this page the user can draw a single line representing the the profile
 /// of a metal sheet.
 ///
-/// The length and angle of the lines can be changed in a bottom sheet.
+/// The length and angle of the lines can be changed in the left column.
 class DrawingPage extends StatelessWidget {
   const DrawingPage({Key? key}) : super(key: key);
-
-  // @override
-  // _DrawingPageState createState() => _DrawingPageState();
 
   @override
   Widget build(BuildContext context) {
@@ -33,36 +30,11 @@ class DrawingPage extends StatelessWidget {
   }
 }
 
-///
+/// The view of the drawing page.
 class DrawingView extends StatelessWidget {
   final _angleController = TextEditingController();
   final _lengthController = TextEditingController();
   final _calcService = GeometricCalculationsService();
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //
-  //   List<Line> selectedLines = context
-  //       .read<DrawingWidgetBloc>()
-  //       .state
-  //       .lines
-  //       .where((element) => element.isSelected)
-  //       .toList();
-  //
-  //   if (selectedLines.isNotEmpty) {
-  //     _setAngle(selectedLines);
-  //   }
-  // }
-  //
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   // Clean up the controller when the widget is removed from the
-  //   // widget tree.
-  //   _angleController.dispose();
-  //   _lengthController.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -364,165 +336,3 @@ class DrawingView extends StatelessWidget {
     }
   }
 }
-// class _DrawingPageState extends State<DrawingPage> {
-//   /// TextField controllers
-//
-//   /// Sets the initial angle in the angle text field.
-//   /// When there are multiple [Line]s selected it show only the angle of
-//   /// the first Line.
-//   void _setAngle(List<Line> lines) {
-//     if (lines.length == 1) {
-//       _angleController.text = _calcService
-//           .getAngle(lines.first.start, lines.first.end)
-//           .toStringAsFixed(1);
-//     } else {
-//       _angleController.text = _calcService
-//           .getInnerAngle(lines.first, lines.last)
-//           .toStringAsFixed(1);
-//     }
-//   }
-//
-//   /// Building a widget containing a [DrawingWidget], one row where the eiditing
-//   /// Mode can be changed and one row where the angle and the length of the
-//   /// line can be changed.
-//   @override
-//   Widget build(BuildContext context) {
-//     /// Triggers when a new line is selected and there the [TextField]s get new
-//     /// values.
-//     return MultiBlocListener(
-//       listeners: [
-//         /// When the drawing widget state updates lines the angle and length
-//         /// of the TextField are updated.
-//         BlocListener<DrawingWidgetBloc, DrawingWidgetState>(
-//           listenWhen: (prev, current) =>
-//               prev.selectedLines != current.selectedLines &&
-//               current.selectedLines.isNotEmpty,
-//           listener: (context, state) {
-//             _setAngle(state.selectedLines);
-//             _setLength(state.selectedLines);
-//           },
-//         ),
-//
-//         /// When the configuration page state has lines the drawing widget page
-//         /// state gets updated as well.
-//         BlocListener<ConfigPageBloc, ConfigPageState>(
-//           listenWhen: (prev, current) =>
-//               prev.lines != current.lines && current.lines.isNotEmpty,
-//           listener: (context, state) {
-//             context
-//                 .read<DrawingWidgetBloc>()
-//                 .add(LinesReplaced(lines: state.lines));
-//           },
-//         ),
-//       ],
-//       child: BlocBuilder<DrawingPageBloc, DrawingPageState>(
-//           builder: (context, state) {
-//         return Scaffold(
-//           resizeToAvoidBottomInset: false,
-//           appBar: AppBar(
-//             title: Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-//                   Text('Blechprofil zeichnen'),
-//                   Container(width: 10),
-//                   IconButton(
-//                       onPressed: () {
-//                         _undo();
-//                       },
-//                       icon: Icon(Icons.arrow_circle_left)),
-//                   SizedBox(width: 10),
-//                   IconButton(
-//                       onPressed: () {
-//                         _redo();
-//                       },
-//                       icon: Icon(Icons.arrow_circle_right))
-//                 ]),
-//                 AppTitle(),
-//               ],
-//             ),
-//           ),
-//           backgroundColor: Colors.white,
-//           body: OrientationBuilder(builder: (context, orientation) {
-//             return orientation == Orientation.portrait
-//                 ? buildPortraitLayout(state)
-//                 : buildLandscapeLayout(state);
-//           }),
-//           floatingActionButton: Stack(
-//             children: [
-//               /// Right Button
-//               Positioned(
-//                 bottom: 20,
-//                 right: 10,
-//                 child: FloatingActionButton(
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(10),
-//                   ),
-//                   child: Icon(Icons.arrow_right),
-//                   onPressed: () => _goToNextPage(),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         );
-//       }),
-//     );
-//   }
-//
-//   Column buildConfigRow22(DrawingPageState state) {
-//     return Column(
-//       children: [
-//         Row(
-//           children: [
-//             Flexible(child: _buildAngleTextField()),
-//             // SizedBox(width: 245, child: _buildAngleTextField()),
-//           ],
-//         ),
-//         SizedBox(height: 10),
-//         Row(children: [
-//           Flexible(child: _buildLengthTextField()),
-//           // SizedBox(
-//           //   width: 245,
-//           //   child: _buildLengthTextField(),
-//           // ),
-//         ]),
-//       ],
-//     );
-//   }
-//
-//   Widget buildConfigRow2(DrawingPageState state) {
-//     return OrientationBuilder(
-//       builder: (context, orientation) {
-//         return orientation == Orientation.landscape
-//             ? buildPortraitLengthAndAngleRow()
-//             : buildConfigRow22(state);
-//       },
-//     );
-//   }
-//
-//   Row buildPortraitLengthAndAngleRow() {
-//     return Row(
-//       children: [
-//         Container(
-//           width: 100,
-//           child: _buildAngleTextField(),
-//         ),
-//         Container(width: 20),
-//         Container(
-//           width: 100,
-//           child: _buildLengthTextField(),
-//         )
-//       ],
-//     );
-//   }
-//
-//   /// Undo the last action.
-//   void _undo() {
-//     context.read<DrawingWidgetBloc>().add(LineDrawingUndo());
-//   }
-//
-//   /// Redo the last action.
-//   void _redo() {
-//     context.read<DrawingWidgetBloc>().add(LineDrawingRedo());
-//   }
-// }
