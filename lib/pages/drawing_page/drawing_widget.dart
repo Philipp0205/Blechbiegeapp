@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/drawing_page/drawing_page_bloc.dart';
+import 'package:open_bsp/drawing/bloc/drawing_page_bloc.dart';
+import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_bloc.dart';
+import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_event.dart';
+import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_state.dart';
 
-import '../../bloc /drawing_page/segment_widget/drawing_widget_bloc.dart';
-import '../../bloc /drawing_page/segment_widget/drawing_widget_event.dart';
-import '../../bloc /drawing_page/segment_widget/drawing_widget_state.dart';
 import 'drawing_widget_sketcher.dart';
 
 /// Widget which the the line is drawn on. Gestures from the user are
@@ -49,8 +49,6 @@ class _DrawingWidgetState extends State<DrawingWidget> {
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.5,
                 height: MediaQuery.of(context).size.height * 0.9,
-                // width: 300,
-                // height: 500,
                 child: CustomPaint(
                   painter: DrawingWidgetSketcher(
                     lines2: state.lines,

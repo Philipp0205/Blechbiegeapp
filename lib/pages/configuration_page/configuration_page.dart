@@ -35,14 +35,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     _sController.text = s.toStringAsFixed(0);
     _rController.text = r.toStringAsFixed(0);
 
-    // createDebuggingShapes();
+    /// Load standard tools from file
+    context.read<ToolPageBloc>().add(ToolDataBackedUp());
+    /// Load standard tools in ui.
+    context.read<ToolPageBloc>().add(ToolPageCreated());
   }
-
-  @override
-  void onBackPressed() {
-//some function
-  }
-
 
   @override
   void dispose() {
@@ -52,7 +49,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
   }
 
   /// Build the page containing the [ConstructingSegmentWidget] which draw the
-  /// line, a row of [Checkbox]es to show differents details of the line and
+  /// line, a row of [Checkbox]es to show different details of the line and
   /// a row of [TextField]s to configure the drawn line.
   @override
   Widget build(BuildContext context) {
@@ -120,7 +117,8 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
     return AppBar(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text('Konfiguration des Profils'),
+        children: [
+          Text('Konfiguration des Profils'),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
