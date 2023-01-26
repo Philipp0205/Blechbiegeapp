@@ -167,7 +167,6 @@ class _AddToolBottomSheetState extends State<AddToolBottomSheet> {
             onChanged: (String? newValue) {
               setState(() {
                 dropdownValue = newValue!;
-                print('dropdownvalue changed: ${newValue}');
               });
             }),
         Container(

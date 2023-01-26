@@ -6,10 +6,11 @@ class DrawingPageState extends Equatable {
   final bool selectionMode;
   final bool setAdapterMode;
 
-  const DrawingPageState(
-      {required this.mode,
-      required this.selectionMode,
-      required this.setAdapterMode});
+  const DrawingPageState({
+    required this.mode,
+    required this.selectionMode,
+    required this.setAdapterMode,
+  });
 
   @override
   List<Object> get props => [selectionMode];
@@ -32,14 +33,20 @@ class DrawingPageInitial extends DrawingPageState {
   final bool selectionMode;
   final bool setAdapterMode;
 
+  final double currentAngle;
+  final double currentLength;
+
   const DrawingPageInitial(
       {required this.mode,
       required this.selectionMode,
-      required this.setAdapterMode})
+      required this.setAdapterMode,
+      required this.currentAngle,
+      required this.currentLength})
       : super(
-            mode: mode,
-            selectionMode: selectionMode,
-            setAdapterMode: setAdapterMode);
+          mode: mode,
+          selectionMode: selectionMode,
+          setAdapterMode: setAdapterMode,
+        );
 }
 
 // class ModeSelectionSuccess extends DrawingPageState {

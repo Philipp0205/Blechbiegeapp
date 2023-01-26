@@ -3,11 +3,8 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/model/simulation/enums/position_enum.dart';
 
-import '../../model/OffsetAdapter.dart';
 import '../../model/line.dart';
 import '../../model/segment_widget/segment.dart';
 import '../../model/simulation/tool.dart';
@@ -18,7 +15,6 @@ import '../../persistence/repositories/tool_repository.dart';
 import '../../services/geometric_calculations_service.dart';
 
 part 'configuration_page_event.dart';
-
 part 'configuration_page_state.dart';
 
 class ConfigPageBloc extends Bloc<ConfigurationPageEvent, ConfigPageState> {

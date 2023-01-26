@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_event.dart';
-import 'package:open_bsp/bloc%20/drawing_page/segment_widget/drawing_widget_state.dart';
+import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_event.dart';
+import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_state.dart';
 import 'package:open_bsp/model/line.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/model/appmodes.dart';
 
-import '../../../model/segment_widget/segment.dart';
-import '../../../services/geometric_calculations_service.dart';
+import '../../../../model/segment_widget/segment.dart';
 
 ///
 class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
@@ -23,6 +22,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
           linesBeforeUndo: [],
           mode: Mode.defaultMode,
           selectionMode: false,
+          currentAngle: 0,
+          currentLength: 0,
         )) {
     /// New Pan Events
     on<LineDrawingStarted>(_addNewLine);
@@ -198,8 +199,14 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     selectedLines = lines.where((line) => line.isSelected).toList();
 
+    double angle =
+        _calculationService.getAngle(selectedLine.start, selectedLine.end);
+
+    double length = (selectedLine.start - selectedLine.end).distance;
+
     emit(state.copyWith(lines: [], selectedLines: []));
-    emit(state.copyWith(lines: lines, selectedLines: selectedLines));
+    emit(state.copyWith(
+        lines: lines, selectedLines: selectedLines, currentAngle: angle, currentLength: length));
   }
 
   Line _toggleLineSelection(Line line) {
