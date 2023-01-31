@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_event.dart';
 import 'package:open_bsp/drawing/drawing.dart';
-import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
-import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
+import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_bloc.dart';
+import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_event.dart';
+import 'package:open_bsp/ui/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
+import 'package:open_bsp/ui/ui.dart';
 
-import '../../bloc /configuration_page/configuration_page_bloc.dart';
-import '../../bloc /shapes_page/tool_page_bloc.dart';
-import '../../model/line.dart';
-import '../widgets/app_title.dart';
-import 'drawing_widget.dart';
+import '../../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../../../bloc /shapes_page/tool_page_bloc.dart';
+import '../../../model/line.dart';
+import '../../../pages/widgets/app_title.dart';
 
 /// On this page the user can draw a single line representing the the profile
 /// of a metal sheet.
@@ -125,18 +125,12 @@ class DrawingView extends StatelessWidget {
 
   List<Widget> _buildMenuHeader(BuildContext context) {
     return [
-      Text('Konfiguration', style: Theme
-          .of(context)
-          .textTheme
-          .titleLarge),
+      Text('Konfiguration', style: Theme.of(context).textTheme.titleLarge),
       SizedBox(
         height: 10,
       ),
       Text('Kante selektieren um Länge und Winkel anzupassen.',
-          style: Theme
-              .of(context)
-              .textTheme
-              .titleSmall)
+          style: Theme.of(context).textTheme.titleSmall)
     ];
   }
 
@@ -195,21 +189,6 @@ class DrawingView extends StatelessWidget {
     );
   }
 
-  /// Sets the initial angle in the angle text field.
-  /// When there are multiple [Line]s selected it show only the angle of
-  /// the first Line.
-  void _setAngle(List<Line> lines) {
-    if (lines.length == 1) {
-      _angleController.text = _calcService
-          .getAngle(lines.first.start, lines.first.end)
-          .toStringAsFixed(1);
-    } else {
-      _angleController.text = _calcService
-          .getInnerAngle(lines.first, lines.last)
-          .toStringAsFixed(1);
-    }
-  }
-
   // TwoColumnLandscapeLayout buildLandscapeLayout(DrawingPageState state) {
   TwoColumnLandscapeLayout buildLandscapeLayout(BuildContext context) {
     return TwoColumnLandscapeLayout(
@@ -230,6 +209,7 @@ class DrawingView extends StatelessWidget {
         ));
   }
 
+  /// Build the text field for changing the angle of the selected line.
   TextField _buildAngleTextField(BuildContext context) {
     _angleController.text = context
         .select((DrawingWidgetBloc bloc) => bloc.state.currentAngle)
@@ -279,14 +259,12 @@ class DrawingView extends StatelessWidget {
 
   /// Navigates to the next Page and passes the selected lines to the next Page.
   void _goToNextPage(BuildContext context) {
-    List<Line> lines = context
-        .read<DrawingWidgetBloc>()
-        .state
-        .lines;
+    List<Line> lines = context.read<DrawingWidgetBloc>().state.lines;
 
     /// Load tools from the database.
     context.read<ToolPageBloc>()
-      ..add(ToolDataBackedUp())..add(ToolPageCreated());
+      ..add(ToolDataBackedUp())
+      ..add(ToolPageCreated());
 
     BlocProvider.of<ConfigPageBloc>(context)
         .add(ConfigPageCreated(lines: lines, tools: []));
@@ -322,10 +300,7 @@ class DrawingView extends StatelessWidget {
   /// selected [Line]s.
   void _changeAngle(BuildContext context, double value) {
     List<Line> selectedLines =
-        context
-            .read<DrawingWidgetBloc>()
-            .state
-            .selectedLines;
+        context.read<DrawingWidgetBloc>().state.selectedLines;
 
     if (selectedLines.length == 1) {
       context.read<DrawingWidgetBloc>().add(LineDrawingAngleChanged(

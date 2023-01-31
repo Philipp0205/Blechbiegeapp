@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_event.dart';
-import 'package:open_bsp/drawing/bloc/drawing_widget/bloc/drawing_widget_state.dart';
+import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_event.dart';
+import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_state.dart';
 import 'package:open_bsp/model/line.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/model/appmodes.dart';
@@ -26,8 +26,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
           currentLength: 0,
         )) {
     /// New Pan Events
-    on<LineDrawingStarted>(_addNewLine);
-    on<LineDrawingUpdated>(_updateLine);
+    on<LineDrawingStarted>(_onLineDrawingStarted);
+    on<LineDrawingUpdated>(_onLineDrawingUpdated);
     on<LineDrawingPanDown>(_selectLine);
     on<LinesDeleted>(_deleteLines);
 
@@ -132,7 +132,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   ///
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
   /// screen with a primary button and has begun to move.'
-  void _addNewLine(LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
+  void _onLineDrawingStarted(LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
       List<Line> lines = state.lines;
 
@@ -145,6 +145,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
       if (lines.isNotEmpty) line = line.copyWith(start: lines.last.end);
 
       lines.add(line);
+      emit(state.copyWith(lines: [], linesBeforeUndo: []));
       emit(state.copyWith(lines: lines, linesBeforeUndo: lines));
     }
   }
@@ -154,7 +155,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   ///
   /// Similar to [GestureDetector]: 'A pointer that is in contact with the
   /// screen with a primary button and moving has moved again.'
-  void _updateLine(LineDrawingUpdated event, Emitter<DrawingWidgetState> emit) {
+  void _onLineDrawingUpdated(LineDrawingUpdated event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
       List<Line> lines = state.lines;
       lines.last = lines.last.copyWith(end: event.updatedOffset);
