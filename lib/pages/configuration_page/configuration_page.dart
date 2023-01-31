@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
-import 'package:open_bsp/pages/drawing_page/two_coloumn_portrait_layout.dart';
+import 'package:open_bsp/ui/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/pages/widgets/app_title.dart';
 import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 
 import '../../bloc /configuration_page/configuration_page_bloc.dart';
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
-import '../drawing_page/two_column_landscape_layout.dart';
+import '../../ui/ui.dart';
 import 'config_page_segment_widget.dart';
 
 class ConfigurationPage extends StatefulWidget {

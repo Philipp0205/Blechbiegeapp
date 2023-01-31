@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
-import 'package:open_bsp/pages/drawing_page/two_column_landscape_layout.dart';
 import 'package:open_bsp/pages/simulation_page/simulation_page_sketcher.dart';
 import 'package:open_bsp/pages/widgets/app_title.dart';
 
 import '../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../model/simulation/tool.dart';
+import '../../ui/ui.dart';
 
 class SimulationPage extends StatefulWidget {
   const SimulationPage({Key? key}) : super(key: key);
