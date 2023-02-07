@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:open_bsp/drawing/drawing.dart';
 import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_event.dart';
 import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_state.dart';
 import 'package:open_bsp/model/line.dart';
@@ -28,25 +29,32 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     /// New Pan Events
     on<LineDrawingStarted>(_onLineDrawingStarted);
     on<LineDrawingUpdated>(_onLineDrawingUpdated);
-    on<LineDrawingPanDown>(_selectLine);
-    on<LinesDeleted>(_deleteLines);
+    on<LineDrawingPanDown>(_onLineDrawingPanDown);
+
+    on<LinesDeleted>(_onLinesDeleted);
 
     /// Selected line changes
     on<LineDrawingInnerAngleChanged>(_changeLineInnerAngle);
     on<LineDrawingAngleChanged>(_changeAngle);
     on<LineDrawingLengthChanged>(_changeLineLength);
 
+    /// Selection mode
     on<LineDrawingSelectionModeSelected>(_toggleSelectionMode);
 
     /// Events for mode editing the segment
     on<CurrentSegmentModeChanged>(_changeMode);
+
+    /// Undo and Redo
     on<LineDrawingUndo>(_undo);
     on<LineDrawingRedo>(_redo);
+
+    /// ???
     on<LinesReplaced>(_onReplaceLines);
   }
 
-  void _deleteLines(LinesDeleted event, Emitter<DrawingWidgetState> emit) {
-    print('delete lines');
+  /// Deletes all lines of the [SegmentWidget].
+  /// Emits a new [SegmentWidgetState] with an empty list of [Line]s.
+  void _onLinesDeleted(LinesDeleted event, Emitter<DrawingWidgetState> emit) {
     emit(state.copyWith(lines: []));
   }
 
@@ -61,8 +69,6 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// length change.
   void _changeLineLength(
       LineDrawingLengthChanged event, Emitter<DrawingWidgetState> emit) {
-    print('changeSegmentPartLength');
-
     List<Line> lines = state.lines;
     Line selectedLine = lines.where((line) => line.isSelected).toList().last;
 
@@ -132,7 +138,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   ///
   /// Similar to [GestureDetector]: 'Triggered when a pointer has contacted the
   /// screen with a primary button and has begun to move.'
-  void _onLineDrawingStarted(LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
+  void _onLineDrawingStarted(
+      LineDrawingStarted event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
       List<Line> lines = state.lines;
 
@@ -155,7 +162,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   ///
   /// Similar to [GestureDetector]: 'A pointer that is in contact with the
   /// screen with a primary button and moving has moved again.'
-  void _onLineDrawingUpdated(LineDrawingUpdated event, Emitter<DrawingWidgetState> emit) {
+  void _onLineDrawingUpdated(
+      LineDrawingUpdated event, Emitter<DrawingWidgetState> emit) {
     if (state.selectionMode == false) {
       List<Line> lines = state.lines;
       lines.last = lines.last.copyWith(end: event.updatedOffset);
@@ -168,7 +176,8 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   }
 
   /// Selects the line nearest to the selected offset.
-  void _selectLine(LineDrawingPanDown event, Emitter<DrawingWidgetState> emit) {
+  void _onLineDrawingPanDown(
+      LineDrawingPanDown event, Emitter<DrawingWidgetState> emit) {
     // Check if selection Mode (Checkbox) is active.
     if (state.selectionMode == false) {
       return;
@@ -207,7 +216,10 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     emit(state.copyWith(lines: [], selectedLines: []));
     emit(state.copyWith(
-        lines: lines, selectedLines: selectedLines, currentAngle: angle, currentLength: length));
+        lines: lines,
+        selectedLines: selectedLines,
+        currentAngle: angle,
+        currentLength: length));
   }
 
   Line _toggleLineSelection(Line line) {
@@ -221,11 +233,19 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   }
 
   /// Undo option.
-  /// Removes the last drawn line.
+  /// Removes the last drawn line in the [DrawingWidget].
   void _undo(LineDrawingUndo event, Emitter<DrawingWidgetState> emit) {
-    print('undo');
     List<Line> lines = state.lines;
-    List<Line> linesBeforeUndo = state.lines;
+    List<Line> linesBeforeUndo = state.linesBeforeUndo.toList();
+
+    if (lines.length == 1) {
+      return;
+    }
+
+    if (lines.length > state.linesBeforeUndo.length) {
+      linesBeforeUndo = state.lines;
+    }
+
     lines.removeLast();
 
     emit(state.copyWith(lines: [], linesBeforeUndo: []));
@@ -233,16 +253,14 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   }
 
   /// Redo option.
-  /// Adds the last removed line again.
+  /// Adds the last removed line in the [DrawingWidget].
   void _redo(LineDrawingRedo event, Emitter<DrawingWidgetState> emit) {
     List<Line> history = state.linesBeforeUndo;
-    List<Line> lines = state.lines;
+    List<Line> lines = state.lines.toList();
 
-    int index = lines.indexOf(lines.last);
+    int index = lines.isNotEmpty ? lines.indexOf(lines.last) : 0;
 
     if (history.length > index) {
-      print('redo possible history: ${history.length}, liens: ${lines.length}');
-      print('index $index');
       lines.add(history[index + 1]);
     }
 

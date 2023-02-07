@@ -6,12 +6,13 @@ import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_bloc.dart';
 import 'package:open_bsp/pages/configuration_page/configuration_page.dart';
-import 'package:open_bsp/drawing/drawing_page/view/drawing_page.dart';
 import 'package:open_bsp/pages/simulation_page/simulation_page.dart';
 import 'package:open_bsp/pages/tool_page/tool_page.dart';
 import 'package:open_bsp/persistence/database_provider.dart';
 import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 import 'package:open_bsp/services/color_service.dart';
+
+import 'drawing/drawing_page/drawing_page.dart';
 
 
 void main() {

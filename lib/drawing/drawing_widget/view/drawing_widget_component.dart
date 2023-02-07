@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/drawing/drawing_page/bloc/drawing_page_bloc.dart';
 import 'package:open_bsp/drawing/drawing_widget/bloc/drawing_widget_state.dart';
 
-import '../drawing_widget/bloc/drawing_widget_event.dart';
-import '../drawing_widget/drawing_widget.dart';
+import '../../drawing.dart';
 import 'drawing_widget_sketcher.dart';
 
 /// Widget which the the line is drawn on. Gestures from the user are
