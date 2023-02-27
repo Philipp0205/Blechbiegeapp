@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
-import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
+import 'package:open_bsp/configuration/view/add_tool_bottom_sheet.dart';
 import 'package:open_bsp/ui/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/pages/widgets/app_title.dart';
 import 'package:open_bsp/persistence/repositories/tool_repository.dart';
 
-import '../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../bloc/configuration_page_bloc.dart';
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
 import '../../ui/ui.dart';
@@ -37,6 +37,7 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
     /// Load standard tools from file
     context.read<ToolPageBloc>().add(ToolDataBackedUp());
+
     /// Load standard tools in ui.
     context.read<ToolPageBloc>().add(ToolPageCreated());
   }
@@ -87,11 +88,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           Divider(height: 20),
           Row(
             children: [
-              Flexible(child: _buildSTextField(context)),
+              Flexible(child: _buildThicknessTextField(context)),
               SizedBox(width: 10),
               Flexible(child: _buildRadiusTextField(context)),
               SizedBox(width: 10),
-              Flexible(child: _buildToolElevatedButton(state)),
+              Flexible(child: _buildAddToolsButton(state)),
             ],
           ),
           Divider(height: 20),
@@ -137,19 +138,20 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
       padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
       child: Row(
         children: [
-          _buildSTextField(context),
+          _buildThicknessTextField(context),
           Container(width: 20),
           _buildRadiusTextField(context),
           Container(
             width: 30,
           ),
-          _buildToolElevatedButton(state)
+          _buildAddToolsButton(state)
         ],
       ),
     );
   }
 
-  ElevatedButton _buildToolElevatedButton(ConfigPageState state) {
+  /// Builds the [ElevatedButton] which used to add tools.
+  ElevatedButton _buildAddToolsButton(ConfigPageState state) {
     return ElevatedButton(
         onPressed: () => _createTool(state),
         child: Row(
@@ -164,6 +166,11 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
 
   /// Builds the [TextField] where the user can change the radius of the
   /// profile.
+  /// If the user enters a value which is not a number the [TextField] gets
+  /// an empty string.
+  ///
+  /// Used the controller [_rController] to set the initial value and to
+  /// preserve the state.
   TextField _buildRadiusTextField(BuildContext context) {
     return TextField(
         decoration:
@@ -180,7 +187,8 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
         });
   }
 
-  TextField _buildSTextField(BuildContext context) {
+  /// Builds the [TextField] where the user can change the metal sheet thickness.
+  TextField _buildThicknessTextField(BuildContext context) {
     return TextField(
         decoration: InputDecoration(
             border: OutlineInputBorder(), labelText: 'Blechdicke'),
@@ -326,13 +334,13 @@ class _ConfigurationPageState extends State<ConfigurationPage> {
           Divider(),
           Flexible(child: _buildRadiusTextField(context)),
           SizedBox(height: 10),
-          Flexible(child: _buildSTextField(context)),
+          Flexible(child: _buildThicknessTextField(context)),
           Divider(),
           buildCheckboxes2(state),
           Divider(),
           SizedBox(
             width: double.infinity,
-            child: _buildToolElevatedButton(state),
+            child: _buildAddToolsButton(state),
           ),
         ],
       ),

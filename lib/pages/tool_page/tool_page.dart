@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/model/simulation/tool_type.dart';
-import 'package:open_bsp/pages/configuration_page/add_tool_bottom_sheet.dart';
+import 'package:open_bsp/configuration/view/add_tool_bottom_sheet.dart';
 
-import '../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../../configuration/bloc/configuration_page_bloc.dart';
 import '../../model/line.dart';
 import '../../model/simulation/tool.dart';
 

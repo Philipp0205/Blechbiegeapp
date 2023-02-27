@@ -39,6 +39,8 @@ class GeometricCalculationsService {
         .toList();
   }
 
+  /// Changes the length of a segment consisting of two Offsets [start] and
+  /// [end] by given [length].
   Offset _changeLengthOfOffset(Offset start, Offset end, double length) {
     double lengthAB = (start - end).distance;
     double x = end.dx + (end.dx - start.dx) / lengthAB * length;
@@ -55,18 +57,20 @@ class GeometricCalculationsService {
   ///
   /// Always two offsets are returned. Only one end got shorted one of the
   /// results will be  the same offset.
-  List<Offset> changeLengthOfSegment(
+  List<Offset> changeLengthOfLine(
       Offset start, Offset end, double length, bool shortStart, bool shortEnd) {
     List<Offset> result = [];
 
     Offset newStart = _changeLengthOfOffset(start, end, length);
     Offset newEnd = _changeLengthOfOffset(end, start, length);
+
+    // Somehow here start and end are switched around. I don't know why :,)
     if (shortStart && shortEnd) {
       result.addAll([newStart, newEnd]);
-    } else if (shortStart) {
-      result.addAll([newStart, end]);
-    } else {
-      result.addAll([start, newEnd]);
+    } else if (shortStart == true && shortEnd == false) {
+      result.addAll([end, newEnd]);
+    } else if (shortStart == false && shortEnd == true) {
+      result.addAll([newStart, start]);
     }
     return result;
   }

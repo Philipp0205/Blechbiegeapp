@@ -9,7 +9,7 @@ import 'package:open_bsp/ui/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/ui/ui.dart';
 
-import '../../../bloc /configuration_page/configuration_page_bloc.dart';
+import '../../../configuration/bloc/configuration_page_bloc.dart';
 import '../../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../../model/line.dart';
 import '../../../pages/widgets/app_title.dart';
@@ -34,7 +34,6 @@ class DrawingPage extends StatelessWidget {
 class DrawingView extends StatelessWidget {
   final _angleController = TextEditingController();
   final _lengthController = TextEditingController();
-  final _calcService = GeometricCalculationsService();
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +188,8 @@ class DrawingView extends StatelessWidget {
     );
   }
 
-  // TwoColumnLandscapeLayout buildLandscapeLayout(DrawingPageState state) {
+  /// Builds the horizontal layout of the page.
+  /// The settings are on the left while the [DrawingWidget] is on the right.
   TwoColumnLandscapeLayout buildLandscapeLayout(BuildContext context) {
     return TwoColumnLandscapeLayout(
         leftColumn: Column(
@@ -299,15 +299,7 @@ class DrawingView extends StatelessWidget {
   /// Note that different events are triggered depending on the number of
   /// selected [Line]s.
   void _changeAngle(BuildContext context, double value) {
-    List<Line> selectedLines =
-        context.read<DrawingWidgetBloc>().state.selectedLines;
-
-    if (selectedLines.length == 1) {
-      context.read<DrawingWidgetBloc>().add(LineDrawingAngleChanged(
-          angle: value, length: double.parse(_lengthController.text)));
-    } else {
-      context.read<DrawingWidgetBloc>().add(LineDrawingInnerAngleChanged(
-          angle: value, length: double.parse(_lengthController.text)));
-    }
+    context.read<DrawingWidgetBloc>().add(LineDrawingAngleChanged(
+        angle: value, length: double.parse(_lengthController.text)));
   }
 }

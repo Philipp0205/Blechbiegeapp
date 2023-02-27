@@ -34,19 +34,18 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     on<LinesDeleted>(_onLinesDeleted);
 
     /// Selected line changes
-    on<LineDrawingInnerAngleChanged>(_changeLineInnerAngle);
-    on<LineDrawingAngleChanged>(_changeAngle);
-    on<LineDrawingLengthChanged>(_changeLineLength);
+    on<LineDrawingAngleChanged>(_onAngleChanged);
+    on<LineDrawingLengthChanged>(_onLineLengthChanged);
 
     /// Selection mode
-    on<LineDrawingSelectionModeSelected>(_toggleSelectionMode);
+    on<LineDrawingSelectionModeSelected>(_onToggleSelectionMode);
 
     /// Events for mode editing the segment
-    on<CurrentSegmentModeChanged>(_changeMode);
+    on<CurrentSegmentModeChanged>(_onModechanged);
 
     /// Undo and Redo
-    on<LineDrawingUndo>(_undo);
-    on<LineDrawingRedo>(_redo);
+    on<LineDrawingUndo>(_onUndo);
+    on<LineDrawingRedo>(_onRedo);
 
     /// ???
     on<LinesReplaced>(_onReplaceLines);
@@ -58,7 +57,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     emit(state.copyWith(lines: []));
   }
 
-  void _changeMode(
+  void _onModechanged(
       CurrentSegmentModeChanged event, Emitter<DrawingWidgetState> emit) {
     // emit(
     //     CurrentSegmentUpdate(segment: [state.segment.first], mode: event.mode));
@@ -67,70 +66,65 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   /// Changes the length of a part of a segment.
   /// At lest two [selectedOffsets] in a [Segment] have to be present for a
   /// length change.
-  void _changeLineLength(
+  void _onLineLengthChanged(
       LineDrawingLengthChanged event, Emitter<DrawingWidgetState> emit) {
     List<Line> lines = state.lines;
     Line selectedLine = lines.where((line) => line.isSelected).toList().last;
 
-    double currentLength = (selectedLine.start - selectedLine.end).distance;
+    double lengthOfSelectedLine =
+        (selectedLine.start - selectedLine.end).distance;
 
-    Offset offset2 = _calculationService
-        .changeLengthOfSegment(selectedLine.start, selectedLine.end,
-            event.length - currentLength, true, false)
+    Offset movedOffset = _calculationService
+        .changeLengthOfLine(selectedLine.start, selectedLine.end,
+            event.length - lengthOfSelectedLine, true, true)
         .first;
 
-    Line newSelectedLine = selectedLine.copyWith(end: offset2);
+    Line changedLine = selectedLine.copyWith(end: movedOffset);
 
     int index = lines.indexOf(selectedLine);
 
-    lines
-      ..insert(index, newSelectedLine)
-      ..remove(selectedLine);
+    lines[lines.indexOf(selectedLine)] = changedLine;
 
     if (lines.length > index + 1) {
-      Line nextLine = lines[index + 1];
-      Line newNextLine = nextLine.copyWith(start: offset2);
+      // Line nextLine = lines[index + 1];
+      // Line newNextLine = nextLine.copyWith(start: movedOffset);
+      //
+      // lines
+      //   ..insert(index + 1, newNextLine)
+      //   ..remove(nextLine);
 
-      lines
-        ..insert(index + 1, newNextLine)
-        ..remove(nextLine);
+      lines = _changeFollowingLines(selectedLine, lines, movedOffset);
     }
 
     emit(state.copyWith(lines: []));
     emit(state.copyWith(lines: lines));
   }
 
-  /// Changes the angle of a part of a [Segment].
-  /// The segment has to have at least two [selectedOffsets] to
-  /// change the angle.
-  void _changeLineInnerAngle(
-      LineDrawingInnerAngleChanged event, Emitter<DrawingWidgetState> emit) {
-    List<Line> lines = state.lines;
-    List<Line> selectedLines = state.selectedLines;
+  /// If a line gets changed all following lines should change as well BUT
+  /// should keep length and angle.
+  List<Line> _changeFollowingLines(
+      Line changedLine, List<Line> lines, Offset movedOffset) {
+    print('change following lines');
 
-    int index = lines.indexOf(selectedLines.last);
+    // Remove all lines from lines after currentLine
+    List<Line> linesAfterCurrentLine =
+        lines.sublist(lines.indexOf(changedLine), lines.length);
 
-    double angleOfFirstLine = _calculationService.getAngle(
-        selectedLines.first.start, selectedLines.first.end);
+    linesAfterCurrentLine.forEach((line) {
+      Line lineBefore = lines[lines.indexOf(line) - 1];
 
-    double newAngle = angleOfFirstLine + event.angle;
-    print('newAngle: $newAngle');
+      double angle = _calculationService.getInnerAngle(line, lineBefore);
+      double length = (line.start - line.end).distance;
 
-    Offset newOffset = _calculationService.calculatePointWithAngle(
-        selectedLines.last.start, event.length, newAngle);
+      print("Angle: $angle");
 
-    Line newLine = selectedLines.last.copyWith(end: newOffset);
-
-    selectedLines
-      ..remove(selectedLines.last)
-      ..add(newLine);
-
-    lines
-      ..removeAt(index)
-      ..insert(index, newLine);
-
-    emit(state.copyWith(lines: []));
-    emit(state.copyWith(lines: lines));
+      lines[lines.indexOf(line)] = line.copyWith(
+        start: movedOffset,
+        end: _calculationService.calculatePointWithAngle(
+            movedOffset, length, angle),
+      );
+    });
+    return lines;
   }
 
   /// When the user start dragging the finger over the screen a new [Line]
@@ -203,14 +197,28 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
     selectedLine = _toggleLineSelection(selectedLine);
 
+    double angle =
+        _calculationService.getAngle(selectedLine.start, selectedLine.end);
+
+    double newAngle = 0;
+
+    // Get line before and after the selected line.
+    if (index > 0) {
+      Line previousLine = lines[index - 1];
+      double angleOfPrevLine =
+          _calculationService.getAngle(previousLine.start, previousLine.end);
+
+      // Higher angle minus lower angle
+      newAngle = angle - angleOfPrevLine;
+    } else {
+      newAngle = angle;
+    }
+
     lines
       ..removeAt(index)
       ..insert(index, selectedLine);
 
     selectedLines = lines.where((line) => line.isSelected).toList();
-
-    double angle =
-        _calculationService.getAngle(selectedLine.start, selectedLine.end);
 
     double length = (selectedLine.start - selectedLine.end).distance;
 
@@ -218,7 +226,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
     emit(state.copyWith(
         lines: lines,
         selectedLines: selectedLines,
-        currentAngle: angle,
+        currentAngle: newAngle,
         currentLength: length));
   }
 
@@ -227,14 +235,14 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
   }
 
   /// Changes the selection mode
-  void _toggleSelectionMode(LineDrawingSelectionModeSelected event,
+  void _onToggleSelectionMode(LineDrawingSelectionModeSelected event,
       Emitter<DrawingWidgetState> emit) {
     emit(state.copyWith(selectionMode: event.selectionMode));
   }
 
   /// Undo option.
   /// Removes the last drawn line in the [DrawingWidget].
-  void _undo(LineDrawingUndo event, Emitter<DrawingWidgetState> emit) {
+  void _onUndo(LineDrawingUndo event, Emitter<DrawingWidgetState> emit) {
     List<Line> lines = state.lines;
     List<Line> linesBeforeUndo = state.linesBeforeUndo.toList();
 
@@ -254,7 +262,7 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
   /// Redo option.
   /// Adds the last removed line in the [DrawingWidget].
-  void _redo(LineDrawingRedo event, Emitter<DrawingWidgetState> emit) {
+  void _onRedo(LineDrawingRedo event, Emitter<DrawingWidgetState> emit) {
     List<Line> history = state.linesBeforeUndo;
     List<Line> lines = state.lines.toList();
 
@@ -270,29 +278,41 @@ class DrawingWidgetBloc extends Bloc<DrawingWidgetEvent, DrawingWidgetState> {
 
   /// Changes the angle of a single line.
   /// This means the angle is changed without looking at other lines.
-  void _changeAngle(
+  void _onAngleChanged(
       LineDrawingAngleChanged event, Emitter<DrawingWidgetState> emit) {
     List<Line> lines = state.lines;
 
     Line selectedLine =
         state.lines.where((line) => line.isSelected).toList().first;
+    int indexOfSelectedLine = lines.indexOf(selectedLine);
+
+    // Ugly
+    double newAngle = 0;
+    Line previousLine = selectedLine;
+    if (indexOfSelectedLine != 0) {
+      previousLine = lines[indexOfSelectedLine - 1];
+      double angleOfPrevLine =
+          _calculationService.getAngle(previousLine.start, previousLine.end);
+      newAngle = angleOfPrevLine + event.angle;
+    } else {
+      newAngle = event.angle;
+      previousLine = selectedLine;
+    }
 
     Offset newOffset = _calculationService.calculatePointWithAngle(
-        selectedLine.start, event.length, event.angle);
+        selectedLine.start, event.length, newAngle);
 
     Line newLine = selectedLine.copyWith(end: newOffset);
 
-    int index = lines.indexOf(selectedLine);
-
     lines
-      ..insert(index, newLine)
+      ..insert(indexOfSelectedLine, newLine)
       ..remove(selectedLine);
 
-    if (lines.length > index + 1) {
-      Line nextLine = lines[index + 1];
+    if (lines.length > indexOfSelectedLine + 1) {
+      Line nextLine = lines[indexOfSelectedLine + 1];
       lines
-        ..removeAt(index + 1)
-        ..insert(index + 1, nextLine.copyWith(start: newOffset));
+        ..removeAt(indexOfSelectedLine + 1)
+        ..insert(indexOfSelectedLine + 1, nextLine.copyWith(start: newOffset));
     }
 
     emit(state.copyWith(lines: []));
