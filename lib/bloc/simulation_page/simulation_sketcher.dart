@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:ui' as ui;
 import 'package:image/image.dart' as img;
-import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
+import 'package:open_bsp/bloc/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/model/debugging_offset.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 

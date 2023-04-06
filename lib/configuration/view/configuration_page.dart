@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
-import 'package:open_bsp/bloc%20/simulation_page/simulation_page_bloc.dart';
+import 'package:open_bsp/bloc/shapes_page/tool_page_bloc.dart';
+import 'package:open_bsp/bloc/simulation_page/simulation_page_bloc.dart';
 import 'package:open_bsp/configuration/view/add_tool_bottom_sheet.dart';
 import 'package:open_bsp/ui/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/pages/widgets/app_title.dart';

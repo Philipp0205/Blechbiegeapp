@@ -9,8 +9,8 @@ import 'package:open_bsp/ui/two_coloumn_portrait_layout.dart';
 import 'package:open_bsp/services/geometric_calculations_service.dart';
 import 'package:open_bsp/ui/ui.dart';
 
+import '../../../bloc/shapes_page/tool_page_bloc.dart';
 import '../../../configuration/bloc/configuration_page_bloc.dart';
-import '../../../bloc /shapes_page/tool_page_bloc.dart';
 import '../../../model/line.dart';
 import '../../../pages/widgets/app_title.dart';
 
