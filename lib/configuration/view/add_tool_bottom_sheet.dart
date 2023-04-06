@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
-import 'package:open_bsp/bloc%20/shapes_page/tool_page_bloc.dart';
+import 'package:open_bsp/configuration/bloc/configuration_page_bloc.dart';
+import 'package:open_bsp/bloc/shapes_page/tool_page_bloc.dart';
 import 'package:open_bsp/model/simulation/tool_type2.dart';
 import 'package:open_bsp/model/simulation/tool.dart';
 

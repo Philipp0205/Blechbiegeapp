@@ -24,6 +24,21 @@ To store your credentials in cache and avoid logging in every time you perform a
 
 [Source](https://stackoverflow.com/a/69559900/7127837)
 
-## Create release apk 
+## A note about states 
+This projects uses Bloc for state management.  
+To emit a state you will often see things like: 
+
+```dart
+emit(state.copyWith(lines: []));
+emit(state.copyWith(lines: lines));
+```
+
+Only emitting a changed list is not enough because the underlying object does not change. 
+Because dart offers no deep copy of objects an emtpy state is emitted before the new state.
+See for more details: https://github.com/felangel/bloc/issues/1703 for more details. 
+
+
+
+
 
 

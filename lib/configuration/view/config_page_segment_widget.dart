@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:open_bsp/bloc%20/configuration_page/configuration_page_bloc.dart';
+import 'package:open_bsp/configuration/bloc/configuration_page_bloc.dart';
 
 import 'configuration_sketcher.dart';
 
@@ -51,7 +51,6 @@ class _ConstructingPageSegmentWidgetState
   /// This means that other tools can be attached to this tool.
   void onPanDown(
       BuildContext context, DragDownDetails details, ConfigPageState state) {
-    print('onpanDown');
     RenderBox box = context.findRenderObject() as RenderBox;
       Offset point = box.globalToLocal(details.globalPosition);
       Offset offset = new Offset(point.dx, point.dy);

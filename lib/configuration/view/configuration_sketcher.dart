@@ -62,7 +62,6 @@ class ConfigurationSketcher extends CustomPainter {
       ..strokeWidth = s
       ..style = PaintingStyle.stroke;
 
-
     List<Line> shortLines = changeLengthsOfSegments(lines, -r, false);
 
     if (lines.isNotEmpty) {
@@ -75,20 +74,16 @@ class ConfigurationSketcher extends CustomPainter {
       drawnPath = addCurvesToPath(canvas, shortLines, lines, drawnPath);
 
       canvas.drawPath(drawnPath, paint);
-      //   createPicture(canvas, size, drawnPath, paint);
 
       lines.forEach((line) {
         if (line.isSelected) {
           canvas.drawLine(line.start, line.end, paintRed);
-
         }
       });
 
       showSegmentDetails(canvas, shortLines, lines);
     }
   }
-
-
 
   /// Changes the lengths of all [lines] by the same [length].
   /// The length value will be subtracted from the start and the end of the line.
@@ -98,25 +93,30 @@ class ConfigurationSketcher extends CustomPainter {
   ///
   /// Depending on the value of [changeEnds] the very first offset and the very
   /// last offset will not be changed at all.
+  ///
+  /// TODO: This rather belongs in a bloc instead of the sketcher.
   List<Line> changeLengthsOfSegments(
       List<Line> lines, double length, bool changeEnds) {
     List<Line> changedLines = [];
 
     lines.forEach((line) {
-      List<Offset> shortOffsets = _calculationsService.changeLengthOfSegment(
-          line.start, line.end, length, true, true);
-
-      SegmentOffset firstOffset =
-          new SegmentOffset(offset: shortOffsets.first, isSelected: false);
-      SegmentOffset endOffset =
-          new SegmentOffset(offset: shortOffsets.last, isSelected: false);
+      List<Offset> shortOffsets = [];
+      //  List<Offset> shortOffsets = _calculationsService.changeLengthOfSegment(
+      //     line.start, line.end, length, false, true);
 
       // If current line ist the first or last line do not change the outer offset.
       if (!changeEnds) {
         if (line == lines.first) {
-          firstOffset = firstOffset.copyWith(offset: line.start);
+          print('first');
+          shortOffsets = _calculationsService.changeLengthOfLine(
+              line.start, line.end, length, false, true);
         } else if (line == lines.last) {
-          endOffset = endOffset.copyWith(offset: line.end);
+          print('last');
+          shortOffsets = _calculationsService.changeLengthOfLine(
+              line.start, line.end, length, true, false);
+        } else {
+          shortOffsets = _calculationsService.changeLengthOfLine(
+              line.start, line.end, length, true, true);
         }
       }
       changedLines.add(new Line(
@@ -155,7 +155,6 @@ class ConfigurationSketcher extends CustomPainter {
   ///  Adds all given [lines] to a [Path].
   Path addLinesToPath(Canvas canvas, List<Line> lines, Paint paint) {
     Path path = new Path();
-
 
     lines.forEach((l) {
       path

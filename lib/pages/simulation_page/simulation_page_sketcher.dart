@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../bloc /simulation_page/simulation_page_bloc.dart';
-import '../../bloc /simulation_page/simulation_sketcher.dart';
+import '../../bloc/simulation_page/simulation_page_bloc.dart';
+import '../../bloc/simulation_page/simulation_sketcher.dart';
+
 
 class SimulationPageSketcher extends StatefulWidget {
   const SimulationPageSketcher({Key? key}) : super(key: key);
